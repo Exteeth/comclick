@@ -25,7 +25,6 @@ export default function Navbar() {
   const navLinks = [
     { href: "/#about", label: "เกี่ยวกับ", icon: Layers },
     { href: "/#committee", label: "กรรมการ", icon: Crown },
-    { href: "/departments", label: "11 ฝ่าย", icon: Users },
     { href: "/#gallery", label: "ภาพค่าย", icon: Camera },
     { href: "/#schedule", label: "กำหนดการ", icon: Calendar },
     { href: "/#faq", label: "FAQ", icon: HelpCircle },
