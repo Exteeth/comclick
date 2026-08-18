@@ -1,0 +1,115 @@
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        cc: {
+          blue: {
+            DEFAULT: "#5e97d3",
+            50: "#f0f6fc",
+            100: "#dbe8f7",
+            200: "#bad5f1",
+            300: "#8dbbe7",
+            400: "#5e97d3",
+            500: "#4481c4",
+            600: "#3268a8",
+            700: "#295388",
+            800: "#254670",
+            900: "#223c5e",
+            dark: "#193557",
+          },
+          cream: {
+            DEFAULT: "#fbf3e0",
+            light: "#fffdf7",
+            50: "#fefcf6",
+            100: "#fbf3e0",
+            200: "#f6e4bc",
+            300: "#eed193",
+            400: "#e5bc68",
+            dark: "#f2e4c2",
+          },
+          coral: {
+            DEFAULT: "#d98e89",
+            light: "#fae9e8",
+            50: "#fdf5f5",
+            100: "#fbeae9",
+            200: "#f6d4d1",
+            300: "#edb2ae",
+            400: "#d98e89",
+            500: "#c76e68",
+            600: "#b0544f",
+            700: "#92423e",
+            dark: "#7c3330",
+          },
+          yellow: {
+            DEFAULT: "#eccb7d",
+            light: "#fbf5e6",
+            50: "#fefaf0",
+            100: "#fbf3de",
+            200: "#f6e4b8",
+            300: "#eccb7d",
+            400: "#deb24c",
+            500: "#ca9732",
+            600: "#ad7626",
+            dark: "#8c5b1f",
+          },
+          bronze: {
+            DEFAULT: "#b08b5f",
+            light: "#f6f1ea",
+            50: "#fbf9f6",
+            100: "#f4ede3",
+            200: "#e7d9c6",
+            300: "#d4bda2",
+            400: "#b08b5f",
+            500: "#987247",
+            600: "#7c5a36",
+            700: "#63462b",
+            dark: "#4a331f",
+          },
+          navy: "#132338",
+          dark: "#0f172a",
+        },
+      },
+      fontFamily: {
+        sans: ["var(--font-anuphan)", "var(--font-prompt)", "sans-serif"],
+        display: ["var(--font-prompt)", "var(--font-anuphan)", "sans-serif"],
+      },
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "hero-glow": "radial-gradient(circle at 50% 30%, rgba(94,151,211,0.25), transparent 70%)",
+        "mesh-pattern": "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
+      },
+      boxShadow: {
+        glow: "0 0 25px -5px rgba(94, 151, 211, 0.4)",
+        "glow-coral": "0 0 25px -5px rgba(217, 142, 137, 0.4)",
+        "glow-yellow": "0 0 25px -5px rgba(236, 203, 125, 0.4)",
+        soft: "0 8px 30px rgba(19, 35, 56, 0.08)",
+        card: "0 10px 40px -10px rgba(19, 35, 56, 0.1)",
+        elevated: "0 20px 40px -15px rgba(19, 35, 56, 0.15)",
+      },
+      animation: {
+        float: "float 6s ease-in-out infinite",
+        "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        shimmer: "shimmer 2.5s infinite linear",
+      },
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-12px)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+      },
+    },
+  },
+  plugins: [],
+};
+export default config;

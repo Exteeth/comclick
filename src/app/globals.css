@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cc-blue: #5e97d3;
+  --cc-cream: #fbf3e0;
+  --cc-coral: #d98e89;
+  --cc-yellow: #eccb7d;
+  --cc-bronze: #b08b5f;
+  --cc-navy: #132338;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-anuphan), -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #132338;
+  background-color: #fbf3e0;
+  min-height: 100vh;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #fbf3e0;
+}
+::-webkit-scrollbar-thumb {
+  background: #b08b5f;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #132338;
+}
+
+/* Typography Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-prompt), var(--font-anuphan), sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Tactile Box Shadows */
+.shadow-solid-sm {
+  box-shadow: 2px 2px 0px 0px #132338;
+}
+
+.shadow-solid {
+  box-shadow: 4px 4px 0px 0px #132338;
+}
+
+.shadow-solid-lg {
+  box-shadow: 6px 6px 0px 0px #132338;
+}
+
+.shadow-card-clean {
+  box-shadow: 0 4px 20px -2px rgba(19, 35, 56, 0.06);
+}
+
+/* Infinite Marquee Animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ========================================================================= */
+/* KKU Student ID Card Authentic Plaid / Tartan Pattern                       */
+/* ========================================================================= */
+.card-background,
+.kku-card-bg {
+  position: relative;
+  background-color: #faf8f5;
+  overflow: hidden;
+}
+
+/* เลเยอร์ลายตารางทแยงมุม */
+.card-background::before,
+.kku-card-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: 
+    /* เส้นสีฟ้าพาสเทล */
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 70px,
+      rgba(90, 160, 205, 0.45) 70px,
+      rgba(90, 160, 205, 0.45) 74px
+    ),
+    /* เส้นลายทแยง 45 องศา โทนสีน้ำตาลกากี/เบจ */
+    repeating-linear-gradient(
+      45deg,
+      rgba(195, 170, 145, 0.35) 0px,
+      rgba(195, 170, 145, 0.35) 15px,
+      transparent 15px,
+      transparent 35px,
+      rgba(160, 130, 105, 0.3) 35px,
+      rgba(160, 130, 105, 0.3) 55px,
+      transparent 55px,
+      transparent 80px
+    ),
+    /* เส้นลายทแยงตัดกัน -45 องศา */
+    repeating-linear-gradient(
+      -45deg,
+      rgba(195, 170, 145, 0.35) 0px,
+      rgba(195, 170, 145, 0.35) 15px,
+      transparent 15px,
+      transparent 35px,
+      rgba(140, 110, 85, 0.25) 35px,
+      rgba(140, 110, 85, 0.25) 55px,
+      transparent 55px,
+      transparent 80px
+    );
+  
+  /* Mask ไล่เฉดให้เข้มที่มุมซ้ายบน และจางหายไปทางขวาล่าง */
+  -webkit-mask-image: radial-gradient(circle at 10% 20%, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 40%, rgba(0, 0, 0, 0) 75%);
+  mask-image: radial-gradient(circle at 10% 20%, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 40%, rgba(0, 0, 0, 0) 75%);
+}
