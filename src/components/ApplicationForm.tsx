@@ -637,7 +637,7 @@ export default function ApplicationForm() {
                   {(() => {
                     const d = DEPARTMENTS.find((x) => x.id === formData.firstChoiceDeptId);
                     return d ? (
-                      <div className="text-xs text-gray-700 space-y-1.5 pt-2">
+                      <div className="text-xs text-gray-700 space-y-2 pt-2">
                         <p className="font-bold text-cc-navy">{d.shortDesc}</p>
                         <div className="flex flex-wrap gap-1">
                           {d.tags.map((t, i) => (
@@ -645,6 +645,14 @@ export default function ApplicationForm() {
                               {t}
                             </span>
                           ))}
+                        </div>
+                        <div className="p-3 rounded-xl bg-white/80 border border-cc-blue/30 space-y-1.5 mt-2">
+                          <div className="font-bold text-[11px] text-cc-blue">🎯 หน้าที่หลัก & คุณสมบัติ:</div>
+                          <ul className="space-y-1 text-[11px] text-gray-600 list-disc list-inside">
+                            {d.responsibilities.slice(0, 2).map((r, i) => (
+                              <li key={i} className="truncate">{r}</li>
+                            ))}
+                          </ul>
                         </div>
                       </div>
                     ) : null;
@@ -676,7 +684,7 @@ export default function ApplicationForm() {
                   {(() => {
                     const d = DEPARTMENTS.find((x) => x.id === formData.secondChoiceDeptId);
                     return d ? (
-                      <div className="text-xs text-gray-700 space-y-1.5 pt-2">
+                      <div className="text-xs text-gray-700 space-y-2 pt-2">
                         <p className="font-bold text-cc-navy">{d.shortDesc}</p>
                         <div className="flex flex-wrap gap-1">
                           {d.tags.map((t, i) => (
@@ -684,6 +692,14 @@ export default function ApplicationForm() {
                               {t}
                             </span>
                           ))}
+                        </div>
+                        <div className="p-3 rounded-xl bg-cc-cream/50 border border-cc-coral/30 space-y-1.5 mt-2">
+                          <div className="font-bold text-[11px] text-cc-coral">🎯 หน้าที่หลัก & คุณสมบัติ:</div>
+                          <ul className="space-y-1 text-[11px] text-gray-600 list-disc list-inside">
+                            {d.responsibilities.slice(0, 2).map((r, i) => (
+                              <li key={i} className="truncate">{r}</li>
+                            ))}
+                          </ul>
                         </div>
                       </div>
                     ) : null;
