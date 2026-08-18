@@ -65,27 +65,31 @@ export default function FAQSection() {
           })}
         </div>
 
-        {/* Solid Contact Card */}
-        <div className="mt-12 p-8 rounded-3xl bg-cc-navy text-white border-3 border-cc-navy shadow-solid-lg text-center space-y-4">
-          <h3 className="font-display font-black text-2xl text-white">
+        {/* Bright & Clean Contact Card */}
+        <div className="mt-12 p-6 sm:p-8 rounded-3xl bg-white text-cc-navy border-3 border-cc-navy shadow-solid-lg text-center space-y-4">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cc-cream text-cc-navy border-2 border-cc-navy text-xs font-mono font-bold">
+            <MessageSquare className="w-3.5 h-3.5 text-cc-coral" />
+            <span>CONTACT & SUPPORT</span>
+          </div>
+          <h3 className="font-display font-black text-2xl sm:text-3xl text-cc-navy">
             ยังมีคำถามอื่นๆ เพิ่มเติมหรือไม่?
           </h3>
-          <p className="text-xs sm:text-sm text-white/80 max-w-xl mx-auto font-light leading-relaxed">
-            สามารถส่งข้อความทักทายหรือสอบถามพี่ๆ ฝ่ายคัดเลือกได้ทางเพจ Facebook หรือ Line Official ของค่ายได้ตลอด 24 ชั่วโมง
+          <p className="text-xs sm:text-sm text-gray-600 max-w-xl mx-auto font-normal leading-relaxed">
+            สามารถส่งข้อความทักทายหรือสอบถามพี่ๆ ฝ่ายคัดเลือกได้ทางเพจ Facebook หรือ Email ของค่ายได้ตลอด 24 ชั่วโมง
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <a
               href={`mailto:${CAMP_INFO.contactEmail}`}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/25 transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cc-cream hover:bg-cc-yellow/30 text-cc-navy text-xs font-bold border-2 border-cc-navy shadow-solid-sm transition-all"
             >
-              <Mail className="w-4 h-4 text-cc-yellow" />
+              <Mail className="w-4 h-4 text-cc-blue" />
               <span>{CAMP_INFO.contactEmail}</span>
             </a>
             <a
               href="https://facebook.com"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-cc-coral hover:bg-cc-coral-dark text-white text-xs font-bold transition-all border-2 border-white/20 shadow-solid-sm"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-cc-coral hover:bg-cc-coral-dark text-white text-xs font-bold transition-all border-2 border-cc-navy shadow-solid-sm hover:translate-x-0.5 hover:-translate-y-0.5"
             >
               <MessageSquare className="w-4 h-4" />
               <span>Inbox Facebook Page</span>

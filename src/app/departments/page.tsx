@@ -29,16 +29,16 @@ export default function DepartmentsPage() {
 
       {/* Direct Apply CTA */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mt-10">
-        <div className="p-8 rounded-3xl bg-cc-navy text-white space-y-4 shadow-xl">
-          <h3 className="font-display font-bold text-2xl text-white">
+        <div className="p-8 rounded-3xl bg-white text-cc-navy border-3 border-cc-navy space-y-4 shadow-solid-lg">
+          <h3 className="font-display font-black text-2xl text-cc-navy">
             เลือกฝ่ายที่ใช่ แล้วมาสร้างค่ายในฝันด้วยกัน!
           </h3>
-          <p className="text-xs sm:text-sm text-white/70 max-w-lg mx-auto">
+          <p className="text-xs sm:text-sm text-gray-600 max-w-lg mx-auto">
             คุณสามารถเลือกฝ่ายที่ต้องการได้ทั้งอันดับ 1 และอันดับ 2 ในแบบฟอร์มการสมัคร
           </p>
           <a
             href="/apply"
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-cc-coral to-cc-blue text-white font-bold text-sm shadow-glow-coral hover:scale-105 transition-transform"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-cc-coral hover:bg-cc-coral-dark text-white font-bold text-sm border-2 border-cc-navy shadow-solid-sm hover:translate-x-0.5 hover:-translate-y-0.5 transition-all"
           >
             <Send className="w-4 h-4" />
             <span>ไปที่แบบฟอร์มสมัครพี่ค่าย</span>
