@@ -36,11 +36,20 @@ export const metadata: Metadata = {
     "ค่ายไอที",
   ],
   authors: [{ name: "ComClick 20 Tech Team" }],
+  icons: {
+    icon: [
+      { url: "/img/logo.webp", type: "image/webp" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    shortcut: ["/img/logo.webp"],
+    apple: [{ url: "/img/logo.webp" }],
+  },
   openGraph: {
     title: "สมัครเป็นพี่ค่าย Comclick 20 (ComClick Camp #20)",
     description: "ค่ายเทคโนโลยีวิชาการ จับมือน้องคลิก ครั้งที่ 20 คณะศึกษาศาสตร์ มหาวิทยาลัยขอนแก่น",
     type: "website",
     locale: "th_TH",
+    images: [{ url: "/img/logo.webp", width: 512, height: 512, alt: "ComClick 20 Logo" }],
   },
 };
 

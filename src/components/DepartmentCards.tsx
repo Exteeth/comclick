@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { DEPARTMENTS } from "@/lib/constants";
 import { Department } from "@/lib/types";
 import {
@@ -23,7 +24,6 @@ import {
   ChevronUp,
   Layers,
   X,
-  Sparkle,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -130,7 +130,7 @@ export default function DepartmentCards({
           </div>
         </div>
 
-        {/* Department Grid */}
+        {/* Department Grid: Equal height cards across each row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
           {filteredDepts.map((dept) => {
             const IconComponent = iconMap[dept.icon] || Code2;
@@ -141,7 +141,7 @@ export default function DepartmentCards({
                 key={dept.id}
                 className="h-full bg-white rounded-3xl border-3 border-cc-navy shadow-solid flex flex-col justify-between p-5 sm:p-6 space-y-4 transition-all"
               >
-                <div className="space-y-4">
+                <div className="flex-1 flex flex-col space-y-3">
                   {/* Top Bar inside Card */}
                   <div className="flex items-center justify-between">
                     <div
@@ -151,76 +151,69 @@ export default function DepartmentCards({
                       <IconComponent className="w-6 h-6" />
                     </div>
                     <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-cc-cream text-cc-navy border-2 border-cc-navy">
-                      รับ {dept.openSlots} คน
+                      เปิดรับสมัคร
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-gray-500 block">
-                      {dept.badge}
-                    </span>
                     <h3 className="font-display font-black text-lg text-cc-navy leading-snug">
                       {dept.nameTh}
                     </h3>
-                    <div className="text-[11px] text-gray-500 font-medium truncate">
-                      {dept.nameEn}
-                    </div>
                   </div>
 
-                  <p className="text-xs text-gray-700 leading-relaxed font-normal">
+                  <p className="text-xs text-gray-700 leading-relaxed font-normal flex-1">
                     {dept.shortDesc}
                   </p>
 
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {dept.tags.map((tag, tIdx) => (
-                      <span
-                        key={tIdx}
-                        className="px-2 py-0.5 rounded-md bg-cc-cream text-[10px] font-bold text-cc-navy border border-cc-navy/30"
+                  {/* ========================================================= */}
+                  {/* DIRECT INLINE ACCORDION: Smooth Motion Animation */}
+                  {/* ========================================================= */}
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
+                      <motion.div
+                        key="accordion-content"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                        className="overflow-hidden"
                       >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                        <div className="pt-3 space-y-3 border-t-2 border-dashed border-cc-navy/20">
+                          {/* Responsibilities */}
+                          <div className="space-y-1.5 bg-blue-50/70 p-3 rounded-2xl border border-blue-200">
+                            <div className="text-[11px] font-bold text-cc-navy flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-cc-blue" />
+                              <span>หน้าที่และความรับผิดชอบ:</span>
+                            </div>
+                            <ul className="space-y-1 text-[11px] text-gray-700">
+                              {dept.responsibilities.map((r, rIdx) => (
+                                <li key={rIdx} className="flex items-start gap-1.5">
+                                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                                  <span>{r}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
 
-                  {/* ========================================================= */}
-                  {/* DIRECT INLINE ACCORDION: หน้าที่และคุณสมบัติ (100% Mobile Safe) */}
-                  {/* ========================================================= */}
-                  {isExpanded && (
-                    <div className="pt-3 space-y-3 border-t-2 border-dashed border-cc-navy/20 animate-fadeIn">
-                      {/* Responsibilities */}
-                      <div className="space-y-1.5 bg-blue-50/70 p-3 rounded-2xl border border-blue-200">
-                        <div className="text-[11px] font-bold text-cc-navy flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-cc-blue" />
-                          <span>📋 หน้าที่และความรับผิดชอบ:</span>
+                          {/* Qualifications */}
+                          <div className="space-y-1.5 bg-orange-50/70 p-3 rounded-2xl border border-orange-200">
+                            <div className="text-[11px] font-bold text-cc-navy flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-cc-coral" />
+                              <span>คุณสมบัติที่มองหา:</span>
+                            </div>
+                            <ul className="space-y-1 text-[11px] text-gray-700">
+                              {dept.qualifications.map((q, qIdx) => (
+                                <li key={qIdx} className="flex items-start gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-cc-coral mt-1.5 flex-shrink-0" />
+                                  <span>{q}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         </div>
-                        <ul className="space-y-1 text-[11px] text-gray-700">
-                          {dept.responsibilities.map((r, rIdx) => (
-                            <li key={rIdx} className="flex items-start gap-1.5">
-                              <CheckCircle className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                              <span>{r}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Qualifications */}
-                      <div className="space-y-1.5 bg-orange-50/70 p-3 rounded-2xl border border-orange-200">
-                        <div className="text-[11px] font-bold text-cc-navy flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-cc-coral" />
-                          <span>🎯 คุณสมบัติที่มองหา:</span>
-                        </div>
-                        <ul className="space-y-1 text-[11px] text-gray-700">
-                          {dept.qualifications.map((q, qIdx) => (
-                            <li key={qIdx} className="flex items-start gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-cc-coral mt-1.5 flex-shrink-0" />
-                              <span>{q}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Bottom Actions */}
@@ -235,7 +228,7 @@ export default function DepartmentCards({
                         : "bg-cc-cream/80 hover:bg-cc-cream text-cc-navy border-cc-navy/30"
                     }`}
                   >
-                    <span>{isExpanded ? "ซ่อนหน้าที่และคุณสมบัติ" : "📖 ดูหน้าที่และคุณสมบัติ"}</span>
+                    <span>{isExpanded ? "ซ่อนหน้าที่และคุณสมบัติ" : "ดูหน้าที่และคุณสมบัติ"}</span>
                     {isExpanded ? (
                       <ChevronUp className="w-4 h-4" />
                     ) : (
@@ -300,14 +293,11 @@ export default function DepartmentCards({
                 </div>
                 <div>
                   <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-cc-cream text-cc-navy border border-cc-navy inline-block">
-                    เปิดรับ {activeModalDept.openSlots} คน
+                    เปิดรับสมัคร
                   </span>
                   <h3 className="font-display font-black text-lg sm:text-2xl text-cc-navy mt-1">
                     {activeModalDept.nameTh}
                   </h3>
-                  <div className="text-[11px] text-gray-500 font-medium">
-                    {activeModalDept.nameEn}
-                  </div>
                 </div>
               </div>
 

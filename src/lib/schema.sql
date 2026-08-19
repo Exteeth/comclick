@@ -18,18 +18,6 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
-DO $$ BEGIN
-    CREATE TYPE year_level AS ENUM (
-        'ปี 1',
-        'ปี 2',
-        'ปี 3',
-        'ปี 4',
-        'อื่นๆ / บัณฑิตศึกษา'
-    );
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-
 -- 2. Departments Table
 CREATE TABLE IF NOT EXISTS departments (
     id VARCHAR(50) PRIMARY KEY,
@@ -47,51 +35,50 @@ CREATE TABLE IF NOT EXISTS departments (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
--- 3. Applications Table
+-- 3. Applications Table (Streamlined 6 Core Registration Fields)
 CREATE TABLE IF NOT EXISTS applications (
     id VARCHAR(50) PRIMARY KEY, -- e.g. CC20-2026-8942
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
-    -- Personal Info
-    title_th VARCHAR(20) NOT NULL,
+    -- 6 Core Registration Fields
     full_name_th VARCHAR(255) NOT NULL,
-    nickname_th VARCHAR(100) NOT NULL,
-    full_name_en VARCHAR(255),
     student_id VARCHAR(50) NOT NULL,
-    faculty VARCHAR(255) NOT NULL,
-    major VARCHAR(255) NOT NULL,
-    year VARCHAR(50) NOT NULL,
     phone VARCHAR(50) NOT NULL,
-    line_id VARCHAR(100) NOT NULL,
-    facebook_or_ig VARCHAR(255),
-    emergency_contact JSONB NOT NULL,
+    major VARCHAR(255) NOT NULL,
+    first_choice_dept_id VARCHAR(50) REFERENCES departments(id) ON DELETE SET NULL,
+    second_choice_dept_id VARCHAR(50) REFERENCES departments(id) ON DELETE SET NULL,
+    fallback_dept_choice TEXT DEFAULT 'ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร',
 
-    -- Logistics
-    shirt_size VARCHAR(10) NOT NULL,
-    diet VARCHAR(100) NOT NULL,
+    -- Optional / Extended Fields
+    title_th VARCHAR(20),
+    nickname_th VARCHAR(100),
+    full_name_en VARCHAR(255),
+    faculty VARCHAR(255) DEFAULT 'คณะศึกษาศาสตร์',
+    year VARCHAR(50),
+    line_id VARCHAR(100),
+    facebook_or_ig VARCHAR(255),
+    emergency_contact JSONB,
+
+    shirt_size VARCHAR(10),
+    diet VARCHAR(100),
     diet_note TEXT,
     medical_conditions TEXT,
     can_join_preparation BOOLEAN DEFAULT TRUE,
     can_join_camp_dates BOOLEAN DEFAULT TRUE,
 
-    -- Department Choices
-    first_choice_dept_id VARCHAR(50) REFERENCES departments(id) ON DELETE SET NULL,
-    second_choice_dept_id VARCHAR(50) REFERENCES departments(id) ON DELETE SET NULL,
-    assigned_dept_id VARCHAR(50) REFERENCES departments(id) ON DELETE SET NULL,
-
-    -- Screening Questions
-    reason_to_apply TEXT NOT NULL,
-    past_experience TEXT NOT NULL,
-    skills_and_strengths TEXT NOT NULL,
-    problem_solving_scenario TEXT NOT NULL,
+    reason_to_apply TEXT,
+    past_experience TEXT,
+    skills_and_strengths TEXT,
+    problem_solving_scenario TEXT,
     portfolio_url TEXT,
 
     -- Status & Administrative
-    status application_status DEFAULT 'submitted',
+    status VARCHAR(50) DEFAULT 'submitted',
     status_notes TEXT,
     interview_date VARCHAR(255),
-    interview_location VARCHAR(255)
+    interview_location VARCHAR(255),
+    assigned_dept_id VARCHAR(50) REFERENCES departments(id) ON DELETE SET NULL
 );
 
 -- 4. Indexes for fast lookup

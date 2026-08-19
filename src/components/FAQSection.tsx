@@ -75,18 +75,11 @@ export default function FAQSection() {
             ยังมีคำถามอื่นๆ เพิ่มเติมหรือไม่?
           </h3>
           <p className="text-xs sm:text-sm text-gray-600 max-w-xl mx-auto font-normal leading-relaxed">
-            สามารถส่งข้อความทักทายหรือสอบถามพี่ๆ ฝ่ายคัดเลือกได้ทางเพจ Facebook หรือ Email ของค่ายได้ตลอด 24 ชั่วโมง
+            สามารถส่งข้อความทักทายหรือสอบถามพี่ๆ ผ่านช่องทาง Facebook Page ของค่ายได้ตลอดเวลา
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <a
-              href={`mailto:${CAMP_INFO.contactEmail}`}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cc-cream hover:bg-cc-yellow/30 text-cc-navy text-xs font-bold border-2 border-cc-navy shadow-solid-sm transition-all"
-            >
-              <Mail className="w-4 h-4 text-cc-blue" />
-              <span>{CAMP_INFO.contactEmail}</span>
-            </a>
-            <a
-              href="https://facebook.com"
+              href={CAMP_INFO.facebookUrl}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-cc-coral hover:bg-cc-coral-dark text-white text-xs font-bold transition-all border-2 border-cc-navy shadow-solid-sm hover:translate-x-0.5 hover:-translate-y-0.5"

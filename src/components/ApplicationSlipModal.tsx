@@ -11,9 +11,9 @@ import {
   GraduationCap,
   Sparkles,
   Download,
-  Shirt,
   X,
   Printer,
+  Compass,
 } from "lucide-react";
 
 interface ApplicationSlipModalProps {
@@ -104,49 +104,45 @@ export default function ApplicationSlipModal({
             </div>
           </div>
 
-          {/* Details Grid */}
+          {/* Details Grid: 4 Core Info */}
           <div className="grid grid-cols-2 gap-2.5 text-xs">
             <div className="p-3 bg-white rounded-xl border border-cc-navy/20">
-              <span className="text-gray-500 block text-[10px] font-bold">ชื่อ-นามสกุล (ชื่อเล่น)</span>
+              <span className="text-gray-500 block text-[10px] font-bold">1. ชื่อ - นามสกุล</span>
               <span className="font-bold text-cc-navy block truncate">
-                {application.titleTh} {application.fullNameTh} ({application.nicknameTh})
+                {application.fullNameTh}
               </span>
             </div>
             <div className="p-3 bg-white rounded-xl border border-cc-navy/20">
-              <span className="text-gray-500 block text-[10px] font-bold">รหัสนักศึกษา</span>
+              <span className="text-gray-500 block text-[10px] font-bold">2. รหัสนักศึกษา</span>
               <span className="font-bold text-cc-navy font-mono block">{application.studentId}</span>
             </div>
             <div className="p-3 bg-white rounded-xl border border-cc-navy/20">
-              <span className="text-gray-500 block text-[10px] font-bold">คณะ & ชั้นปี</span>
-              <span className="font-bold text-cc-navy block truncate">
-                {application.faculty} ({application.year})
+              <span className="text-gray-500 block text-[10px] font-bold">3. เบอร์โทรศัพท์</span>
+              <span className="font-bold text-cc-navy block truncate font-mono">
+                {application.phone}
               </span>
             </div>
             <div className="p-3 bg-white rounded-xl border border-cc-navy/20">
-              <span className="text-gray-500 block text-[10px] font-bold">เบอร์โทร & Line ID</span>
+              <span className="text-gray-500 block text-[10px] font-bold">4. สาขาวิชา</span>
               <span className="font-bold text-cc-navy block truncate">
-                {application.phone} | {application.lineId}
+                {application.major}
               </span>
             </div>
           </div>
 
           {/* Department Choices */}
-          <div className="p-3.5 bg-white rounded-xl border-2 border-cc-navy space-y-1.5 text-xs">
+          <div className="p-3.5 bg-white rounded-xl border-2 border-cc-navy space-y-2 text-xs">
             <div className="flex items-center justify-between">
-              <span className="text-gray-600 font-bold">อันดับ 1 (หลัก):</span>
+              <span className="text-gray-600 font-bold">5. ฝ่ายที่ต้องการลง (อันดับ 1):</span>
               <strong className="text-cc-navy">{firstDept?.nameTh || application.firstChoiceDeptId}</strong>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-600 font-bold">อันดับ 2 (สำรอง):</span>
-              <span className="text-gray-800">{secondDept?.nameTh || application.secondChoiceDeptId}</span>
+              <span className="text-gray-600 font-bold">5. ฝ่ายที่ต้องการลง (อันดับ 2):</span>
+              <span className="text-gray-800 font-medium">{secondDept?.nameTh || application.secondChoiceDeptId}</span>
             </div>
-            <div className="flex items-center justify-between pt-1.5 border-t border-gray-200 text-[11px]">
-              <span className="text-gray-600 flex items-center gap-1 font-bold">
-                <Shirt className="w-3.5 h-3.5 text-cc-coral" /> ขนาดเสื้อ: <strong className="text-cc-navy">{application.shirtSize}</strong>
-              </span>
-              <span className="text-gray-600 font-bold">
-                อาหาร: <strong className="text-cc-navy">{application.diet}</strong>
-              </span>
+            <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+              <span className="text-gray-600 font-bold">6. ถ้าไม่ติดอยากลงฝ่ายไหน:</span>
+              <span className="text-cc-coral font-bold">{application.fallbackDeptChoice || "ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร"}</span>
             </div>
           </div>
 

@@ -24,14 +24,11 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-cc-navy/10">
           {/* Brand & Logo */}
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 relative flex-shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-cc-cream p-1.5 flex items-center justify-center border-2 border-cc-navy shadow-solid-sm flex-shrink-0">
               <img
                 src="/img/logo.webp"
                 alt="ComClick 20 Logo"
                 className="w-full h-full object-contain"
-                onError={(e) => {
-                  (e.target as HTMLElement).style.display = "none";
-                }}
               />
             </div>
             <div>
@@ -76,13 +73,6 @@ export default function Footer() {
               ตรวจสถานะ
             </a>
             <a
-              href="/admin"
-              className="px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-cc-cream text-gray-700 hover:text-cc-navy border border-gray-200 transition-colors flex items-center gap-1"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-cc-coral" />
-              <span>Admin</span>
-            </a>
-            <a
               href="/apply"
               className="px-4 py-1.5 rounded-xl bg-cc-coral hover:bg-cc-coral-dark text-white font-bold transition-all shadow-sm"
             >
@@ -98,10 +88,16 @@ export default function Footer() {
             <span className="hidden md:inline">• {CAMP_INFO.organizerTh}</span>
           </div>
 
-          <div className="flex items-center gap-4">
-            <span className="text-[11px] text-gray-400">
-              ติดต่อ: {CAMP_INFO.contactPhone} | {CAMP_INFO.contactEmail}
-            </span>
+          <div className="flex flex-wrap items-center gap-4">
+            <a
+              href={CAMP_INFO.facebookUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[11px] text-cc-blue hover:text-cc-coral font-bold inline-flex items-center gap-1 transition-colors"
+            >
+              <span>Facebook Page</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
 
             <button
               onClick={scrollToTop}

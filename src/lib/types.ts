@@ -40,42 +40,41 @@ export interface Application {
   createdAt: string;               // ISO String
   updatedAt: string;
 
-  // Personal Info
-  titleTh: "นาย" | "นางสาว" | "นาง" | "อื่นๆ";
-  fullNameTh: string;
-  nicknameTh: string;
+  // Core 6 Required Fields
+  fullNameTh: string;              // 1. ชื่อ - นามสกุล
+  studentId: string;               // 2. รหัสนักศึกษา
+  phone: string;                   // 3. เบอร์โทรศัพท์
+  major: string;                   // 4. สาขาวิชา
+  firstChoiceDeptId: string;       // 5. ฝ่ายที่ต้องการลง อันดับที่ 1
+  secondChoiceDeptId: string;      // 5. ฝ่ายที่ต้องการลง อันดับที่ 2
+  fallbackDeptChoice: string;      // 6. ถ้าไม่ติดอยากลงฝ่ายไหน
+
+  // Additional / Optional Fields
+  titleTh?: "นาย" | "นางสาว" | "นาง" | "อื่นๆ";
+  nicknameTh?: string;
   fullNameEn?: string;
-  studentId: string;               // รหัสนักศึกษา 10-11 หลัก
-  faculty: string;                 // คณะ เช่น ศึกษาศาสตร์, วิศวกรรมศาสตร์, วิทยาศาสตร์ ฯลฯ
-  major: string;                   // สาขาวิชา เช่น คอมพิวเตอร์ศึกษา, วิทยาการคอมพิวเตอร์
-  year: YearLevel;
-  phone: string;
-  lineId: string;
+  faculty?: string;
+  year?: YearLevel | string;
+  lineId?: string;
   facebookOrIg?: string;
-  emergencyContact: {
+  emergencyContact?: {
     name: string;
     relation: string;
     phone: string;
   };
 
-  // Lifestyle & Logistics
-  shirtSize: ShirtSize;
-  diet: DietRequirement;
+  shirtSize?: ShirtSize | string;
+  diet?: DietRequirement | string;
   dietNote?: string;
-  medicalConditions?: string;      // โรคประจำตัว หรือ ยาที่แพ้
-  canJoinPreparation: boolean;     // สามารถเข้าร่วมการเตรียมงานได้
-  canJoinCampDates: boolean;       // สามารถอยู่ร่วมค่ายตลอดระยะเวลาได้
+  medicalConditions?: string;
+  canJoinPreparation?: boolean;
+  canJoinCampDates?: boolean;
 
-  // Department Choices
-  firstChoiceDeptId: string;
-  secondChoiceDeptId: string;
-
-  // Screening & Interview Q&A
-  reasonToApply: string;           // เหตุผลที่อยากมาเป็นพี่ค่าย Comclick 20
-  pastExperience: string;          // ประสบการณ์ทำงานค่ายหรือกิจกรรมที่ผ่านมา
-  skillsAndStrengths: string;      // ทักษะ จุดเด่น ความสามารถพิเศษที่สอดคล้องกับฝ่าย
-  problemSolvingScenario: string;  // วิธีแก้ปัญหาเฉพาะหน้าในการทำงานเป็นทีม
-  portfolioUrl?: string;           // ลิงก์พอร์ตโฟลิโอ / ผลงาน / Google Drive
+  reasonToApply?: string;
+  pastExperience?: string;
+  skillsAndStrengths?: string;
+  problemSolvingScenario?: string;
+  portfolioUrl?: string;
 
   // Status & Administration
   status: ApplicationStatus;

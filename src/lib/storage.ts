@@ -118,7 +118,36 @@ export const updateApplicationInterview = (
   return updated;
 };
 
-export const resetToInitialData = (): Application[] => {
-  saveApplications([...INITIAL_APPLICANTS]);
-  return [...INITIAL_APPLICANTS];
+export const updateApplicationFull = (
+  id: string,
+  data: Partial<Application>
+): Application | null => {
+  const all = getApplications();
+  const index = all.findIndex((a) => a.id === id);
+  if (index === -1) return null;
+
+  const current = all[index];
+  const updated: Application = {
+    ...current,
+    ...data,
+    updatedAt: new Date().toISOString(),
+  };
+
+  all[index] = updated;
+  saveApplications(all);
+  return updated;
 };
+
+export const deleteApplication = (id: string): boolean => {
+  const all = getApplications();
+  const filtered = all.filter((a) => a.id !== id);
+  if (filtered.length === all.length) return false;
+  saveApplications(filtered);
+  return true;
+};
+
+export const resetToInitialData = (): Application[] => {
+  saveApplications([]);
+  return [];
+};
+

@@ -1,20 +1,22 @@
 import { Department, CampTimelineItem, FaqItem, Application, CampStat } from "./types";
 
 export const CAMP_INFO = {
-  nameTh: "ค่ายเทคโนโลยีวิชาการ จับมือน้องคลิก ครั้งที่ 20",
+  nameTh: 'ค่ายเทคโนโลยีวิชาการ "จับมือน้องคลิก" ครั้งที่ 20',
   nameEn: "ComClick Camp #20",
   shortName: "Comclick 20",
-  sloganTh: "ก้าวสู่ทศวรรษที่ 2 สานฝันเทคโนโลยีสู่น้องๆ คลิกอนาคตไปด้วยกัน",
-  sloganEn: "Step into the 2nd Decade: Empowering Young Minds through Tech",
-  organizerTh: "สาขาวิชาคอมพิวเตอร์ศึกษาและเทคโนโลยีดิจิทัล คณะศึกษาศาสตร์ มหาวิทยาลัยขอนแก่น",
+  sloganTh: "วิชาการเข้มข้น กิจกรรมสร้างสรรค์ เข้าใจง่ายสไตล์ครูคอม",
+  sloganEn: "Empowering Youth through Technology & Creative Digital Skills",
+  organizerTh: "สาขาวิชาคอมพิวเตอร์ศึกษา คณะศึกษาศาสตร์ มหาวิทยาลัยขอนแก่น",
   organizerEn: "Department of Computer Education, Faculty of Education, Khon Kaen University",
+  organizerUrl: "http://ednet.kku.ac.th/",
   campDates: "17 - 19 ตุลาคม 2569",
   prepDates: "10 - 16 ตุลาคม 2569",
-  locationTh: "คณะศึกษาศาสตร์ มหาวิทยาลัยขอนแก่น และ อาคารศูนย์เทคโนโลยีสารสนเทศ",
+  locationTh: "โรงเรียนโนนสูงพิทยาคาร และ คณะศึกษาศาสตร์ มหาวิทยาลัยขอนแก่น",
+  targetSchool: "โรงเรียนโนนสูงพิทยาคาร",
+  locationMapUrl: "https://maps.app.goo.gl/B841y3j6k3fnHJbw7",
   registrationDeadline: "30 กันยายน 2569 เวลา 23:59 น.",
-  contactEmail: "comclickcamp.kku@gmail.com",
-  contactPhone: "089-123-4567, 084-987-6543",
   facebookPage: "ค่ายเทคโนโลยีวิชาการ จับมือน้องคลิก คณะศึกษาศาสตร์ มข.",
+  facebookUrl: "https://www.facebook.com/camp.com.click",
   instagram: "@comclick.kku",
   lineOfficial: "@comclick20",
 };
@@ -22,12 +24,12 @@ export const CAMP_INFO = {
 export const DEPARTMENTS: Department[] = [
   {
     id: "academic",
-    nameTh: "ฝ่ายวิชาการ (Academic & AI Lab)",
+    nameTh: "ฝ่ายวิชาการ",
     nameEn: "Academic & Workshop Specialist",
     badge: "วิชาการ & โค้ดดิ้ง",
     icon: "Code2",
     color: "#5e97d3",
-    shortDesc: "ออกแบบหลักสูตร วางแผนบทเรียน สอน Coding, AI, Robotics และดูแลกิจกรรมวิชาการ",
+    shortDesc: "ออกแบบหลักสูตร วางแผนบทเรียน สอน และดูแลกิจกรรมวิชาการ",
     description:
       "หัวใจสำคัญในการถ่ายทอดความรู้ด้านคอมพิวเตอร์และเทคโนโลยี ออกแบบใบงาน กิจกรรม Hands-on โค้ดดิ้ง ปัญญาประดิษฐ์ (AI) ไมโครบิต (Micro:bit) และโครงงานนวัตกรรมดิจิทัลสำหรับน้องๆ มัธยม",
     responsibilities: [
@@ -48,12 +50,12 @@ export const DEPARTMENTS: Department[] = [
   },
   {
     id: "recreation",
-    nameTh: "ฝ่ายกิจกรรมพิเศษและนันทนาการ (Special Activities & Recreation)",
+    nameTh: "ฝ่ายกิจกรรมพิเศษและนันทนาการ",
     nameEn: "Special Activities & Recreation",
     badge: "สันทนาการ & กิจกรรม",
     icon: "Sparkles",
     color: "#eccb7d",
-    shortDesc: "สร้างรอยยิ้ม เอนเตอร์เทน นำเกม ร้องเพลง กิจกรรมเชื่อมสัมพันธ์ และดูแลพิธีกร",
+    shortDesc: "สร้างรอยยิ้ม เอนเตอร์เทน นำเกม ร้องเพลง กิจกรรมเชื่อมสัมพันธ์ และดูแลน้องๆ",
     description:
       "ผู้สร้างความสุข เสียงหัวเราะ และบรรยากาศที่อบอุ่นเป็นกันเองตั้งแต่นาทีแรกจนถึงวันจบค่าย ควบคุมเวที กิจกรรมเปิด-ปิด และเกมกระชับมิตร",
     responsibilities: [
@@ -73,7 +75,7 @@ export const DEPARTMENTS: Department[] = [
   },
   {
     id: "tech-pr",
-    nameTh: "ฝ่ายเทคโนโลยีและประชาสัมพันธ์ (Technology & PR)",
+    nameTh: "ฝ่ายเทคโนโลยีและประชาสัมพันธ์",
     nameEn: "Technology & Public Relations",
     badge: "เทคโนโลยี & มีเดีย",
     icon: "Camera",
@@ -84,7 +86,7 @@ export const DEPARTMENTS: Department[] = [
     responsibilities: [
       "บันทึกภาพนิ่งและวิดีโอกิจกรรมตลอดทุกช่วงเวลาของค่าย",
       "ตัดต่อวิดีโอไฮไลต์ประจำวัน (Daily Highlight) และวิดีโอปัจฉิมนิเทศ",
-      "ออกแบบกราฟิก สื่อประชาสัมพันธ์ โปสเตอร์ และเกียรติบัตร",
+      "ออกแบบกราฟิก สื่อประชาสัมพันธ์ โปสเตอร์ และเกียรติบัตรสำหรับน้องค่าย",
       "ดูแลระบบเว็บไซต์ Live Streaming และช่องทาง Social Media",
     ],
     qualifications: [
@@ -98,7 +100,7 @@ export const DEPARTMENTS: Department[] = [
   },
   {
     id: "fundraising",
-    nameTh: "ฝ่ายจัดหาทุน (Fundraising & Sponsorship)",
+    nameTh: "ฝ่ายจัดหาทุน",
     nameEn: "Fundraising & Sponsorship Specialist",
     badge: "จัดหาทุน & สปอนเซอร์",
     icon: "Coins",
@@ -123,12 +125,12 @@ export const DEPARTMENTS: Department[] = [
   },
   {
     id: "discipline",
-    nameTh: "ฝ่ายปกครอง (Student Discipline & Governance)",
+    nameTh: "ฝ่ายปกครอง",
     nameEn: "Discipline & Governance Officer",
     badge: "ปกครอง & ระเบียบวินัย",
     icon: "ShieldAlert",
     color: "#132338",
-    shortDesc: "ดูแลระเบียบวินัย ความปลอดภัย และสวัสดิภาพความเป็นอยู่ของน้องค่ายตลอด 24 ชั่วโมง",
+    shortDesc: "ดูแลระเบียบวินัย ความปลอดภัย และสวัสดิภาพความเป็นอยู่ของน้องค่ายและพี่ค่ายตลอด 24 ชั่วโมง",
     description:
       "ฝ่ายดูแลความเรียบร้อย ความปลอดภัย การตรงต่อเวลา และกฎระเบียบของค่าย ประสานงานการตรวจตราหอพัก และดูแลสวัสดิภาพของน้องค่ายและสตาฟทุกคน",
     responsibilities: [
@@ -148,19 +150,19 @@ export const DEPARTMENTS: Department[] = [
   },
   {
     id: "registration",
-    nameTh: "ฝ่ายทะเบียน วัดและประเมินผล (Registration & Evaluation)",
+    nameTh: "ฝ่ายทะเบียน วัดและประเมินผล",
     nameEn: "Registration, Data & QA",
     badge: "ทะเบียน & ประเมินผล",
     icon: "ClipboardCheck",
     color: "#5e97d3",
-    shortDesc: "จัดการระบบลงทะเบียน ตรวจสอบรายชื่อ แจกของที่ระลึก และประเมินผลสัมฤทธิ์ค่าย",
+    shortDesc: "จัดการระบบลงทะเบียน ตรวจสอบรายชื่อ และประเมินผลสัมฤทธิ์ค่าย",
     description:
       "ฝ่ายดูแลความถูกต้องของข้อมูลผู้เข้าร่วม ป้ายชื่อ เสื้อค่าย เอกสารลงทะเบียน ของที่ระลึก สถิติการเข้าเรียน และสรุปผลแบบประเมินโครงการ",
     responsibilities: [
       "ดูแลจุดลงทะเบียน Check-in รับส่งน้องค่ายและสตาฟ",
       "จัดการระบบข้อมูล จัดสรรห้องพัก และเตรียมป้ายชื่อ/ของที่ระลึก",
       "จัดทำแบบประเมินความพึงพอใจและสรุป Data Dashboard สถิติค่าย",
-      "ประสานงานออกเกียรติบัตรอิเล็กทรอนิกส์และเอกสารรับรอง",
+      "ประสานงานออกเกียรติบัตรอิเล็กทรอนิกส์สำหรับน้องค่ายและเอกสารรับรอง",
     ],
     qualifications: [
       "มีความละเอียดรอบคอบ ไม่ตกหล่นในเรื่องเอกสารและตัวเลข",
@@ -173,12 +175,12 @@ export const DEPARTMENTS: Department[] = [
   },
   {
     id: "coordination",
-    nameTh: "ฝ่ายประสานงาน (Coordination & Liaison)",
+    nameTh: "ฝ่ายประสานงาน",
     nameEn: "Camp Coordination & Liaison",
     badge: "ประสานงาน & ดูแลน้อง",
     icon: "HeartHandshake",
     color: "#d98e89",
-    shortDesc: "ประสานงานทุกภาคส่วน ดูแลพี่เลี้ยงประจำกลุ่ม และประสานงานคณาจารย์วิทยากร",
+    shortDesc: "ประสานงานทุกภาคส่วน ดูแลพี่เลี้ยงประจำกลุ่ม และประสานงานกับทุกฝ่าย",
     description:
       "สะพานเชื่อมการทำงานระหว่างทุกฝ่าย คณาจารย์ วิทยากรภายนอก และดูแลพี่เลี้ยงประจำกลุ่มน้องค่าย ให้ทุกกิจกรรมดำเนินไปอย่างราบรื่น",
     responsibilities: [
@@ -198,7 +200,7 @@ export const DEPARTMENTS: Department[] = [
   },
   {
     id: "medical",
-    nameTh: "ฝ่ายพยาบาล (Medical & Healthcare)",
+    nameTh: "ฝ่ายพยาบาล",
     nameEn: "Welfare, Safety & First Aid",
     badge: "พยาบาล & สุขภาพ",
     icon: "ShieldAlert",
@@ -223,18 +225,18 @@ export const DEPARTMENTS: Department[] = [
   },
   {
     id: "protocol",
-    nameTh: "ฝ่ายพิธีการและปฏิคม (Protocol & Hospitality)",
+    nameTh: "ฝ่ายพิธีการและปฏิคม",
     nameEn: "Protocol, Reception & Hospitality",
     badge: "พิธีการ & ปฏิคม",
     icon: "Award",
     color: "#eccb7d",
-    shortDesc: "ดูแลลำดับพิธีการ พิธีเปิด-ปิด ต้อนรับแขกผู้มีเกียรติ และจัดเตรียมของที่ระลึก",
+    shortDesc: "ดูแลลำดับพิธีการ พิธีเปิด-ปิด ต้อนรับแขกผู้มีเกียรติ",
     description:
       "ผู้รังสรรค์ความสง่างามและความประทับใจ ดูแลลำดับขั้นตอนพิธีเปิด พิธีปิด พิธีบายศรีสู่ขวัญ ต้อนรับผู้บริหาร คณาจารย์ แขกผู้มีเกียรติ และจัดเตรียมของที่ระลึก",
     responsibilities: [
       "จัดทำสคริปต์และกำกับดูแลลำดับพิธีการในพิธีเปิดและพิธีปิดค่าย",
       "ต้อนรับและดูแลอำนวยความสะดวกแก่ผู้บริหาร คณาจารย์ และแขกผู้มีเกียรติ",
-      "จัดเตรียมพานพุ่ม มาลัย ของที่ระลึก และเกียรติบัตรสำหรับแขกพิเศษ",
+      "จัดเตรียมพานพุ่ม มาลัย ของที่ระลึก และเกียรติบัตรสำหรับน้องค่ายและแขกพิเศษ",
       "ดูแลพิธีการบายศรีสู่ขวัญและกิจกรรมประเพณีอันทรงคุณค่า",
     ],
     qualifications: [
@@ -248,7 +250,7 @@ export const DEPARTMENTS: Department[] = [
   },
   {
     id: "venue",
-    nameTh: "ฝ่ายสถานที่ (Venue & Facilities)",
+    nameTh: "ฝ่ายสถานที่",
     nameEn: "Logistics, Stage Tech & Facilities",
     badge: "สถานที่ & ระบบเวที",
     icon: "Hammer",
@@ -273,7 +275,7 @@ export const DEPARTMENTS: Department[] = [
   },
   {
     id: "catering-welfare",
-    nameTh: "ฝ่ายอาหารและสวัสดิการ (Catering & Welfare)",
+    nameTh: "ฝ่ายอาหารและสวัสดิการ",
     nameEn: "Catering & Hospitality Nutrition",
     badge: "อาหาร & สวัสดิการ",
     icon: "Utensils",
@@ -401,166 +403,9 @@ export const FAQS: FaqItem[] = [
     category: "general",
     question: "เมื่อเสร็จสิ้นการเป็นพี่ค่าย จะได้รับอะไรบ้าง?",
     answer:
-      "จะได้รับเกียรติบัตรการเป็นคณะทำงานพี่ค่ายระดับมหาวิทยาลัย (สามารถนำไปยื่นชั่วโมงกิจกรรม / สะสมพอร์ตโฟลิโอได้), เสื้อยืดสตาฟ Comclick 20 ลิมิเต็ด, ประสบการณ์การทำงานจริง และมิตรภาพที่เหนียวแน่นจากเพื่อนๆ พี่น้องหลากสาขา",
+      "จะได้รับเกียรติบัตรรับรองการเป็นคณะทำงานพี่ค่ายจากคณะศึกษาศาสตร์ มหาวิทยาลัยขอนแก่น (สามารถนำไปยื่นชั่วโมงกิจกรรม / สะสมพอร์ตโฟลิโอได้), เสื้อยืดสตาฟ Comclick 20 ลิมิเต็ด, ประสบการณ์การทำงานจริง และมิตรภาพที่เหนียวแน่นจากเพื่อนๆ พี่น้องหลากสาขา",
   },
 ];
 
-// Rich Seed Applicants for Demo & Immediate Testing
-export const INITIAL_APPLICANTS: Application[] = [
-  {
-    id: "CC20-2026-0001",
-    createdAt: "2026-08-15T09:30:00Z",
-    updatedAt: "2026-08-15T09:30:00Z",
-    titleTh: "นาย",
-    fullNameTh: "ธนภัทร วงศ์เจริญ",
-    nicknameTh: "มาร์ค",
-    fullNameEn: "Thanaphat Wongcharoen",
-    studentId: "653050123-4",
-    faculty: "คณะศึกษาศาสตร์",
-    major: "สาขาวิชาคอมพิวเตอร์ศึกษา",
-    year: "ปี 3",
-    phone: "081-234-5678",
-    lineId: "mark_cc20",
-    facebookOrIg: "fb.com/mark.wong",
-    emergencyContact: {
-      name: "นางสมพร วงศ์เจริญ",
-      relation: "มารดา",
-      phone: "089-999-8888",
-    },
-    shirtSize: "L",
-    diet: "ทั่วไป (อาหารปกติ)",
-    medicalConditions: "ไม่มี",
-    canJoinPreparation: true,
-    canJoinCampDates: true,
-    firstChoiceDeptId: "academic",
-    secondChoiceDeptId: "tech-pr",
-    reasonToApply:
-      "อยากนำความรู้ด้านการสอนเขียนโปรแกรมและ AI ที่เรียนมา มาถ่ายทอดให้กับน้องๆ มัธยม เพื่อจุดประกายแรงบันดาลใจให้เข้าสู่วงการเทคโนโลยี",
-    pastExperience:
-      "เคยเป็นผู้ช่วยสอนแล็บ Python ในค่าย Comclick 19 และเป็นสตาฟฝ่ายมีเดียงานสัปดาห์วิทยาศาสตร์",
-    skillsAndStrengths: "เชี่ยวชาญ Python, Micro:bit, Web Dev อธิบายเข้าใจง่าย ใจเย็น และกระตือรือร้น",
-    problemSolvingScenario:
-      "หากน้องในห้องแล็บตามเนื้อหาไม่ทัน จะจัดพี่สตาฟประกบตัวต่อตัวและปรับระดับตัวอย่างให้เห็นภาพชัดเจนขึ้น",
-    portfolioUrl: "https://github.com/thanaphat-portfolio",
-    status: "interview_passed",
-    statusNotes: "ทักษะวิชาการดีเยี่ยม มีความพร้อมในการซ้อมสอนแล็บ",
-    assignedDeptId: "academic",
-    interviewDate: "5 ตุลาคม 2569 เวลา 10:00 น.",
-    interviewLocation: "ห้อง 402 อาคารศึกษาศาสตร์ 2",
-  },
-  {
-    id: "CC20-2026-0002",
-    createdAt: "2026-08-16T14:15:00Z",
-    updatedAt: "2026-08-16T14:15:00Z",
-    titleTh: "นางสาว",
-    fullNameTh: "กัญญาณัฐ รัตนโชติ",
-    nicknameTh: "มิ้นท์",
-    fullNameEn: "Kanyanat Rattanachot",
-    studentId: "663040456-7",
-    faculty: "คณะมนุษยศาสตร์และสังคมศาสตร์",
-    major: "สาขาวิชาภาษาอังกฤษ",
-    year: "ปี 2",
-    phone: "082-987-6543",
-    lineId: "mint_kku",
-    facebookOrIg: "IG: @minty.kk",
-    emergencyContact: {
-      name: "นายประสิทธิ์ รัตนโชติ",
-      relation: "บิดา",
-      phone: "081-111-2222",
-    },
-    shirtSize: "M",
-    diet: "ทั่วไป (อาหารปกติ)",
-    medicalConditions: "แพ้กุ้งและอาหารทะเล",
-    canJoinPreparation: true,
-    canJoinCampDates: true,
-    firstChoiceDeptId: "recreation",
-    secondChoiceDeptId: "coordination",
-    reasonToApply:
-      "ชอบกิจกรรมสันทนาการ อยากให้ทุกคนที่มาค่ายนี้ได้รับความสนุก พลังบวก และความทรงจำที่ดีที่สุดกลับไป",
-    pastExperience:
-      "ประธานฝ่ายสันทนาการค่ายรับน้องคณะมนุษยศาสตร์ และพิธีกรงานประกวดดนตรีสากล มข.",
-    skillsAndStrengths: "พลังงานสูง พูดเก่ง กล้าแสดงออก นำเกมและร้องเพลงสันทนาการได้คล่อง",
-    problemSolvingScenario:
-      "หากบรรยากาศช่วงบ่ายน้องๆ เริ่มง่วง จะเปลี่ยนเป็นเกมขยับร่างกายสั้นๆ 5 นาทีเพื่อรีเซ็ตความสดชื่น",
-    portfolioUrl: "https://drive.google.com/mint-mc-portfolio",
-    status: "interview_eligible",
-    statusNotes: "บุคลิกภาพดีมาก เหมาะกับตำแหน่งพิธีกรและสันทนาการ",
-    assignedDeptId: "recreation",
-    interviewDate: "5 ตุลาคม 2569 เวลา 13:30 น.",
-    interviewLocation: "ห้องประชุมสารสิน อาคาร 1",
-  },
-  {
-    id: "CC20-2026-0003",
-    createdAt: "2026-08-17T11:00:00Z",
-    updatedAt: "2026-08-17T11:00:00Z",
-    titleTh: "นาย",
-    fullNameTh: "ชนาธิป ปัญญาวงศ์",
-    nicknameTh: "เจมส์",
-    fullNameEn: "Chanathip Panyawong",
-    studentId: "673050789-0",
-    faculty: "คณะวิทยาลัยการคอมพิวเตอร์",
-    major: "วิทยาการคอมพิวเตอร์",
-    year: "ปี 1",
-    phone: "095-456-7890",
-    lineId: "james.cp",
-    facebookOrIg: "fb.com/james.panya",
-    emergencyContact: {
-      name: "นางพรทิพย์ ปัญญาวงศ์",
-      relation: "มารดา",
-      phone: "086-333-4444",
-    },
-    shirtSize: "XL",
-    diet: "ทั่วไป (อาหารปกติ)",
-    medicalConditions: "ไม่มี",
-    canJoinPreparation: true,
-    canJoinCampDates: true,
-    firstChoiceDeptId: "tech-pr",
-    secondChoiceDeptId: "academic",
-    reasonToApply:
-      "อยากฝึกทักษะการถ่ายภาพและงานตัดต่อวิดีโอในค่ายจริง และอยากร่วมเป็นส่วนหนึ่งของค่ายตำนาน Comclick 20",
-    pastExperience: "ช่างภาพกิจกรรมโรงเรียนมัธยม และทำช่อง TikTok สรุปความรู้คอมพิวเตอร์",
-    skillsAndStrengths:
-      "มีกล้อง Sony A7IV เลนส์ 24-70mm ตัดต่อ Premiere Pro และ After Effects ได้คล่อง",
-    problemSolvingScenario:
-      "เตรียมการ์ดความจำและแบตเตอรี่สำรองหลายชุด พร้อมแบ็กอัปไฟล์ลง SSD ทุกเย็นเพื่อป้องกันงานสูญหาย",
-    portfolioUrl: "https://instagram.com/james_photo_kku",
-    status: "submitted",
-    statusNotes: "รอตรวจสอบใบสมัคร",
-  },
-  {
-    id: "CC20-2026-0004",
-    createdAt: "2026-08-18T08:45:00Z",
-    updatedAt: "2026-08-18T08:45:00Z",
-    titleTh: "นางสาว",
-    fullNameTh: "พิมพาภรณ์ ศรีสุวรรณ",
-    nicknameTh: "แพรว",
-    fullNameEn: "Pimpaporn Srisuwan",
-    studentId: "653020345-1",
-    faculty: "คณะพยาบาลศาสตร์",
-    major: "พยาบาลศาสตรบัณฑิต",
-    year: "ปี 3",
-    phone: "084-555-6789",
-    lineId: "praew.nurse",
-    emergencyContact: {
-      name: "นายสมชาย ศรีสุวรรณ",
-      relation: "บิดา",
-      phone: "081-444-5555",
-    },
-    shirtSize: "S",
-    diet: "ทั่วไป (อาหารปกติ)",
-    medicalConditions: "ไม่มี",
-    canJoinPreparation: true,
-    canJoinCampDates: true,
-    firstChoiceDeptId: "medical",
-    secondChoiceDeptId: "catering-welfare",
-    reasonToApply:
-      "อยากนำทักษะการปฐมพยาบาลและการดูแลสุขภาพมาช่วยดูแลความปลอดภัยของน้องๆ และทีมงานในค่ายตลอดทั้ง 3 วัน",
-    pastExperience: "ผ่านการอบรม Basic Life Support (BLS & CPR) และเป็นฝ่ายพยาบาลค่ายอาสา มข.",
-    skillsAndStrengths: "การปฐมพยาบาลเบื้องต้น การประเมินสัญญาณชีพ ความใจเย็นและรับฟัง",
-    problemSolvingScenario:
-      "หากมีน้องเป็นลมหรือมีไข้ จะแยกเข้าห้องพยาบาลที่มีอากาศถ่ายเท วัดไข้ ให้น้ำเกลือแร่ และประสานงานโรงพยาบาลทันทีหากอาการไม่ดีขึ้น",
-    status: "confirmed",
-    statusNotes: "ยืนยันสิทธิ์เรียบร้อย",
-    assignedDeptId: "medical",
-  },
-];
+// Clean Initial Applicants (Empty for Live Real Data)
+export const INITIAL_APPLICANTS: Application[] = [];

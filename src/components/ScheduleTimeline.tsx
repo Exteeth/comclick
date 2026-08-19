@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { TIMELINE, CAMP_INFO } from "@/lib/constants";
-import { Calendar, Clock, CheckCircle2 } from "lucide-react";
+import { Calendar, Clock, CheckCircle2, MapPin, ExternalLink } from "lucide-react";
 import AnimatedContent from "./ui/AnimatedContent";
 
 export default function ScheduleTimeline() {
@@ -143,9 +143,21 @@ export default function ScheduleTimeline() {
             <h3 className="font-display font-black text-2xl sm:text-3xl text-cc-navy">
               กำหนดการ 3 วัน 2 คืน ในค่าย Comclick 20
             </h3>
-            <p className="text-xs text-gray-500">
-              สถานที่: {CAMP_INFO.locationTh}
-            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-1">
+              <span className="text-xs text-gray-600 font-medium inline-flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-cc-coral flex-shrink-0" />
+                <span>สถานที่: <strong>{CAMP_INFO.targetSchool}</strong> & คณะศึกษาศาสตร์ มข.</span>
+              </span>
+              <a
+                href={CAMP_INFO.locationMapUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-cc-cream hover:bg-cc-yellow/30 text-cc-navy text-[11px] font-bold border border-cc-navy transition-all"
+              >
+                <span>ดูแผนที่ Google Maps</span>
+                <ExternalLink className="w-3 h-3 text-cc-blue" />
+              </a>
+            </div>
           </div>
 
           {/* Day Tabs */}

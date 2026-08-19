@@ -22,6 +22,9 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
+  // Hide Navbar when on /apply
+  if (pathname === "/apply") return null;
+
   const navLinks = [
     { href: "/#about", label: "เกี่ยวกับ", icon: Layers },
     { href: "/#committee", label: "กรรมการ", icon: Crown },
@@ -41,12 +44,6 @@ export default function Navbar() {
               src="/img/logo.webp"
               alt="ComClick 20 Logo"
               className="w-full h-full object-contain"
-              onError={(e) => {
-                const target = e.target as HTMLElement;
-                target.style.display = "none";
-                const parent = target.parentElement;
-                if (parent) parent.innerText = "C20";
-              }}
             />
           </div>
           <div className="flex flex-col min-w-0">
@@ -86,17 +83,8 @@ export default function Navbar() {
           })}
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Button: Apply */}
         <div className="hidden sm:flex items-center gap-2">
-          <a
-            href="/admin"
-            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-cc-navy hover:text-cc-coral bg-cc-cream hover:bg-white border border-cc-navy/20 rounded-xl transition-all"
-            title="สำหรับคณะกรรมการ"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-cc-coral" />
-            <span>Admin</span>
-          </a>
-
           <a
             href="/apply"
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-cc-coral hover:bg-cc-coral-dark text-white font-display font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm hover:translate-x-0.5 hover:-translate-y-0.5 transition-all"
@@ -146,15 +134,6 @@ export default function Navbar() {
           })}
 
           <div className="pt-2.5 border-t border-cc-navy/15 flex flex-col gap-2">
-            <a
-              href="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-center gap-2 py-2 text-xs font-bold text-cc-navy bg-cc-cream rounded-xl border border-cc-navy/20"
-            >
-              <ShieldCheck className="w-4 h-4 text-cc-coral" />
-              <span>Admin Portal</span>
-            </a>
-
             <a
               href="/apply"
               onClick={() => setMobileMenuOpen(false)}

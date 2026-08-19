@@ -5,6 +5,15 @@ export default function Loading() {
     <div className="w-full min-h-[70vh] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16 space-y-8">
       {/* Header Skeleton */}
       <div className="space-y-4 max-w-2xl mx-auto text-center flex flex-col items-center">
+        {/* Logo Image */}
+        <div className="w-12 h-12 rounded-2xl bg-cc-cream p-2 flex items-center justify-center border-2 border-cc-navy shadow-solid-sm animate-bounce">
+          <img
+            src="/img/logo.webp"
+            alt="ComClick 20 Logo"
+            className="w-full h-full object-contain"
+          />
+        </div>
+
         {/* Pill Badge */}
         <div className="h-7 w-40 rounded-full skeleton-shimmer border-2 border-cc-navy/15" />
         

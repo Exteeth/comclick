@@ -1,107 +1,117 @@
 "use client";
 
-import React, { useState } from "react";
-import { findApplicationByQuery, updateApplicationStatus } from "@/lib/storage";
+import React, { useState, useEffect, useCallback } from "react";
+import { findApplicationByQuery } from "@/lib/storage";
 import { Application, ApplicationStatus } from "@/lib/types";
-import { DEPARTMENTS, CAMP_INFO } from "@/lib/constants";
+import { DEPARTMENTS } from "@/lib/constants";
 import {
   Search,
   CheckCircle2,
   Clock,
   XCircle,
-  Calendar,
-  MapPin,
-  FileText,
   User,
-  Phone,
   Layers,
   AlertCircle,
-  ShieldCheck,
-  Printer,
   Sparkles,
+  RefreshCw,
+  Award,
+  Check,
 } from "lucide-react";
 
 export default function StatusChecker() {
   const [query, setQuery] = useState("");
   const [searchResult, setSearchResult] = useState<Application | null | "NOT_FOUND">(null);
   const [isSearching, setIsSearching] = useState(false);
-  const [hasConfirmedRights, setHasConfirmedRights] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastSyncedTime, setLastSyncedTime] = useState<string | null>(null);
+
+  const fetchStatusRealtime = useCallback(async (searchQuery: string, isManualRefresh = false) => {
+    if (!searchQuery.trim()) return;
+
+    if (isManualRefresh) setIsRefreshing(true);
+    else setIsSearching(true);
+
+    try {
+      // 1. Fetch live directly from Neon DB / API endpoint with no-cache
+      const res = await fetch(`/api/status?q=${encodeURIComponent(searchQuery.trim())}`, {
+        cache: "no-store",
+        headers: { "Pragma": "no-cache" },
+      });
+
+      const json = await res.json();
+      if (json.success && json.data) {
+        setSearchResult(json.data);
+        setLastSyncedTime(new Date().toLocaleTimeString("th-TH"));
+      } else {
+        // Fallback to local storage
+        const local = findApplicationByQuery(searchQuery);
+        if (local) {
+          setSearchResult(local);
+          setLastSyncedTime(new Date().toLocaleTimeString("th-TH"));
+        } else {
+          setSearchResult("NOT_FOUND");
+        }
+      }
+    } catch (err) {
+      console.warn("Status fetch error, using local fallback", err);
+      const local = findApplicationByQuery(searchQuery);
+      if (local) {
+        setSearchResult(local);
+        setLastSyncedTime(new Date().toLocaleTimeString("th-TH"));
+      } else {
+        setSearchResult("NOT_FOUND");
+      }
+    } finally {
+      setIsSearching(false);
+      setIsRefreshing(false);
+    }
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
-
-    setIsSearching(true);
-    setTimeout(() => {
-      const result = findApplicationByQuery(query);
-      if (result) {
-        setSearchResult(result);
-      } else {
-        setSearchResult("NOT_FOUND");
-      }
-      setIsSearching(false);
-    }, 300);
+    fetchStatusRealtime(query);
   };
 
-  const handleConfirmRights = () => {
+  // Auto-sync status every 10 seconds if applicant is viewing
+  useEffect(() => {
     if (!searchResult || searchResult === "NOT_FOUND") return;
-    updateApplicationStatus(searchResult.id, "CONFIRMED");
-    setSearchResult((prev) => (prev && prev !== "NOT_FOUND" ? { ...prev, status: "CONFIRMED" } : prev));
-    setHasConfirmedRights(true);
-  };
 
-  const getStatusBadge = (status: ApplicationStatus) => {
-    switch (status) {
-      case "SUBMITTED":
-        return {
-          label: "ส่งใบสมัครแล้ว (รอการพิจารณา)",
-          color: "bg-blue-100 text-blue-800 border-blue-400",
-          icon: Clock,
-          desc: "ใบสมัครของคุณอยู่ในระบบเรียบร้อยแล้ว อยู่ระหว่างการตรวจทานโดยคณะกรรมการฝ่ายคัดเลือก",
-        };
-      case "DOCUMENT_PASSED":
-        return {
-          label: "ผ่านการคัดเลือกรอบเอกสาร",
-          color: "bg-emerald-100 text-emerald-800 border-emerald-400",
-          icon: CheckCircle2,
-          desc: "ยินดีด้วย! คุณผ่านการคัดเลือกรอบเอกสาร กรุณาตรวจสอบวันและเวลาสัมภาษณ์ด้านล่าง",
-        };
-      case "INTERVIEW_SCHEDULED":
-        return {
-          label: "มีนัดสัมภาษณ์ (โปรดตรงต่อเวลา)",
-          color: "bg-amber-100 text-amber-900 border-amber-400",
-          icon: Calendar,
-          desc: "คุณมีกำหนดการสัมภาษณ์พี่ค่าย กรุณาเตรียมตัวและเข้าห้องสัมภาษณ์ตามวันเวลาที่ระบุ",
-        };
-      case "ACCEPTED":
-        return {
-          label: "ผ่านการคัดเลือกเป็นพี่ค่าย Comclick 20!",
-          color: "bg-emerald-500 text-white border-cc-navy",
-          icon: Sparkles,
-          desc: "ขอแสดงความยินดีด้วยอย่างยิ่ง! คุณได้รับคัดเลือกเป็นพี่ค่าย Comclick 20 กรุณากดยืนยันสิทธิ์",
-        };
-      case "CONFIRMED":
-        return {
-          label: "ยืนยันสิทธิ์เป็นพี่ค่ายเรียบร้อยแล้ว",
-          color: "bg-cc-navy text-white border-white",
-          icon: ShieldCheck,
-          desc: "คุณได้ยืนยันสิทธิ์เข้าร่วมเป็นทีมงานพี่ค่าย Comclick 20 แล้ว แล้วพบกันในวันปฐมนิเทศ!",
-        };
-      case "REJECTED":
-        return {
-          label: "ไม่ผ่านการคัดเลือกในรอบนี้",
-          color: "bg-gray-100 text-gray-700 border-gray-400",
-          icon: XCircle,
-          desc: "ขอขอบคุณสำหรับความสนใจอย่างยิ่ง ทางโครงการหวังว่าจะได้ร่วมงานกับคุณในโอกาสต่อไป",
-        };
-      default:
-        return {
-          label: "อยู่ระหว่างตรวจสอบ",
-          color: "bg-gray-100 text-gray-800 border-gray-400",
-          icon: Clock,
-          desc: "กำลังประมวลผลข้อมูล",
-        };
+    const interval = setInterval(() => {
+      if (query.trim()) {
+        fetchStatusRealtime(query, true);
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [searchResult, query, fetchStatusRealtime]);
+
+  const getStatusBadge = (status: ApplicationStatus | string) => {
+    const s = (status || "").toUpperCase();
+    if (s === "ACCEPTED" || s === "CONFIRMED" || s === "INTERVIEW_PASSED") {
+      return {
+        label: "ผ่านการคัดเลือกเป็นพี่ค่าย Comclick 20!",
+        color: "bg-emerald-500 text-white border-cc-navy",
+        icon: Sparkles,
+        desc: "ขอแสดงความยินดีด้วยอย่างยิ่ง! คุณผ่านการคัดเลือกเป็นทีมงานพี่ค่าย ComClick Camp #20",
+      };
     }
+
+    if (s === "REJECTED") {
+      return {
+        label: "ไม่ผ่านการคัดเลือก",
+        color: "bg-gray-100 text-gray-700 border-gray-400",
+        icon: XCircle,
+        desc: "ขอขอบคุณสำหรับความสนใจอย่างยิ่ง ทางโครงการหวังว่าจะได้ร่วมงานกับคุณในโอกาสต่อไป",
+      };
+    }
+
+    return {
+      label: "รอดำเนินการ (อยู่ระหว่างพิจารณา)",
+      color: "bg-blue-100 text-blue-800 border-blue-400",
+      icon: Clock,
+      desc: "ใบสมัครของคุณอยู่ในระบบเรียบร้อยแล้ว อยู่ระหว่างการตรวจทานและจัดสรรฝ่ายโดยคณะกรรมการ",
+    };
   };
 
   return (
@@ -109,6 +119,10 @@ export default function StatusChecker() {
       {/* Search Box with Solid Border and Shadow */}
       <div className="bg-white rounded-3xl border-3 border-cc-navy shadow-solid-lg p-6 sm:p-8">
         <div className="text-center max-w-xl mx-auto mb-6 space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cc-cream text-cc-navy border border-cc-navy/20 text-xs font-mono font-bold">
+            <Search className="w-3.5 h-3.5 text-cc-coral" />
+            <span>REALTIME APPLICATION STATUS</span>
+          </div>
           <h2 className="font-display font-black text-2xl sm:text-3xl text-cc-navy">
             ค้นหาและตรวจสอบสถานะการสมัคร
           </h2>
@@ -133,7 +147,7 @@ export default function StatusChecker() {
             <button
               type="submit"
               disabled={isSearching}
-              className="px-8 py-3.5 rounded-xl bg-cc-navy hover:bg-cc-blue text-white font-display font-bold text-sm border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2"
+              className="px-8 py-3.5 rounded-xl bg-cc-navy hover:bg-cc-blue text-white font-display font-bold text-sm border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               {isSearching ? (
                 <>
@@ -141,81 +155,85 @@ export default function StatusChecker() {
                   <span>กำลังค้นหา...</span>
                 </>
               ) : (
-                <>
-                  <Search className="w-4 h-4" />
-                  <span>ค้นหาข้อมูล</span>
-                </>
+                <span>ตรวจสอบ</span>
               )}
             </button>
           </div>
         </form>
-
-        {/* Demo Quick Queries */}
-        <div className="mt-4 text-center">
-          <span className="text-[11px] text-gray-500 font-medium">ตัวอย่างข้อมูลทดสอบ: </span>
-          <button
-            type="button"
-            onClick={() => setQuery("663050123-4")}
-            className="text-[11px] font-mono font-bold text-cc-blue hover:underline mx-1"
-          >
-            663050123-4
-          </button>
-          <span className="text-gray-300">|</span>
-          <button
-            type="button"
-            onClick={() => setQuery("653050456-7")}
-            className="text-[11px] font-mono font-bold text-cc-coral hover:underline mx-1"
-          >
-            653050456-7
-          </button>
-        </div>
       </div>
 
-      {/* RESULT NOT FOUND */}
+      {/* Not Found State */}
       {searchResult === "NOT_FOUND" && (
-        <div className="p-8 rounded-3xl bg-white border-3 border-cc-navy shadow-solid text-center space-y-3 animate-fadeIn">
-          <div className="w-14 h-14 rounded-2xl bg-amber-100 border-2 border-amber-400 text-amber-700 flex items-center justify-center mx-auto">
+        <div className="bg-white rounded-3xl border-3 border-cc-navy shadow-solid p-8 text-center space-y-4 animate-fadeIn">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-600 flex items-center justify-center mx-auto">
             <AlertCircle className="w-8 h-8" />
           </div>
-          <h3 className="font-display font-black text-xl text-cc-navy">
-            ไม่พบข้อมูลการสมัครในระบบ
-          </h3>
-          <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto font-normal">
-            ไม่พบข้อมูลที่ตรงกับคำค้นหา "{query}" กรุณาตรวจสอบความถูกต้องของรหัสนักศึกษา หรือเบอร์โทรศัพท์อีกครั้ง
+          <h3 className="font-display font-black text-xl text-cc-navy">ไม่พบข้อมูลการสมัคร</h3>
+          <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto">
+            กรุณาตรวจสอบรหัสนักศึกษา หรือเบอร์โทรศัพท์ที่ใช้สมัครอีกครั้ง หรือหากเพิ่งกรอกใบสมัคร กรุณารอสักครู่แล้วลองค้นหาใหม่
           </p>
           <div className="pt-2">
             <a
               href="/apply"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-cc-coral text-white text-xs font-bold border-2 border-cc-navy shadow-solid-sm hover:bg-cc-coral-dark transition-all"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-cc-coral hover:bg-cc-coral-dark text-white font-bold text-xs border-2 border-cc-navy shadow-solid-sm transition-all"
             >
-              <span>ไปที่แบบฟอร์มสมัครพี่ค่าย</span>
+              <span>ไปที่หน้ากรอกใบสมัครพี่ค่าย</span>
             </a>
           </div>
         </div>
       )}
 
-      {/* RESULT FOUND */}
+      {/* Result Card */}
       {searchResult && searchResult !== "NOT_FOUND" && (
         <div className="bg-white rounded-3xl border-3 border-cc-navy shadow-solid-lg p-6 sm:p-8 space-y-6 animate-fadeIn">
-          {/* Header with Status */}
+          {/* Header with Live Sync Bar */}
+          <div className="flex items-center justify-between pb-3 border-b border-gray-100 text-[11px] text-gray-500 font-mono">
+            <div className="flex items-center gap-1.5 text-emerald-700 font-bold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              <span>LIVE DATABASE SYNC</span>
+            </div>
+            {lastSyncedTime && (
+              <button
+                onClick={() => fetchStatusRealtime(query, true)}
+                className="flex items-center gap-1 text-cc-blue hover:text-cc-coral font-bold cursor-pointer transition-colors"
+                title="รีเฟรชข้อมูลล่าสุดจากเซิร์ฟเวอร์"
+              >
+                <RefreshCw className={`w-3 h-3 ${isRefreshing ? "animate-spin" : ""}`} />
+                <span>อัปเดตล่าสุด: {lastSyncedTime}</span>
+              </button>
+            )}
+          </div>
+
+          {/* Result Core */}
           {(() => {
+            const rawStatus = (searchResult.status || "SUBMITTED").toUpperCase();
+            const isAccepted = rawStatus === "ACCEPTED" || rawStatus === "CONFIRMED" || rawStatus === "INTERVIEW_PASSED";
             const badge = getStatusBadge(searchResult.status);
             const BadgeIcon = badge.icon;
+
             const firstDept = DEPARTMENTS.find((d) => d.id === searchResult.firstChoiceDeptId);
             const secondDept = DEPARTMENTS.find((d) => d.id === searchResult.secondChoiceDeptId);
+            
+            // Final assigned department:
+            const assignedDept = searchResult.assignedDeptId
+              ? DEPARTMENTS.find((d) => d.id === searchResult.assignedDeptId)
+              : isAccepted
+              ? firstDept
+              : null;
 
             return (
               <>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b-2 border-cc-navy/10">
+                {/* Applicant Info Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b-2 border-cc-navy/10">
                   <div>
                     <span className="text-[10px] font-mono font-bold text-gray-500 block">
                       APPLICATION ID: {searchResult.id}
                     </span>
                     <h3 className="font-display font-black text-2xl text-cc-navy mt-0.5">
-                      {searchResult.titleTh} {searchResult.fullNameTh} ({searchResult.nicknameTh})
+                      {searchResult.fullNameTh}
                     </h3>
                     <div className="text-xs text-gray-600 font-medium mt-1">
-                      {searchResult.faculty} • {searchResult.major} ({searchResult.year})
+                      รหัสนักศึกษา: <span className="font-mono font-bold text-cc-navy">{searchResult.studentId}</span> • {searchResult.major}
                     </div>
                   </div>
 
@@ -227,34 +245,49 @@ export default function StatusChecker() {
                   </div>
                 </div>
 
-                {/* Status Explanation Card */}
-                <div className="p-4 rounded-2xl bg-cc-cream border-2 border-cc-navy text-xs sm:text-sm text-gray-800 space-y-1">
-                  <span className="font-bold text-cc-navy block">สถานะปัจจุบัน:</span>
-                  <p className="font-normal">{badge.desc}</p>
-                </div>
-
-                {/* Interview Information (If Available) */}
-                {searchResult.interviewDate && (
-                  <div className="p-5 rounded-2xl bg-amber-50 border-2 border-amber-400 space-y-3">
-                    <div className="flex items-center gap-2 text-sm font-black text-amber-950 font-display">
-                      <Calendar className="w-4 h-4 text-amber-700" />
-                      <span>กำหนดการสัมภาษณ์สำหรับคุณ</span>
+                {/* 🌟 HERO: FINAL ASSIGNED DEPARTMENT (WHEN PASSED) */}
+                {isAccepted && assignedDept ? (
+                  <div className="p-6 rounded-3xl bg-emerald-50 border-3 border-emerald-600 shadow-solid-sm space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-mono font-bold text-emerald-800 uppercase">
+                      <Award className="w-4 h-4 text-emerald-600" />
+                      <span>ผลการจัดสรรฝ่ายอย่างเป็นทางการ</span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div className="p-3 bg-white rounded-xl border border-amber-300">
-                        <span className="text-gray-500 block text-[10px] font-bold">วันและเวลาสัมภาษณ์</span>
-                        <strong className="text-amber-950 text-sm font-mono block mt-0.5">
-                          {searchResult.interviewDate}
-                        </strong>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border-2 border-emerald-500">
+                      <div>
+                        <span className="text-[11px] text-gray-500 font-bold block">
+                          ฝ่ายที่คุณได้รับคัดเลือกเป็นพี่ค่าย Comclick 20 คือ:
+                        </span>
+                        <div className="font-display font-black text-2xl sm:text-3xl text-emerald-900 mt-1">
+                          {assignedDept.nameTh}
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">
+                          💡 <strong>หน้าที่หลัก:</strong> {assignedDept.shortDesc}
+                        </p>
                       </div>
-                      <div className="p-3 bg-white rounded-xl border border-amber-300">
-                        <span className="text-gray-500 block text-[10px] font-bold">สถานที่ / ลิงก์ออนไลน์</span>
-                        <strong className="text-amber-950 text-sm block mt-0.5">
-                          {searchResult.interviewLocation || "ห้อง 2105 อาคาร ED2 คณะศึกษาศาสตร์"}
-                        </strong>
+
+                      <div className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm whitespace-nowrap self-start sm:self-center">
+                        <Check className="w-4 h-4" />
+                        <span>ยืนยันฝ่ายตัวจริง</span>
                       </div>
                     </div>
+
+                    {/* Historical applied choice reference for clarity */}
+                    <div className="text-[11px] text-emerald-800/80 pt-1 flex flex-wrap gap-x-4 gap-y-1">
+                      <span><strong>อันดับที่เลือกไว้ตอนสมัคร:</strong> อันดับ 1: {firstDept?.nameTh || searchResult.firstChoiceDeptId}</span>
+                      <span>อันดับ 2: {secondDept?.nameTh || searchResult.secondChoiceDeptId}</span>
+                    </div>
+                  </div>
+                ) : (
+                  /* Status Description for Pending / Rejected */
+                  <div className="p-4 rounded-2xl bg-cc-cream border-2 border-cc-navy text-xs sm:text-sm text-gray-800 space-y-1">
+                    <span className="font-bold text-cc-navy block">สถานะปัจจุบัน:</span>
+                    <p className="font-normal">{badge.desc}</p>
+                    {searchResult.statusNotes && (
+                      <p className="text-xs text-gray-600 pt-1 border-t border-cc-navy/10 mt-1">
+                        <strong>หมายเหตุจากกรรมการ:</strong> {searchResult.statusNotes}
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -263,57 +296,43 @@ export default function StatusChecker() {
                   <div className="p-4 rounded-2xl bg-gray-50 border-2 border-cc-navy/15 space-y-2">
                     <span className="font-bold text-cc-navy block flex items-center gap-1.5">
                       <Layers className="w-4 h-4 text-cc-blue" />
-                      <span>ฝ่ายที่เลือกสมัคร</span>
+                      <span>ข้อมูลการเลือกฝ่าย</span>
                     </span>
                     <div className="space-y-1">
                       <div>
                         <span className="text-gray-500">อันดับ 1:</span>{" "}
-                        <strong className="text-cc-navy font-bold">{firstDept?.nameTh}</strong>
+                        <strong className="text-cc-navy font-bold">{firstDept?.nameTh || searchResult.firstChoiceDeptId}</strong>
                       </div>
                       <div>
                         <span className="text-gray-500">อันดับ 2:</span>{" "}
-                        <span className="text-gray-800">{secondDept?.nameTh}</span>
+                        <span className="text-gray-800 font-medium">{secondDept?.nameTh || searchResult.secondChoiceDeptId}</span>
                       </div>
+                      {searchResult.fallbackDeptChoice && (
+                        <div className="pt-1 border-t border-gray-200 text-[11px]">
+                          <span className="text-gray-500">ถ้าไม่ติดอันดับ 1-2:</span>{" "}
+                          <span className="text-cc-coral font-bold">{searchResult.fallbackDeptChoice}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-gray-50 border-2 border-cc-navy/15 space-y-2">
                     <span className="font-bold text-cc-navy block flex items-center gap-1.5">
                       <User className="w-4 h-4 text-cc-coral" />
-                      <span>ข้อมูลการติดต่อและสวัสดิการ</span>
+                      <span>ข้อมูลผู้สมัคร</span>
                     </span>
                     <div className="space-y-1">
                       <div>
-                        <span className="text-gray-500">เบอร์โทร / Line:</span>{" "}
-                        <strong className="text-cc-navy">{searchResult.phone} | {searchResult.lineId}</strong>
+                        <span className="text-gray-500">เบอร์โทรศัพท์:</span>{" "}
+                        <strong className="text-cc-navy font-mono">{searchResult.phone}</strong>
                       </div>
                       <div>
-                        <span className="text-gray-500">เสื้อ / อาหาร:</span>{" "}
-                        <span>{searchResult.shirtSize} / {searchResult.diet}</span>
+                        <span className="text-gray-500">สาขาวิชา:</span>{" "}
+                        <span className="text-gray-800 font-medium">{searchResult.major}</span>
                       </div>
                     </div>
                   </div>
                 </div>
-
-                {/* Confirm Rights Button (If Accepted) */}
-                {searchResult.status === "ACCEPTED" && !hasConfirmedRights && (
-                  <div className="p-5 rounded-2xl bg-emerald-50 border-2 border-emerald-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div>
-                      <h4 className="font-display font-black text-sm text-emerald-950">
-                        ยืนยันสิทธิ์การเป็นพี่ค่าย Comclick 20
-                      </h4>
-                      <p className="text-xs text-emerald-800 mt-0.5">
-                        กรุณากดยืนยันสิทธิ์เพื่อยืนยันการเข้าร่วมทีมงานอย่างเป็นทางการ
-                      </p>
-                    </div>
-                    <button
-                      onClick={handleConfirmRights}
-                      className="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm border-2 border-emerald-900 shadow-solid-sm transition-all"
-                    >
-                      กดยืนยันสิทธิ์ทันที
-                    </button>
-                  </div>
-                )}
               </>
             );
           })()}
