@@ -22,6 +22,10 @@ const prompt = Prompt({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
+  ),
   title: "ค่าย Comclick 20 | ระบบรับสมัครพี่ค่ายและคณะทำงาน (ComClick Camp #20)",
   description:
     "เปิดรับสมัครทีมงานพี่ค่าย Comclick ครั้งที่ 20 ค่ายเทคโนโลยีวิชาการ จับมือน้องคลิก สาขาวิชาคอมพิวเตอร์ศึกษา คณะศึกษาศาสตร์ มหาวิทยาลัยขอนแก่น ร่วมสร้างแรงบันดาลใจและก้าวสู่ทศวรรษที่ 2 ไปด้วยกัน",
