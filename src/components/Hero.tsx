@@ -124,21 +124,23 @@ export default function Hero() {
                   </div>
                 </div>
 
-                {/* Registration Deadline */}
+                {/* Registration Period & Deadline */}
                 <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/5 border border-white/10 text-left">
                   <div className="w-8 h-8 rounded-xl bg-cc-coral text-white flex items-center justify-center flex-shrink-0 border border-white/20 shadow-sm">
                     <Clock className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">ปิดรับสมัครพี่ค่าย</div>
-                    <div className="text-xs sm:text-sm font-bold text-cc-yellow truncate leading-snug">{CAMP_INFO.registrationDeadline}</div>
+                    <div className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">เปิด - ปิดรับสมัครพี่ค่าย</div>
+                    <div className="text-xs sm:text-sm font-bold text-cc-yellow truncate leading-snug">
+                      {CAMP_INFO.registrationPeriod} (ถึง 23:59 น.)
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Real-time Countdown Timer */}
               <div className="pt-2 border-t border-white/10">
-                <HeroCountdown targetDate="2026-09-30T23:59:59+07:00" showTitle={true} />
+                <HeroCountdown targetDate="2026-08-29T23:59:59+07:00" showTitle={true} />
               </div>
             </div>
 

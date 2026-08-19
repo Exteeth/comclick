@@ -14,7 +14,8 @@ export const CAMP_INFO = {
   locationTh: "โรงเรียนโนนสูงพิทยาคาร และ คณะศึกษาศาสตร์ มหาวิทยาลัยขอนแก่น",
   targetSchool: "โรงเรียนโนนสูงพิทยาคาร",
   locationMapUrl: "https://maps.app.goo.gl/B841y3j6k3fnHJbw7",
-  registrationDeadline: "30 กันยายน 2569 เวลา 23:59 น.",
+  registrationPeriod: "24 - 29 สิงหาคม 2569",
+  registrationDeadline: "29 สิงหาคม 2569 เวลา 23:59 น.",
   facebookPage: "ค่ายเทคโนโลยีวิชาการ จับมือน้องคลิก คณะศึกษาศาสตร์ มข.",
   facebookUrl: "https://www.facebook.com/camp.com.click",
   instagram: "@comclick.kku",
@@ -303,9 +304,9 @@ export const DEPARTMENTS: Department[] = [
 export const TIMELINE: CampTimelineItem[] = [
   {
     phase: "01",
-    date: "1 กันยายน - 30 กันยายน 2569",
+    date: "24 - 29 สิงหาคม 2569",
     title: "เปิดรับสมัครพี่ค่ายออนไลน์ (Staff Application)",
-    description: "กรอกข้อมูล ประวัติการทำกิจกรรม และเลือกฝ่ายที่ต้องการผ่านระบบออนไลน์",
+    description: "กรอกข้อมูลและเลือกฝ่ายที่ต้องการผ่านระบบออนไลน์ (ปิดรับสมัคร 29 ส.ค. 23:59 น.)",
     status: "active",
     highlight: true,
   },

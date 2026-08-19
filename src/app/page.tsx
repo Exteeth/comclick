@@ -61,7 +61,7 @@ export default function HomePage() {
               </h2>
 
               <p className="text-base sm:text-lg text-white/95 max-w-2xl mx-auto font-normal leading-relaxed">
-                เปิดรับสมัครถึงวันที่ <strong className="text-cc-yellow font-black underline">{CAMP_INFO.registrationDeadline}</strong> ไม่จำกัดคณะและชั้นปี สมัครได้ทั้งอันดับ 1 และอันดับ 2
+                เปิดรับสมัคร <strong className="text-cc-yellow font-black underline">{CAMP_INFO.registrationPeriod}</strong> (ถึง {CAMP_INFO.registrationDeadline}) ไม่จำกัดคณะและชั้นปี สมัครได้ทั้งอันดับ 1 และอันดับ 2
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
