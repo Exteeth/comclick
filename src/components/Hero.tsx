@@ -111,28 +111,28 @@ export default function Hero() {
             </p>
 
             {/* Unified Schedule & Countdown Card */}
-            <div className="p-3.5 sm:p-4 rounded-3xl bg-white/[0.08] border-2 border-white/15 backdrop-blur-md shadow-solid-sm space-y-3 max-w-xl mx-auto lg:mx-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="p-4 sm:p-5 rounded-3xl bg-white/[0.08] border-2 border-white/15 backdrop-blur-md shadow-solid-sm space-y-3.5 max-w-2xl mx-auto lg:mx-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Camp Dates */}
-                <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/5 border border-white/10 text-left">
-                  <div className="w-8 h-8 rounded-xl bg-cc-blue text-white flex items-center justify-center flex-shrink-0 border border-white/20 shadow-sm">
+                <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 text-left">
+                  <div className="w-9 h-9 rounded-xl bg-cc-blue text-white flex items-center justify-center flex-shrink-0 border border-white/20 shadow-sm">
                     <Calendar className="w-4 h-4" />
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">วันจัดค่ายจริง (3 วัน 2 คืน)</div>
-                    <div className="text-xs sm:text-sm font-bold text-white truncate leading-snug">{CAMP_INFO.campDates}</div>
+                  <div className="flex-1">
+                    <div className="text-[10px] text-white/70 font-semibold uppercase tracking-wider">วันจัดค่ายจริง (3 วัน 2 คืน)</div>
+                    <div className="text-xs sm:text-sm font-bold text-white leading-tight mt-0.5">{CAMP_INFO.campDates}</div>
                   </div>
                 </div>
 
                 {/* Registration Period & Deadline */}
-                <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/5 border border-white/10 text-left">
-                  <div className="w-8 h-8 rounded-xl bg-cc-coral text-white flex items-center justify-center flex-shrink-0 border border-white/20 shadow-sm">
+                <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 text-left">
+                  <div className="w-9 h-9 rounded-xl bg-cc-coral text-white flex items-center justify-center flex-shrink-0 border border-white/20 shadow-sm">
                     <Clock className="w-4 h-4" />
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">เปิด - ปิดรับสมัครพี่ค่าย</div>
-                    <div className="text-xs sm:text-sm font-bold text-cc-yellow truncate leading-snug">
-                      {CAMP_INFO.registrationPeriod} (ถึง 23:59 น.)
+                  <div className="flex-1">
+                    <div className="text-[10px] text-white/70 font-semibold uppercase tracking-wider">เปิด - ปิดรับสมัครพี่ค่าย</div>
+                    <div className="text-xs sm:text-sm font-bold text-cc-yellow leading-tight mt-0.5">
+                      {CAMP_INFO.registrationPeriod} <span className="text-[11px] text-white/80 font-normal">(ถึง 23:59 น.)</span>
                     </div>
                   </div>
                 </div>
