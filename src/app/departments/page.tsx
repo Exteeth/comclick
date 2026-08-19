@@ -5,7 +5,7 @@ import { CAMP_INFO } from "@/lib/constants";
 
 export const metadata = {
   title: "11 ฝ่ายที่เปิดรับสมัครพี่ค่าย Comclick 20 | ComClick Camp #20",
-  description: "รายละเอียด 11 ฝ่ายงาน ภาระหน้าที่ คุณสมบัติ และจำนวนที่เปิดรับในค่าย Comclick 20",
+  description: "รายละเอียด 11 ฝ่ายงาน ภาระหน้าที่ และคุณสมบัติในการสมัครพี่ค่าย Comclick 20",
 };
 
 export default function DepartmentsPage() {
