@@ -61,6 +61,7 @@ export default function AdminDashboard() {
     fullNameTh: string;
     studentId: string;
     phone: string;
+    faculty: string;
     major: string;
     diet: string;
     firstChoiceDeptId: string;
@@ -74,6 +75,7 @@ export default function AdminDashboard() {
     fullNameTh: "",
     studentId: "",
     phone: "",
+    faculty: "คณะศึกษาศาสตร์",
     major: "",
     diet: "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
     firstChoiceDeptId: DEPARTMENTS[0]?.id ?? "protocol",
@@ -182,6 +184,7 @@ export default function AdminDashboard() {
       fullNameTh: app.fullNameTh || "",
       studentId: app.studentId || "",
       phone: app.phone || "",
+      faculty: app.faculty || "คณะศึกษาศาสตร์",
       major: app.major || "",
       diet: app.diet || "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
       firstChoiceDeptId: app.firstChoiceDeptId || DEPARTMENTS[0]?.id || "protocol",
@@ -248,6 +251,7 @@ export default function AdminDashboard() {
       "รหัสใบสมัคร",
       "ชื่อ-นามสกุล",
       "รหัสนักศึกษา",
+      "คณะ",
       "สาขาวิชา",
       "เบอร์โทรศัพท์",
       "ข้อมูลอาหาร/แพ้อาหาร",
@@ -279,6 +283,7 @@ export default function AdminDashboard() {
         a.id,
         a.fullNameTh,
         `\t${a.studentId}`,
+        a.faculty || "คณะศึกษาศาสตร์",
         a.major,
         `\t${a.phone}`,
         a.diet || "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
@@ -957,9 +962,10 @@ export default function AdminDashboard() {
                               </div>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap">
+                          <td className="py-3.5 px-4">
                             <div className="font-mono text-cc-navy font-bold">{app.studentId}</div>
-                            <div className="text-[11px] text-gray-500">{app.major}</div>
+                            <div className="text-[10px] text-gray-500 font-bold">{app.faculty || "คณะศึกษาศาสตร์"}</div>
+                            <div className="text-[11px] text-gray-700">{app.major}</div>
                           </td>
                           <td className="py-3.5 px-4">
                             <div className="text-[11px] text-gray-700 font-bold">
@@ -1092,6 +1098,16 @@ export default function AdminDashboard() {
                         setEditFormData({ ...editFormData, phone: digits });
                       }}
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-mono outline-none focus:border-cc-blue"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700">คณะที่สังกัด:</label>
+                    <input
+                      type="text"
+                      placeholder="เช่น คณะศึกษาศาสตร์, คณะวิทยาศาสตร์"
+                      value={editFormData.faculty || ""}
+                      onChange={(e) => setEditFormData({ ...editFormData, faculty: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue"
                     />
                   </div>
                   <div className="space-y-1">

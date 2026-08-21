@@ -79,6 +79,7 @@ export async function POST(request: Request) {
     const cleanFirstChoice = body.firstChoiceDeptId?.trim() || null;
     const cleanSecondChoice = body.secondChoiceDeptId?.trim() || cleanFirstChoice;
     const cleanFullName = body.fullNameTh.trim();
+    const cleanFaculty = body.faculty?.trim() || "คณะศึกษาศาสตร์";
     const cleanMajor = body.major.trim();
     const cleanDiet = body.diet?.trim() || "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)";
 
@@ -119,7 +120,7 @@ export async function POST(request: Request) {
               ${cleanFullName},
               ${body.nicknameTh || cleanFullName.split(" ")[0] || "พี่ค่าย"},
               ${cleanStudentId},
-              ${body.faculty || "คณะศึกษาศาสตร์"},
+              ${cleanFaculty},
               ${cleanMajor},
               ${body.year || "ไม่ระบุ"},
               ${cleanPhone},
@@ -157,6 +158,7 @@ export async function POST(request: Request) {
       fullNameTh: cleanFullName,
       studentId: cleanStudentId,
       phone: cleanPhone,
+      faculty: cleanFaculty,
       major: cleanMajor,
       diet: cleanDiet,
       firstChoiceDeptId: cleanFirstChoice || "protocol",
@@ -195,6 +197,7 @@ export async function PUT(request: Request) {
               full_name_th = COALESCE(${body.fullNameTh?.trim()}, full_name_th),
               student_id = COALESCE(${body.studentId?.trim()}, student_id),
               phone = COALESCE(${body.phone?.trim()}, phone),
+              faculty = COALESCE(${body.faculty?.trim()}, faculty),
               major = COALESCE(${body.major?.trim()}, major),
               diet = COALESCE(${body.diet?.trim()}, diet),
               first_choice_dept_id = COALESCE(${firstChoiceClean}, first_choice_dept_id),

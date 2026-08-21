@@ -25,6 +25,21 @@ export const CAMP_INFO = {
   lineOfficial: "@comclick20",
 };
 
+export const EDUCATION_MAJORS = [
+  "สาขาวิชาคอมพิวเตอร์ศึกษา",
+  "สาขาวิชาคณิตศาสตรศึกษา",
+  "สาขาวิชาวิทยาศาสตร์ศึกษา",
+  "สาขาวิชาการสอนภาษาไทย",
+  "สาขาวิชาสังคมศึกษา",
+  "สาขาวิชาศิลปศึกษา",
+  "สาขาวิชาพลศึกษา",
+  "สาขาวิชาการสอนภาษาญี่ปุ่น",
+  "สาขาวิชาการประถมศึกษา (วิชาเอกเดี่ยว)",
+  "สาขาวิชาการศึกษาปฐมวัยและประถมศึกษา (วิชาเอกคู่)",
+  "สาขาวิชาดนตรีศึกษา",
+  "สาขาอื่นๆ ในคณะศึกษาศาสตร์ (ระบุเอง)",
+] as const;
+
 export function getRegistrationStatus(): "upcoming" | "open" | "closed" {
   const now = new Date().getTime();
   const start = new Date(CAMP_INFO.registrationStartDate).getTime();

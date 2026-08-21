@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { CAMP_INFO, DEPARTMENTS } from "@/lib/constants";
+import { CAMP_INFO, DEPARTMENTS, EDUCATION_MAJORS } from "@/lib/constants";
 import { addApplication } from "@/lib/storage";
 import { Application } from "@/lib/types";
 import confetti from "canvas-confetti";
@@ -65,11 +65,16 @@ export default function ApplicationForm() {
   const [dietChoice, setDietChoice] = useState<string>("ทานได้ทุกอย่าง (ไม่แพ้อาหาร)");
   const [otherAllergyNote, setOtherAllergyNote] = useState<string>("");
 
+  // Faculty & Major State
+  const [facultyType, setFacultyType] = useState<"edu" | "other">("edu");
+  const [customFacultyName, setCustomFacultyName] = useState<string>("");
+  const [educationMajorChoice, setEducationMajorChoice] = useState<string>("สาขาวิชาคอมพิวเตอร์ศึกษา");
+  const [customMajorName, setCustomMajorName] = useState<string>("");
+
   // Form State: Core Fields
   const [formData, setFormData] = useState({
     studentId: "",
     phone: "",
-    major: "สาขาวิชาคอมพิวเตอร์ศึกษา",
     firstChoiceDeptId: preselectedDept || (DEPARTMENTS[0]?.id ?? "protocol"),
     secondChoiceDeptId: DEPARTMENTS[1]?.id ?? "fundraising",
     fallbackDeptChoice: "ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร",
@@ -120,6 +125,23 @@ export default function ApplicationForm() {
     // Strip redundant typed prefixes if already typed
     clean = clean.replace(/^(นาย|นางสาว|นาง|น\.ส\.)\s*/, "");
     return `${titlePrefix}${clean}`;
+  };
+
+  const getFinalFacultyString = (): string => {
+    if (facultyType === "edu") {
+      return "คณะศึกษาศาสตร์";
+    }
+    return customFacultyName.trim() || "คณะอื่นๆ (มข.)";
+  };
+
+  const getFinalMajorString = (): string => {
+    if (facultyType === "edu") {
+      if (educationMajorChoice === "สาขาอื่นๆ ในคณะศึกษาศาสตร์ (ระบุเอง)") {
+        return customMajorName.trim() || "สาขาอื่นๆ ในคณะศึกษาศาสตร์";
+      }
+      return educationMajorChoice;
+    }
+    return customMajorName.trim() || "ไม่ระบุสาขา";
   };
 
   const getFinalDietString = () => {
@@ -178,9 +200,20 @@ export default function ApplicationForm() {
       return false;
     }
 
-    if (!formData.major.trim()) {
-      setErrorMessage("กรุณากรอก 4. สาขาวิชา");
-      return false;
+    if (facultyType === "other") {
+      if (!customFacultyName.trim()) {
+        setErrorMessage("กรุณากรอกชื่อคณะของคุณ (เช่น คณะวิทยาศาสตร์, คณะวิศวกรรมศาสตร์)");
+        return false;
+      }
+      if (!customMajorName.trim()) {
+        setErrorMessage("กรุณากรอกชื่อสาขาวิชาของคุณ");
+        return false;
+      }
+    } else {
+      if (educationMajorChoice === "สาขาอื่นๆ ในคณะศึกษาศาสตร์ (ระบุเอง)" && !customMajorName.trim()) {
+        setErrorMessage("กรุณาระบุชื่อสาขาวิชาในคณะศึกษาศาสตร์ของคุณ");
+        return false;
+      }
     }
 
     if (formData.firstChoiceDeptId === formData.secondChoiceDeptId) {
@@ -200,17 +233,19 @@ export default function ApplicationForm() {
     try {
       const finalFullName = getCleanFullName();
       const finalDiet = getFinalDietString();
+      const finalFaculty = getFinalFacultyString();
+      const finalMajor = getFinalMajorString();
 
       const payload = {
         fullNameTh: finalFullName,
         studentId: formData.studentId.trim(),
         phone: formData.phone.trim().replace(/-/g, ""),
-        major: formData.major.trim(),
+        faculty: finalFaculty,
+        major: finalMajor,
         diet: finalDiet,
         firstChoiceDeptId: formData.firstChoiceDeptId,
         secondChoiceDeptId: formData.secondChoiceDeptId,
         fallbackDeptChoice: formData.fallbackDeptChoice,
-        faculty: "คณะศึกษาศาสตร์",
       };
 
       // 1. Sync with Server API & Neon PostgreSQL Database
@@ -382,21 +417,121 @@ export default function ApplicationForm() {
                 </div>
               </div>
 
-              {/* 4. สาขา */}
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="block text-xs sm:text-sm font-bold text-cc-navy">
-                  4. สาขาวิชา <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <BookOpen className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    required
-                    placeholder="เช่น สาขาวิชาคอมพิวเตอร์ศึกษา, วิทยาการคอมพิวเตอร์ หรือสาขาอื่นๆ"
-                    value={formData.major}
-                    onChange={(e) => updateField("major", e.target.value)}
-                    className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm"
-                  />
+              {/* 4. คณะ & 5. สาขาวิชา */}
+              <div className="sm:col-span-2 space-y-4 pt-3 border-t border-gray-200">
+                {/* 4. คณะที่สังกัด */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs sm:text-sm font-bold text-cc-navy flex items-center gap-1.5">
+                    <GraduationCap className="w-4 h-4 text-cc-blue" />
+                    <span>4. คณะที่สังกัดในมหาวิทยาลัยขอนแก่น <span className="text-red-500">*</span></span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFacultyType("edu");
+                        setErrorMessage(null);
+                      }}
+                      className={`p-3 rounded-xl border-2 font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
+                        facultyType === "edu"
+                          ? "bg-cc-navy text-white border-cc-navy shadow-solid-sm"
+                          : "bg-white text-gray-700 border-gray-300 hover:border-cc-navy hover:bg-cc-cream/30"
+                      }`}
+                    >
+                      คณะศึกษาศาสตร์
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFacultyType("other");
+                        setErrorMessage(null);
+                      }}
+                      className={`p-3 rounded-xl border-2 font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
+                        facultyType === "other"
+                          ? "bg-cc-navy text-white border-cc-navy shadow-solid-sm"
+                          : "bg-white text-gray-700 border-gray-300 hover:border-cc-navy hover:bg-cc-cream/30"
+                      }`}
+                    >
+                      คณะอื่นๆ (มข.)
+                    </button>
+                  </div>
+
+                  {facultyType === "other" && (
+                    <div className="pt-1.5 animate-fadeIn">
+                      <input
+                        type="text"
+                        required
+                        placeholder="กรอกชื่อคณะของคุณ เช่น คณะวิทยาศาสตร์, คณะวิศวกรรมศาสตร์, คณะมนุษยศาสตร์ฯ"
+                        value={customFacultyName}
+                        onChange={(e) => {
+                          setCustomFacultyName(e.target.value);
+                          setErrorMessage(null);
+                        }}
+                        className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* 5. สาขาวิชา */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs sm:text-sm font-bold text-cc-navy flex items-center gap-1.5">
+                    <BookOpen className="w-4 h-4 text-cc-coral" />
+                    <span>5. สาขาวิชา <span className="text-red-500">*</span></span>
+                  </label>
+
+                  {facultyType === "edu" ? (
+                    <div className="space-y-2">
+                      <select
+                        value={educationMajorChoice}
+                        onChange={(e) => {
+                          setEducationMajorChoice(e.target.value);
+                          setErrorMessage(null);
+                        }}
+                        className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm focus:border-cc-blue focus:bg-cc-cream-50"
+                      >
+                        {EDUCATION_MAJORS.map((m) => (
+                          <option key={m} value={m}>
+                            {m}
+                          </option>
+                        ))}
+                      </select>
+
+                      {educationMajorChoice === "สาขาอื่นๆ ในคณะศึกษาศาสตร์ (ระบุเอง)" && (
+                        <div className="animate-fadeIn pt-1">
+                          <input
+                            type="text"
+                            required
+                            placeholder="พิมพ์ระบุชื่อสาขาวิชาของคุณในคณะศึกษาศาสตร์"
+                            value={customMajorName}
+                            onChange={(e) => {
+                              setCustomMajorName(e.target.value);
+                              setErrorMessage(null);
+                            }}
+                            className="w-full px-3.5 py-2.5 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="animate-fadeIn">
+                      <input
+                        type="text"
+                        required
+                        placeholder="กรอกชื่อสาขาวิชาของคุณ เช่น วิทยาการคอมพิวเตอร์, เทคโนโลยีสารสนเทศ, การตลาด ฯลฯ"
+                        value={customMajorName}
+                        onChange={(e) => {
+                          setCustomMajorName(e.target.value);
+                          setErrorMessage(null);
+                        }}
+                        className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                      />
+                    </div>
+                  )}
+
+                  <p className="text-[11px] text-gray-500 pt-0.5">
+                    สังกัดที่จะบันทึก: <strong className="text-cc-navy">{getFinalFacultyString()}</strong> • <strong className="text-cc-blue">{getFinalMajorString()}</strong>
+                  </p>
                 </div>
               </div>
             </div>
@@ -622,12 +757,10 @@ export default function ApplicationForm() {
                 <span className="text-cc-navy">{createdApplication.id}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">ชื่อ - นามสกุล:</span>
-                <span className="font-bold text-gray-800">{createdApplication.fullNameTh}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">รหัสนักศึกษา:</span>
-                <span className="font-bold text-gray-800">{createdApplication.studentId}</span>
+                <span className="text-gray-500">คณะ / สาขาวิชา:</span>
+                <span className="font-bold text-gray-800 text-right truncate max-w-[210px]" title={`${createdApplication.faculty} • ${createdApplication.major}`}>
+                  {createdApplication.faculty || "คณะศึกษาศาสตร์"} • {createdApplication.major}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">เบอร์โทรศัพท์:</span>
@@ -668,10 +801,13 @@ export default function ApplicationForm() {
                   setNameInput("");
                   setDietChoice("ทานได้ทุกอย่าง (ไม่แพ้อาหาร)");
                   setOtherAllergyNote("");
+                  setFacultyType("edu");
+                  setCustomFacultyName("");
+                  setEducationMajorChoice("สาขาวิชาคอมพิวเตอร์ศึกษา");
+                  setCustomMajorName("");
                   setFormData({
                     studentId: "",
                     phone: "",
-                    major: "สาขาวิชาคอมพิวเตอร์ศึกษา",
                     firstChoiceDeptId: DEPARTMENTS[0]?.id ?? "protocol",
                     secondChoiceDeptId: DEPARTMENTS[1]?.id ?? "fundraising",
                     fallbackDeptChoice: "ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร",
