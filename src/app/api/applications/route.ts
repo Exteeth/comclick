@@ -64,31 +64,6 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Check if registration window is open
-    const now = new Date().getTime();
-    const start = new Date(CAMP_INFO.registrationStartDate).getTime();
-    const end = new Date(CAMP_INFO.registrationEndDate).getTime();
-    const allowBypass = request.headers.get("x-bypass-reg-gate") === "true";
-
-    if (!allowBypass && (now < start || now > end)) {
-      if (now < start) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `ระบบรับสมัครจะเปิดให้ส่งใบสมัครในวันที่ ${CAMP_INFO.registrationStart}`,
-          },
-          { status: 403 }
-        );
-      }
-      return NextResponse.json(
-        {
-          success: false,
-          error: `ระบบปิดรับสมัครเรียบร้อยแล้วเมื่อ ${CAMP_INFO.registrationDeadline}`,
-        },
-        { status: 403 }
-      );
-    }
-
     // Validate required fields
     if (!body.fullNameTh || !body.studentId || !body.phone || !body.major || !body.firstChoiceDeptId) {
       return NextResponse.json(
