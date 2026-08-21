@@ -57,13 +57,12 @@ export default function ApplicationForm() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Title prefix state
+  // Title prefix state
   const [titlePrefix, setTitlePrefix] = useState<string>("นาย");
   const [nameInput, setNameInput] = useState<string>("");
 
-  // Food Allergy / Dietary State
-  const [selectedAllergies, setSelectedAllergies] = useState<string[]>([
-    "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
-  ]);
+  // Food Allergy / Dietary Drop box State
+  const [dietChoice, setDietChoice] = useState<string>("ทานได้ทุกอย่าง (ไม่แพ้อาหาร)");
   const [otherAllergyNote, setOtherAllergyNote] = useState<string>("");
 
   // Form State: Core Fields
@@ -116,27 +115,6 @@ export default function ApplicationForm() {
     setErrorMessage(null);
   };
 
-  const toggleAllergy = (label: string) => {
-    if (label === "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)") {
-      setSelectedAllergies(["ทานได้ทุกอย่าง (ไม่แพ้อาหาร)"]);
-      setOtherAllergyNote("");
-      return;
-    }
-
-    // When selecting specific allergies, remove "ทานได้ทุกอย่าง"
-    let updated = selectedAllergies.filter((item) => item !== "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)");
-    if (updated.includes(label)) {
-      updated = updated.filter((item) => item !== label);
-    } else {
-      updated.push(label);
-    }
-
-    if (updated.length === 0 && !otherAllergyNote.trim()) {
-      updated = ["ทานได้ทุกอย่าง (ไม่แพ้อาหาร)"];
-    }
-    setSelectedAllergies(updated);
-  };
-
   const getCleanFullName = () => {
     let clean = nameInput.trim();
     // Strip redundant typed prefixes if already typed
@@ -145,17 +123,21 @@ export default function ApplicationForm() {
   };
 
   const getFinalDietString = () => {
-    if (selectedAllergies.includes("ทานได้ทุกอย่าง (ไม่แพ้อาหาร)")) {
+    if (dietChoice === "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)") {
       if (otherAllergyNote.trim()) {
         return `ทานได้ทุกอย่าง (หมายเหตุ: ${otherAllergyNote.trim()})`;
       }
       return "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)";
     }
-    const items = [...selectedAllergies];
-    if (otherAllergyNote.trim()) {
-      items.push(`ระบุเพิ่มเติม: ${otherAllergyNote.trim()}`);
+    if (dietChoice === "แพ้อื่นๆ / มีข้อจำกัดเฉพาะ") {
+      return otherAllergyNote.trim()
+        ? `แพ้อื่นๆ (${otherAllergyNote.trim()})`
+        : "แพ้อื่นๆ (มีข้อจำกัดเฉพาะ)";
     }
-    return items.length > 0 ? items.join(", ") : "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)";
+    if (otherAllergyNote.trim()) {
+      return `${dietChoice} (ระบุเพิ่มเติม: ${otherAllergyNote.trim()})`;
+    }
+    return dietChoice;
   };
 
   const validateForm = (): boolean => {
@@ -384,7 +366,7 @@ export default function ApplicationForm() {
           </div>
 
           {/* ========================================================= */}
-          {/* Section 2: ข้อมูลอาหาร & การแพ้อาหาร (Dietary Preferences) */}
+          {/* Section 2: ข้อมูลอาหาร & การแพ้อาหาร (Dietary Drop box)    */}
           {/* ========================================================= */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
@@ -397,69 +379,54 @@ export default function ApplicationForm() {
                   <Utensils className="w-4 h-4 text-emerald-600" />
                 </h3>
                 <p className="text-xs text-gray-500">
-                  เลือกข้อจำกัดด้านอาหารหรืออาหารที่แพ้ เพื่อให้ฝ่ายสวัสดิการและอาหารเตรียมอาหารได้อย่างถูกต้อง
+                  เลือกประเภทอาหารหรืออาหารที่แพ้ เพื่อให้ฝ่ายสวัสดิการและอาหารเตรียมอาหารได้อย่างถูกต้อง
                 </p>
               </div>
             </div>
 
             <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50/60 border-2 border-emerald-300 space-y-4">
-              {/* Allergy Preset Options Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {FOOD_ALLERGY_OPTIONS.map((opt) => {
-                  const isChecked = selectedAllergies.includes(opt.label);
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => toggleAllergy(opt.label)}
-                      className={`p-3 rounded-xl border-2 text-left transition-all flex items-start gap-3 cursor-pointer ${
-                        isChecked
-                          ? opt.id === "none"
-                            ? "bg-emerald-600 text-white border-emerald-700 shadow-sm"
-                            : "bg-cc-navy text-white border-cc-navy shadow-sm"
-                          : "bg-white text-gray-800 border-gray-200 hover:border-emerald-400 hover:bg-emerald-50/30"
-                      }`}
-                    >
-                      <div
-                        className={`w-5 h-5 rounded-lg border flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
-                          isChecked
-                            ? "bg-white text-cc-navy border-white"
-                            : "bg-gray-100 border-gray-300"
-                        }`}
-                      >
-                        {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-xs font-bold leading-snug">{opt.label}</div>
-                        <div
-                          className={`text-[11px] mt-0.5 leading-tight ${
-                            isChecked ? "text-white/80" : "text-gray-500"
-                          }`}
-                        >
-                          {opt.desc}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
+              {/* Drop box (Select Dropdown) */}
+              <div className="space-y-1.5">
+                <label className="block text-xs sm:text-sm font-bold text-cc-navy flex items-center gap-1.5">
+                  <Utensils className="w-4 h-4 text-emerald-700" />
+                  <span>ประเภทอาหาร / ข้อจำกัดด้านอาหาร <span className="text-red-500">*</span></span>
+                </label>
+                <select
+                  value={dietChoice}
+                  onChange={(e) => setDietChoice(e.target.value)}
+                  className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm focus:border-cc-blue focus:bg-cc-cream-50"
+                >
+                  <option value="ทานได้ทุกอย่าง (ไม่แพ้อาหาร)">
+                    ทานได้ทุกอย่าง (ไม่แพ้อาหาร) — อาหารทั่วไปปกติ
+                  </option>
+                  <optgroup label="อาหารตามหลักศาสนา / มังสวิรัติ">
+                    <option value="อาหารฮาลาล (อิสลาม)">อาหารฮาลาล (อิสลาม) — ตามหลักศาสนาอิสลาม</option>
+                    <option value="มังสวิรัติ (ไม่ทานเนื้อสัตว์)">มังสวิรัติ (ไม่ทานเนื้อสัตว์)</option>
+                    <option value="อาหารเจ / วีแกน">อาหารเจ / วีแกน — งดเนื้อสัตว์และผักฉุน</option>
+                  </optgroup>
+                  <optgroup label="แพ้อาหารเฉพาะ / ข้อจำกัดพิเศษ">
+                    <option value="แพ้อาหารทะเล (กุ้ง, ปู, หอย, หมึก)">แพ้อาหารทะเล (กุ้ง, ปู, หอย, หมึก)</option>
+                    <option value="แพ้ถั่วลิสง / ถั่วเปลือกแข็ง">แพ้ถั่วลิสง / ถั่วเปลือกแข็ง</option>
+                    <option value="แพ้นมวัว / ผลิตภัณฑ์จากนม">แพ้นมวัว / ผลิตภัณฑ์จากนม (แลคโตส)</option>
+                    <option value="แพ้ไข่">แพ้ไข่ (ไข่ไก่ / เมนูที่มีไข่)</option>
+                    <option value="แพ้แป้งสาลี / กลูเตน">แพ้แป้งสาลี / กลูเตน</option>
+                    <option value="ไม่ทานเนื้อวัว">ไม่ทานเนื้อวัว</option>
+                    <option value="แพ้อื่นๆ / มีข้อจำกัดเฉพาะ">แพ้อื่นๆ / มีข้อจำกัดเฉพาะ (โปรดระบุด้านล่าง)</option>
+                  </optgroup>
+                </select>
               </div>
 
               {/* Specific Allergy / Dietary Note Input */}
-              <div className="space-y-1.5 pt-2 border-t border-emerald-200">
+              <div className="space-y-1.5 pt-1">
                 <label className="block text-xs font-bold text-cc-navy flex items-center gap-1.5">
                   <HeartHandshake className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>ระบุอาหารที่แพ้ หรือข้อจำกัดเพิ่มเติม (ถ้ามี):</span>
+                  <span>ระบุรายละเอียดอาหารที่แพ้ หรือข้อจำกัดเพิ่มเติม (ถ้ามี):</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="เช่น แพ้กุ้งอย่างรุนแรง (ผื่น/หายใจไม่ออก), แพ้ผงชูรส, ทานมังสวิรัติแบบดื่มนมได้ เป็นต้น"
+                  placeholder="เช่น แพ้กุ้งอย่างรุนแรง (ห้ามมีส่วนผสมเด็ดขาด), ไม่ทานผักชี, ทานมังสวิรัติแบบดื่มนมได้ เป็นต้น"
                   value={otherAllergyNote}
-                  onChange={(e) => {
-                    setOtherAllergyNote(e.target.value);
-                    if (e.target.value.trim() && selectedAllergies.includes("ทานได้ทุกอย่าง (ไม่แพ้อาหาร)")) {
-                      setSelectedAllergies([]);
-                    }
-                  }}
+                  onChange={(e) => setOtherAllergyNote(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border-2 border-emerald-300 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:border-cc-navy outline-none shadow-sm font-medium"
                 />
               </div>
@@ -662,7 +629,7 @@ export default function ApplicationForm() {
                 onClick={() => {
                   setCreatedApplication(null);
                   setNameInput("");
-                  setSelectedAllergies(["ทานได้ทุกอย่าง (ไม่แพ้อาหาร)"]);
+                  setDietChoice("ทานได้ทุกอย่าง (ไม่แพ้อาหาร)");
                   setOtherAllergyNote("");
                   setFormData({
                     studentId: "",
