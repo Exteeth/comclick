@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
-  Target,
   Users,
   BookOpen,
   Award,
@@ -12,15 +11,29 @@ import {
   HeartHandshake,
   Compass,
   Cpu,
-  Gamepad2,
   Code,
   CheckCircle2,
   Zap,
+  ChevronDown,
+  Flame,
+  Lightbulb,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { CAMP_INFO } from "@/lib/constants";
 import AnimatedContent from "./ui/AnimatedContent";
 
 export default function AboutSection() {
+  const [openScopeIndex, setOpenScopeIndex] = useState<number | null>(0);
+  const [openMissionIndex, setOpenMissionIndex] = useState<number | null>(null);
+
+  const toggleScope = (index: number) => {
+    setOpenScopeIndex(openScopeIndex === index ? null : index);
+  };
+
+  const toggleMission = (index: number) => {
+    setOpenMissionIndex(openMissionIndex === index ? null : index);
+  };
+
   const staffObjectives = [
     {
       icon: Compass,
@@ -58,23 +71,44 @@ export default function AboutSection() {
     {
       icon: GraduationCap,
       title: "วิชาการแนะแนวสายอาชีพ & คณะใน มข.",
-      desc: "จัดเวทีย่อยและบูธ ถ่ายทอดประสบการณ์จริง เปิดมุมมองการเรียนต่อในมหาวิทยาลัยขอนแก่นและสายอาชีพเทคโนโลยี",
-      color: "border-cc-blue bg-blue-50/50",
-      tagColor: "bg-cc-blue text-white",
+      tag: "CAREER & EDUCATION GUIDANCE",
+      shortDesc: "จัดเวทีย่อยและบูธ ถ่ายทอดประสบการณ์จริง เปิดมุมมองการเรียนต่อในมหาวิทยาลัยขอนแก่นและสายอาชีพเทคโนโลยี",
+      details: [
+        "🎤 จัดเวทีย่อยและบูธแนะแนวคณะ/สาขาวิชาต่าง ๆ ในมหาวิทยาลัยขอนแก่นอย่างใกล้ชิด",
+        "💼 แชร์ประสบการณ์การเรียน ชีวิตในรั้วมหาวิทยาลัย และเส้นทางสายอาชีพด้านดิจิทัล & เทคโนโลยี",
+        "🧭 เปิดโอกาสให้น้องมัธยมได้ซักถามข้อสงสัย ไขข้อข้องใจเรื่องระบบ TCAS และการเตรียม Portfolio",
+      ],
+      color: "border-cc-blue bg-blue-50/40",
+      accentBg: "bg-cc-blue text-white",
+      iconColor: "text-cc-blue bg-blue-100",
     },
     {
       icon: Code,
       title: "Comclick Innovation Pitching Workshop",
-      desc: "ร่วมเป็นโค้ชประจำกลุ่ม ดูแลกิจกรรมเวิร์กช็อปนวัตกรรม ฝึกทักษะการแก้ปัญหา และเตรียมความพร้อมในการ Pitching บนเวที",
-      color: "border-cc-coral bg-rose-50/50",
-      tagColor: "bg-cc-coral text-white",
+      tag: "INNOVATION & PITCHING",
+      shortDesc: "ร่วมเป็นโค้ชประจำกลุ่ม ดูแลกิจกรรมเวิร์กช็อปนวัตกรรม ฝึกทักษะการแก้ปัญหา และเตรียมความพร้อมในการ Pitching บนเวที",
+      details: [
+        "💡 ร่วมเป็นพี่เลี้ยง (Mentor/Coach) ประจำกลุ่ม ช่วยน้องๆ พัฒนาแนวคิดโครงงานผ่านกระบวนการ Design Thinking",
+        "💻 ให้คำแนะนำการประยุกต์ใช้เทคโนโลยี, AI และเครื่องมือดิจิทัลในการสร้างสรรค์ชิ้นงาน",
+        "🚀 ฝึกฝนทักษะการนำเสนอผลงาน (Pitching) เทคนิคการพูดบนเวที และการตอบคำถามกรรมการอย่างมั่นใจ",
+      ],
+      color: "border-cc-coral bg-rose-50/40",
+      accentBg: "bg-cc-coral text-white",
+      iconColor: "text-cc-coral bg-rose-100",
     },
     {
       icon: Sparkles,
       title: "นันทนาการฐาน Wild Game, รอบกองไฟ & Big Cleaning",
-      desc: "คุมกิจกรรมฐาน Wild Game สุดเร้าใจ กิจกรรมรอบกองไฟอันแสนอบอุ่น และร่วมจิตอาสา Big Cleaning ทำความสะอาดโรงเรียน",
-      color: "border-cc-yellow bg-amber-50/50",
-      tagColor: "bg-cc-yellow text-cc-navy",
+      tag: "RECREATION & VOLUNTEER",
+      shortDesc: "คุมกิจกรรมฐาน Wild Game สุดเร้าใจ กิจกรรมรอบกองไฟอันแสนอบอุ่น และร่วมจิตอาสา Big Cleaning ทำความสะอาดโรงเรียน",
+      details: [
+        "🎯 วางแผนและดำเนินกิจกรรมฐานเกมสันทนาการ (Wild Game) ที่สนุกสนาน ปลอดภัย และละลายพฤติกรรม",
+        "🔥 ร่วมสร้างบรรยากาศแห่งความประทับใจในคืนรอบกองไฟ (Campfire Night) และกิจกรรมผูกข้อมือรับน้อง",
+        "🧹 ลงแรงร่วมกิจกรรมจิตอาสา Big Cleaning Day ทำความสะอาดและปรับปรุงภูมิทัศน์โรงเรียนเป้าหมาย",
+      ],
+      color: "border-cc-yellow bg-amber-50/40",
+      accentBg: "bg-cc-yellow text-cc-navy",
+      iconColor: "text-amber-700 bg-amber-100",
     },
   ];
 
@@ -175,7 +209,7 @@ export default function AboutSection() {
                   >
                     คณะศึกษาศาสตร์ มข.
                   </a>{" "}
-                  และ<strong>เปิดรับสมัครนักศึกษาทุกชั้นปี ทุกสาขาวิชาใน มข.</strong> มาร่วมเป็นทีมงานพี่ค่าย 13 ฝ่าย
+                  และ<strong>เปิดรับสมัครนักศึกษาทุกชั้นปี ทุกสาขาวิชาใน มข.</strong> มาร่วมเป็นทีมงานพี่ค่าย 11 ฝ่าย
                 </p>
               </div>
             </div>
@@ -239,52 +273,118 @@ export default function AboutSection() {
           </div>
         </div>
 
-        {/* 3. Scope of Activity Design (What Staff will Do) */}
+        {/* 3. Scope of Activity Design (Drop Box / Accordion Dropdown) */}
         <div className="space-y-6">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cc-yellow text-cc-navy border-2 border-cc-navy text-xs font-mono font-black uppercase">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cc-yellow text-cc-navy border-2 border-cc-navy text-xs font-mono font-black uppercase shadow-solid-sm">
               <BookOpen className="w-3.5 h-3.5 text-cc-navy" />
-              <span>CONCEPT: "ส่งเสริมคุณลักษณะด้านจิตอาสาและจิตวิญญาณความเป็นครู"</span>
+              <span>ACTIVITY SCOPE & RESPONSIBILITIES</span>
             </div>
             <h3 className="font-display font-black text-2xl sm:text-4xl text-cc-navy">
               ขอบเขตกิจกรรมที่พวกเราสตาฟจะร่วมจัด <span className="text-cc-blue">(Scope of Activities)</span>
             </h3>
+            <p className="text-xs sm:text-sm text-gray-600 font-normal">
+              คลิกเปิดดูรายละเอียดขอบเขตงานแต่ละกิจกรรมที่พี่ค่ายจะได้ร่วมลงมือทำจริง
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Interactive Drop Box List */}
+          <div className="space-y-4 max-w-4xl mx-auto">
             {staffLearningScopes.map((scope, idx) => {
               const Icon = scope.icon;
+              const isOpen = openScopeIndex === idx;
+
               return (
-                <AnimatedContent
-                  key={idx}
-                  distance={40}
-                  direction="vertical"
-                  duration={0.6}
-                  delay={idx * 0.1}
-                >
+                <AnimatedContent key={idx} distance={20} duration={0.4} delay={idx * 0.05}>
                   <div
-                    className={`h-full p-6 sm:p-7 rounded-3xl bg-white border-3 border-cc-navy shadow-solid space-y-4 flex flex-col justify-between hover:translate-x-0.5 hover:-translate-y-1 transition-all ${scope.color}`}
+                    className={`rounded-3xl border-3 border-cc-navy shadow-solid transition-all overflow-hidden bg-white ${
+                      isOpen ? "ring-2 ring-cc-navy/10" : ""
+                    }`}
                   >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="w-12 h-12 rounded-2xl bg-cc-cream border-2 border-cc-navy shadow-solid-sm flex items-center justify-center text-cc-navy">
-                          <Icon className="w-6 h-6 text-cc-navy" />
-                        </div>
-                        <span
-                          className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-md border border-cc-navy ${scope.tagColor}`}
+                    {/* Header Button / Trigger */}
+                    <button
+                      type="button"
+                      onClick={() => toggleScope(idx)}
+                      className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 hover:bg-cc-cream/40 transition-colors focus:outline-none cursor-pointer"
+                    >
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div
+                          className={`w-12 h-12 rounded-2xl border-2 border-cc-navy shadow-solid-sm flex items-center justify-center flex-shrink-0 transition-transform ${
+                            isOpen ? "scale-105" : ""
+                          } ${scope.iconColor}`}
                         >
-                          STAFF WORK SCOPE
-                        </span>
+                          <Icon className="w-6 h-6" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span
+                              className={`text-[9px] sm:text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border border-cc-navy ${scope.accentBg}`}
+                            >
+                              {scope.tag}
+                            </span>
+                          </div>
+                          <h4 className="font-display font-black text-base sm:text-lg text-cc-navy leading-snug mt-1 truncate sm:whitespace-normal">
+                            {scope.title}
+                          </h4>
+                        </div>
                       </div>
 
-                      <h4 className="font-display font-black text-lg text-cc-navy leading-snug">
-                        {scope.title}
-                      </h4>
+                      {/* Animated Chevron Indicator */}
+                      <motion.div
+                        animate={{ rotate: isOpen ? 180 : 0 }}
+                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                        className={`w-9 h-9 rounded-xl border-2 border-cc-navy flex items-center justify-center font-bold flex-shrink-0 transition-colors ${
+                          isOpen ? "bg-cc-coral text-white" : "bg-cc-cream text-cc-navy"
+                        }`}
+                      >
+                        <ChevronDown className="w-4 h-4" />
+                      </motion.div>
+                    </button>
 
-                      <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
-                        {scope.desc}
-                      </p>
-                    </div>
+                    {/* Expandable Drop Box Content */}
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          key="scope-content"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                          className="overflow-hidden"
+                        >
+                          <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.25 }}
+                            className="px-5 sm:px-6 pb-6 pt-1 border-t-2 border-cc-navy/10 space-y-4 font-normal"
+                          >
+                            {/* Summary Paragraph */}
+                            <p className="text-xs sm:text-sm text-gray-700 leading-relaxed bg-cc-cream/60 p-3.5 rounded-2xl border border-cc-navy/15">
+                              {scope.shortDesc}
+                            </p>
+
+                            {/* Detailed Bullet Points */}
+                            <div className="space-y-2">
+                              <span className="text-xs font-bold text-cc-navy block">
+                                รายละเอียดและบทบาทหน้าที่ของพี่ค่ายในส่วนนี้:
+                              </span>
+                              <div className="space-y-2">
+                                {scope.details.map((detail, dIdx) => (
+                                  <div
+                                    key={dIdx}
+                                    className="flex items-start gap-2.5 text-xs sm:text-sm text-gray-700 bg-gray-50/80 p-3 rounded-xl border border-gray-200"
+                                  >
+                                    <span className="w-1.5 h-1.5 rounded-full bg-cc-coral mt-2 flex-shrink-0" />
+                                    <span className="leading-relaxed">{detail}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </AnimatedContent>
               );
