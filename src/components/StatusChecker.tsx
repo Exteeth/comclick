@@ -16,6 +16,9 @@ import {
   RefreshCw,
   Award,
   Check,
+  Mic,
+  Calendar,
+  MapPin,
 } from "lucide-react";
 
 export default function StatusChecker() {
@@ -94,6 +97,20 @@ export default function StatusChecker() {
         color: "bg-emerald-500 text-white border-cc-navy",
         icon: Sparkles,
         desc: "ขอแสดงความยินดีด้วยอย่างยิ่ง! คุณผ่านการคัดเลือกเป็นทีมงานพี่ค่าย ComClick Camp #20",
+      };
+    }
+
+    if (
+      s === "INTERVIEW_ELIGIBLE" ||
+      s === "INTERVIEW" ||
+      s === "INTERVIEW_SCHEDULED" ||
+      s === "DOCUMENT_PASSED"
+    ) {
+      return {
+        label: "มีสิทธิ์เข้าสัมภาษณ์พี่ค่าย Comclick 20! 🎙️",
+        color: "bg-purple-600 text-white border-cc-navy",
+        icon: Mic,
+        desc: "ขอแสดงความยินดีด้วย! คุณผ่านการพิจารณาคุณสมบัติรอบเอกสารและมีสิทธิ์เข้ารับการสัมภาษณ์เป็นพี่ค่าย ComClick Camp #20",
       };
     }
 
@@ -208,6 +225,7 @@ export default function StatusChecker() {
           {(() => {
             const rawStatus = (searchResult.status || "SUBMITTED").toUpperCase();
             const isAccepted = rawStatus === "ACCEPTED" || rawStatus === "CONFIRMED" || rawStatus === "INTERVIEW_PASSED";
+            const isInterview = rawStatus === "INTERVIEW_ELIGIBLE" || rawStatus === "INTERVIEW" || rawStatus === "INTERVIEW_SCHEDULED" || rawStatus === "DOCUMENT_PASSED";
             const badge = getStatusBadge(searchResult.status);
             const BadgeIcon = badge.icon;
 
@@ -245,9 +263,9 @@ export default function StatusChecker() {
                   </div>
                 </div>
 
-                {/* 🌟 HERO: FINAL ASSIGNED DEPARTMENT (WHEN PASSED) */}
+                {/* 🌟 HERO 1: FINAL ASSIGNED DEPARTMENT (WHEN PASSED) */}
                 {isAccepted && assignedDept ? (
-                  <div className="p-6 rounded-3xl bg-emerald-50 border-3 border-emerald-600 shadow-solid-sm space-y-3">
+                  <div className="p-6 rounded-3xl bg-emerald-50 border-3 border-emerald-600 shadow-solid-sm space-y-3 animate-fadeIn">
                     <div className="flex items-center gap-2 text-xs font-mono font-bold text-emerald-800 uppercase">
                       <Award className="w-4 h-4 text-emerald-600" />
                       <span>ผลการจัดสรรฝ่ายอย่างเป็นทางการ</span>
@@ -276,6 +294,58 @@ export default function StatusChecker() {
                     <div className="text-[11px] text-emerald-800/80 pt-1 flex flex-wrap gap-x-4 gap-y-1">
                       <span><strong>อันดับที่เลือกไว้ตอนสมัคร:</strong> อันดับ 1: {firstDept?.nameTh || searchResult.firstChoiceDeptId}</span>
                       <span>อันดับ 2: {secondDept?.nameTh || searchResult.secondChoiceDeptId}</span>
+                    </div>
+                  </div>
+                ) : isInterview ? (
+                  /* 🎙️ HERO 2: INTERVIEW DETAILS (WHEN INTERVIEW ELIGIBLE) */
+                  <div className="p-6 rounded-3xl bg-purple-50 border-3 border-purple-600 shadow-solid-sm space-y-3 animate-fadeIn">
+                    <div className="flex items-center gap-2 text-xs font-mono font-bold text-purple-900 uppercase">
+                      <Mic className="w-4 h-4 text-purple-700" />
+                      <span>ข้อมูลและกำหนดการสอบสัมภาษณ์พี่ค่าย Comclick 20</span>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border-2 border-purple-400 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-purple-100 border border-purple-300 text-purple-700 flex items-center justify-center flex-shrink-0 text-lg">
+                          🎙️
+                        </div>
+                        <div>
+                          <div className="font-display font-black text-xl text-purple-950">
+                            คุณมีสิทธิ์เข้ารับการสัมภาษณ์
+                          </div>
+                          <p className="text-xs text-gray-600 mt-0.5">
+                            กรุณาเตรียมตัวและเข้ารับการสัมภาษณ์ตามวัน เวลา และสถานที่ที่กำหนด
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-purple-100 font-sans text-xs">
+                        <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-200">
+                          <span className="font-bold text-purple-950 flex items-center gap-1.5 mb-1">
+                            <Calendar className="w-3.5 h-3.5 text-purple-700" />
+                            <span>วันและเวลาสัมภาษณ์:</span>
+                          </span>
+                          <span className="text-gray-800 font-medium block">
+                            {searchResult.interviewDate || "จะประกาศวันและเวลาให้ทราบทางเพจค่ายและกลุ่มประสานงาน"}
+                          </span>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-200">
+                          <span className="font-bold text-purple-950 flex items-center gap-1.5 mb-1">
+                            <MapPin className="w-3.5 h-3.5 text-purple-700" />
+                            <span>สถานที่สัมภาษณ์ / ช่องทาง:</span>
+                          </span>
+                          <span className="text-gray-800 font-medium block">
+                            {searchResult.interviewLocation || "ห้องประชุมสาขาวิชาคอมพิวเตอร์ศึกษา (หรือ Online)"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {searchResult.statusNotes && (
+                        <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs">
+                          <strong>💡 หมายเหตุเพิ่มเติมจากคณะกรรมการ:</strong> {searchResult.statusNotes}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : (

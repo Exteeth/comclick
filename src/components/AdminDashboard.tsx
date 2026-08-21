@@ -70,6 +70,8 @@ export default function AdminDashboard() {
     assignedDeptId: string;
     status: ApplicationStatus;
     statusNotes: string;
+    interviewDate: string;
+    interviewLocation: string;
   }>({
     id: "",
     fullNameTh: "",
@@ -84,6 +86,8 @@ export default function AdminDashboard() {
     assignedDeptId: "",
     status: "SUBMITTED",
     statusNotes: "",
+    interviewDate: "",
+    interviewLocation: "",
   });
 
   const fetchLiveApplications = async () => {
@@ -150,6 +154,16 @@ export default function AdminDashboard() {
     return s === "REJECTED";
   };
 
+  const isAppInterview = (app: Application) => {
+    const s = (app.status || "").toUpperCase();
+    return (
+      s === "INTERVIEW_ELIGIBLE" ||
+      s === "INTERVIEW" ||
+      s === "INTERVIEW_SCHEDULED" ||
+      s === "DOCUMENT_PASSED"
+    );
+  };
+
   // Filtered list for table view
   const filteredApps = applications.filter((app) => {
     const matchSearch =
@@ -162,7 +176,8 @@ export default function AdminDashboard() {
       statusFilter === "all" ||
       (statusFilter === "ACCEPTED" && isAppAccepted(app)) ||
       (statusFilter === "REJECTED" && isAppRejected(app)) ||
-      (statusFilter === "SUBMITTED" && !isAppAccepted(app) && !isAppRejected(app));
+      (statusFilter === "INTERVIEW" && isAppInterview(app)) ||
+      (statusFilter === "SUBMITTED" && !isAppAccepted(app) && !isAppRejected(app) && !isAppInterview(app));
 
     const matchDept =
       deptFilter === "all" ||
@@ -178,6 +193,7 @@ export default function AdminDashboard() {
     let normalizedStatus: ApplicationStatus = "SUBMITTED";
     if (isAppAccepted(app)) normalizedStatus = "ACCEPTED";
     else if (isAppRejected(app)) normalizedStatus = "REJECTED";
+    else if (isAppInterview(app)) normalizedStatus = "INTERVIEW_ELIGIBLE";
 
     setEditFormData({
       id: app.id,
@@ -193,6 +209,8 @@ export default function AdminDashboard() {
       assignedDeptId: app.assignedDeptId || app.firstChoiceDeptId || "",
       status: normalizedStatus,
       statusNotes: app.statusNotes || "",
+      interviewDate: app.interviewDate || "",
+      interviewLocation: app.interviewLocation || "",
     });
     setIsEditModalOpen(true);
   };
@@ -275,6 +293,8 @@ export default function AdminDashboard() {
 
       const statusTh = isAppAccepted(a)
         ? "ผ่านการคัดเลือก"
+        : isAppInterview(a)
+        ? "มีสิทธิ์เข้าสัมภาษณ์"
         : isAppRejected(a)
         ? "ไม่ผ่านการคัดเลือก"
         : "รอดำเนินการ";
@@ -375,11 +395,12 @@ export default function AdminDashboard() {
     );
   }
 
-  // 3 Stats calculation
+  // Stats calculation
   const totalCount = applications.length;
   const acceptedCount = applications.filter(isAppAccepted).length;
+  const interviewCount = applications.filter(isAppInterview).length;
   const rejectedCount = applications.filter(isAppRejected).length;
-  const pendingCount = totalCount - acceptedCount - rejectedCount;
+  const pendingCount = totalCount - acceptedCount - rejectedCount - interviewCount;
 
   // Total Open Slots across 11 Departments
   const totalOpenSlots = DEPARTMENTS.reduce((acc, d) => acc + d.openSlots, 0);
@@ -397,7 +418,7 @@ export default function AdminDashboard() {
             ระบบบริหารจัดการและคัดเลือกพี่ค่าย Comclick 20
           </h1>
           <p className="text-xs sm:text-sm text-white/70 mt-1 font-light">
-            สรุปยอดผู้สมัคร 13 ฝ่าย • จัดสรรสตาฟตัวจริง • ส่งออกข้อมูลสรุป
+            สรุปยอดผู้สมัคร 13 ฝ่าย • สัมภาษณ์ • จัดสรรสตาฟตัวจริง • ส่งออกข้อมูลสรุป
           </p>
         </div>
 
@@ -432,44 +453,51 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* 4 Stat Bento Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-3xl bg-cc-blue text-white border-3 border-cc-navy shadow-solid">
+      {/* 5 Stat Bento Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div className="p-4 sm:p-5 rounded-3xl bg-cc-blue text-white border-3 border-cc-navy shadow-solid">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono font-bold uppercase">ผู้สมัครทั้งหมด</span>
-            <Users className="w-5 h-5 text-cc-yellow" />
+            <span className="text-[11px] font-mono font-bold uppercase">ผู้สมัครทั้งหมด</span>
+            <Users className="w-4 h-4 text-cc-yellow" />
           </div>
-          <div className="font-display font-black text-4xl mt-3">{totalCount}</div>
-          <div className="text-[11px] opacity-80 mt-1 font-medium">รวม 13 ฝ่ายที่เปิดรับ</div>
+          <div className="font-display font-black text-3xl sm:text-4xl mt-2">{totalCount}</div>
+          <div className="text-[10px] opacity-80 mt-1 font-medium">รวม 13 ฝ่าย</div>
         </div>
 
-        <div className="p-5 rounded-3xl bg-emerald-600 text-white border-3 border-cc-navy shadow-solid">
+        <div className="p-4 sm:p-5 rounded-3xl bg-amber-500 text-cc-navy border-3 border-cc-navy shadow-solid">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono font-bold uppercase">สตาฟที่ผ่านคัดเลือกแล้ว</span>
-            <CheckCircle2 className="w-5 h-5 text-white" />
+            <span className="text-[11px] font-mono font-bold uppercase">รอดำเนินการ</span>
+            <Clock className="w-4 h-4 text-cc-navy" />
           </div>
-          <div className="font-display font-black text-4xl mt-3">{acceptedCount}</div>
-          <div className="text-[11px] opacity-80 mt-1 font-medium">
-            พร้อมปฏิบัติหน้าที่พี่ค่าย
-          </div>
+          <div className="font-display font-black text-3xl sm:text-4xl mt-2">{pendingCount}</div>
+          <div className="text-[10px] opacity-80 mt-1 font-medium">รอตรวจเอกสาร</div>
         </div>
 
-        <div className="p-5 rounded-3xl bg-amber-500 text-cc-navy border-3 border-cc-navy shadow-solid">
+        <div className="p-4 sm:p-5 rounded-3xl bg-purple-600 text-white border-3 border-cc-navy shadow-solid">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono font-bold uppercase">รอดำเนินการ</span>
-            <Clock className="w-5 h-5 text-cc-navy" />
+            <span className="text-[11px] font-mono font-bold uppercase">มีสิทธิ์สัมภาษณ์</span>
+            <Award className="w-4 h-4 text-purple-200" />
           </div>
-          <div className="font-display font-black text-4xl mt-3">{pendingCount}</div>
-          <div className="text-[11px] opacity-80 mt-1 font-medium">รอการตรวจทานและจัดสรร</div>
+          <div className="font-display font-black text-3xl sm:text-4xl mt-2">{interviewCount}</div>
+          <div className="text-[10px] opacity-80 mt-1 font-medium">ผ่านรอบเอกสาร</div>
         </div>
 
-        <div className="p-5 rounded-3xl bg-rose-600 text-white border-3 border-cc-navy shadow-solid">
+        <div className="p-4 sm:p-5 rounded-3xl bg-emerald-600 text-white border-3 border-cc-navy shadow-solid">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono font-bold uppercase">ไม่ผ่านการคัดเลือก</span>
-            <XCircle className="w-5 h-5 text-white" />
+            <span className="text-[11px] font-mono font-bold uppercase">ผ่านการคัดเลือก</span>
+            <CheckCircle2 className="w-4 h-4 text-white" />
           </div>
-          <div className="font-display font-black text-4xl mt-3">{rejectedCount}</div>
-          <div className="text-[11px] opacity-80 mt-1 font-medium">ไม่ผ่านเกณฑ์การคัดเลือก</div>
+          <div className="font-display font-black text-3xl sm:text-4xl mt-2">{acceptedCount}</div>
+          <div className="text-[10px] opacity-80 mt-1 font-medium">สตาฟตัวจริง</div>
+        </div>
+
+        <div className="p-4 sm:p-5 rounded-3xl bg-gray-500 text-white border-3 border-cc-navy shadow-solid col-span-2 sm:col-span-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono font-bold uppercase">ไม่ผ่านการคัดเลือก</span>
+            <XCircle className="w-4 h-4 text-gray-200" />
+          </div>
+          <div className="font-display font-black text-3xl sm:text-4xl mt-2">{rejectedCount}</div>
+          <div className="text-[10px] opacity-80 mt-1 font-medium">ปฏิเสธ / สละสิทธิ์</div>
         </div>
       </div>
 
@@ -864,8 +892,9 @@ export default function AdminDashboard() {
                   >
                     <option value="all">สถานะทั้งหมด</option>
                     <option value="SUBMITTED">รอดำเนินการ</option>
-                    <option value="ACCEPTED">ผ่านการคัดเลือก</option>
-                    <option value="REJECTED">ไม่ผ่านการคัดเลือก</option>
+                    <option value="INTERVIEW">🎙️ มีสิทธิ์สัมภาษณ์</option>
+                    <option value="ACCEPTED">🎉 ผ่านการคัดเลือก</option>
+                    <option value="REJECTED">❌ ไม่ผ่านการคัดเลือก</option>
                   </select>
                 </div>
 
@@ -932,6 +961,7 @@ export default function AdminDashboard() {
 
                       const isAccepted = isAppAccepted(app);
                       const isRejected = isAppRejected(app);
+                      const isInterview = isAppInterview(app);
 
                       // Check if moved to different department
                       const finalDeptObj = assignedDept || (isAccepted ? firstDept : null);
@@ -993,6 +1023,8 @@ export default function AdminDashboard() {
                                   </div>
                                 )}
                               </div>
+                            ) : isInterview ? (
+                              <span className="text-purple-700 font-bold text-[11px]">รอผลสัมภาษณ์</span>
                             ) : (
                               <span className="text-gray-400 text-[11px]">-</span>
                             )}
@@ -1002,12 +1034,20 @@ export default function AdminDashboard() {
                               className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${
                                 isAccepted
                                   ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                                  : isInterview
+                                  ? "bg-purple-100 text-purple-800 border-purple-300 font-black"
                                   : isRejected
                                   ? "bg-rose-100 text-rose-800 border-rose-300"
                                   : "bg-blue-100 text-blue-800 border-blue-300"
                               }`}
                             >
-                              {isAccepted ? "ผ่านการคัดเลือก" : isRejected ? "ไม่ผ่านการคัดเลือก" : "รอดำเนินการ"}
+                              {isAccepted
+                                ? "ผ่านการคัดเลือก"
+                                : isInterview
+                                ? "🎙️ มีสิทธิ์สัมภาษณ์"
+                                : isRejected
+                                ? "ไม่ผ่านการคัดเลือก"
+                                : "รอดำเนินการ"}
                             </span>
                           </td>
                           <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -1175,7 +1215,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Committee Decision & Evaluation (3 Statuses Only) */}
+              {/* Committee Decision & Evaluation (4 Statuses) */}
               <div className="p-4 rounded-2xl bg-cc-yellow/30 border-2 border-cc-navy space-y-3">
                 <span className="font-bold text-cc-navy block text-sm flex items-center gap-1.5">
                   <Award className="w-4 h-4 text-cc-navy" />
@@ -1190,9 +1230,10 @@ export default function AdminDashboard() {
                       onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value as ApplicationStatus })}
                       className="w-full px-3 py-2 rounded-xl border-2 border-cc-navy bg-white font-bold text-cc-navy outline-none cursor-pointer"
                     >
-                      <option value="SUBMITTED">รอดำเนินการ</option>
-                      <option value="ACCEPTED">ผ่านการคัดเลือก</option>
-                      <option value="REJECTED">ไม่ผ่านการคัดเลือก</option>
+                      <option value="SUBMITTED">รอดำเนินการ (พิจารณาเอกสาร)</option>
+                      <option value="INTERVIEW_ELIGIBLE">🎙️ มีสิทธิ์เข้าสัมภาษณ์</option>
+                      <option value="ACCEPTED">🎉 ผ่านการคัดเลือกเป็นพี่ค่าย</option>
+                      <option value="REJECTED">❌ ไม่ผ่านการคัดเลือก</option>
                     </select>
                   </div>
 
@@ -1209,6 +1250,38 @@ export default function AdminDashboard() {
                       ))}
                     </select>
                   </div>
+
+                  {/* Interview Information (Shows when INTERVIEW_ELIGIBLE) */}
+                  {(editFormData.status === "INTERVIEW_ELIGIBLE" || (editFormData.status as string) === "interview_eligible") && (
+                    <div className="sm:col-span-2 p-3.5 rounded-2xl bg-purple-50 border-2 border-purple-300 space-y-2.5 animate-fadeIn">
+                      <span className="font-bold text-purple-900 text-xs flex items-center gap-1.5">
+                        <Award className="w-3.5 h-3.5 text-purple-600" />
+                        <span>ข้อมูลการนัดสัมภาษณ์ (จะแสดงในหน้าตรวจสอบสถานะของผู้สมัคร)</span>
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-purple-950">วันและเวลาสัมภาษณ์:</label>
+                          <input
+                            type="text"
+                            placeholder="เช่น 25 ส.ค. 2569 เวลา 13:00 - 15:00 น."
+                            value={editFormData.interviewDate}
+                            onChange={(e) => setEditFormData({ ...editFormData, interviewDate: e.target.value })}
+                            className="w-full px-3 py-1.5 rounded-xl border border-purple-300 bg-white text-xs outline-none focus:border-purple-600 font-medium"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-purple-950">สถานที่สัมภาษณ์ / ลิงก์:</label>
+                          <input
+                            type="text"
+                            placeholder="เช่น ห้อง ED-201 คณะศึกษาศาสตร์ หรือ Google Meet"
+                            value={editFormData.interviewLocation}
+                            onChange={(e) => setEditFormData({ ...editFormData, interviewLocation: e.target.value })}
+                            className="w-full px-3 py-1.5 rounded-xl border border-purple-300 bg-white text-xs outline-none focus:border-purple-600 font-medium"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="sm:col-span-2 space-y-1">
                     <label className="font-bold text-gray-700">บันทึกหมายเหตุเพิ่มเติม (ถ้ามี):</label>
