@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     // Validate required fields
     if (!body.fullNameTh || !body.studentId || !body.phone || !body.major || !body.firstChoiceDeptId) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields" },
+        { success: false, error: "กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน" },
         { status: 400 }
       );
     }
@@ -75,6 +75,14 @@ export async function POST(request: Request) {
     const year = new Date().getFullYear();
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     const id = `CC20-${year}-${randomNum}`;
+
+    const cleanFirstChoice = body.firstChoiceDeptId?.trim() || null;
+    const cleanSecondChoice = body.secondChoiceDeptId?.trim() || cleanFirstChoice;
+    const cleanFullName = body.fullNameTh.trim();
+    const cleanStudentId = body.studentId.trim();
+    const cleanPhone = body.phone.trim();
+    const cleanMajor = body.major.trim();
+    const cleanDiet = body.diet?.trim() || "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)";
 
     // Save to Neon DB if connected
     if (isNeonConfigured()) {
@@ -86,46 +94,61 @@ export async function POST(request: Request) {
               id, title_th, full_name_th, nickname_th, student_id, faculty, major, year,
               phone, line_id, emergency_contact, shirt_size, diet, first_choice_dept_id,
               second_choice_dept_id, fallback_dept_choice, reason_to_apply, past_experience,
-              skills_and_strengths, problem_solving_scenario, portfolio_url
+              skills_and_strengths, problem_solving_scenario, portfolio_url, status, created_at, updated_at
             ) VALUES (
               ${id},
               ${body.titleTh || "คุณ"},
-              ${body.fullNameTh},
-              ${body.nicknameTh || body.fullNameTh.split(" ")[0] || "พี่ค่าย"},
-              ${body.studentId},
+              ${cleanFullName},
+              ${body.nicknameTh || cleanFullName.split(" ")[0] || "พี่ค่าย"},
+              ${cleanStudentId},
               ${body.faculty || "คณะศึกษาศาสตร์"},
-              ${body.major},
+              ${cleanMajor},
               ${body.year || "ไม่ระบุ"},
-              ${body.phone},
+              ${cleanPhone},
               ${body.lineId || "-"},
               ${JSON.stringify(body.emergencyContact || { name: "-", relation: "-", phone: "-" })},
               ${body.shirtSize || "L"},
-              ${body.diet || "ทั่วไป (อาหารปกติ)"},
-              ${body.firstChoiceDeptId},
-              ${body.secondChoiceDeptId || body.firstChoiceDeptId},
+              ${cleanDiet},
+              ${cleanFirstChoice},
+              ${cleanSecondChoice},
               ${body.fallbackDeptChoice || "ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร"},
               ${body.reasonToApply || "สมัครเข้าร่วมเป็นพี่ค่าย ComClick Camp 20"},
               ${body.pastExperience || ""},
               ${body.skillsAndStrengths || ""},
               ${body.problemSolvingScenario || ""},
-              ${body.portfolioUrl || ""}
+              ${body.portfolioUrl || ""},
+              'submitted',
+              CURRENT_TIMESTAMP,
+              CURRENT_TIMESTAMP
             )
           `;
           return NextResponse.json({ success: true, source: "neon", id });
-        } catch (dbErr) {
-          console.warn("Neon insert failed, fallback to local store", dbErr);
+        } catch (dbErr: any) {
+          console.error("Neon insert error:", dbErr);
+          return NextResponse.json(
+            { success: false, error: dbErr.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล" },
+            { status: 500 }
+          );
         }
       }
     }
 
     const created = addApplication({
       ...body,
+      id,
+      fullNameTh: cleanFullName,
+      studentId: cleanStudentId,
+      phone: cleanPhone,
+      major: cleanMajor,
+      diet: cleanDiet,
+      firstChoiceDeptId: cleanFirstChoice || "protocol",
+      secondChoiceDeptId: cleanSecondChoice || "protocol",
       fallbackDeptChoice: body.fallbackDeptChoice || "ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร",
     });
-    return NextResponse.json({ success: true, source: "memory_store", data: created });
-  } catch (error) {
+    return NextResponse.json({ success: true, source: "memory_store", id, data: created });
+  } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: "Failed to create application" },
+      { success: false, error: error.message || "Failed to create application" },
       { status: 500 }
     );
   }
@@ -140,6 +163,10 @@ export async function PUT(request: Request) {
       return NextResponse.json({ success: false, error: "Missing application id" }, { status: 400 });
     }
 
+    const assignedDeptIdClean = body.assignedDeptId && body.assignedDeptId.trim() !== "" ? body.assignedDeptId.trim() : null;
+    const firstChoiceClean = body.firstChoiceDeptId && body.firstChoiceDeptId.trim() !== "" ? body.firstChoiceDeptId.trim() : null;
+    const secondChoiceClean = body.secondChoiceDeptId && body.secondChoiceDeptId.trim() !== "" ? body.secondChoiceDeptId.trim() : null;
+
     // 1. Update Neon DB if configured
     if (isNeonConfigured()) {
       const sql = getNeonSql();
@@ -147,33 +174,40 @@ export async function PUT(request: Request) {
         try {
           await sql`
             UPDATE applications SET
-              full_name_th = COALESCE(${body.fullNameTh}, full_name_th),
-              student_id = COALESCE(${body.studentId}, student_id),
-              phone = COALESCE(${body.phone}, phone),
-              major = COALESCE(${body.major}, major),
-              diet = COALESCE(${body.diet}, diet),
-              first_choice_dept_id = COALESCE(${body.firstChoiceDeptId}, first_choice_dept_id),
-              second_choice_dept_id = COALESCE(${body.secondChoiceDeptId}, second_choice_dept_id),
+              full_name_th = COALESCE(${body.fullNameTh?.trim()}, full_name_th),
+              student_id = COALESCE(${body.studentId?.trim()}, student_id),
+              phone = COALESCE(${body.phone?.trim()}, phone),
+              major = COALESCE(${body.major?.trim()}, major),
+              diet = COALESCE(${body.diet?.trim()}, diet),
+              first_choice_dept_id = COALESCE(${firstChoiceClean}, first_choice_dept_id),
+              second_choice_dept_id = COALESCE(${secondChoiceClean}, second_choice_dept_id),
               fallback_dept_choice = COALESCE(${body.fallbackDeptChoice}, fallback_dept_choice),
-              assigned_dept_id = COALESCE(${body.assignedDeptId}, assigned_dept_id),
-              status = COALESCE(${body.status}, status),
+              assigned_dept_id = ${assignedDeptIdClean},
+              status = COALESCE(${body.status?.toLowerCase()}, status),
               interview_date = COALESCE(${body.interviewDate}, interview_date),
               interview_location = COALESCE(${body.interviewLocation}, interview_location),
               status_notes = COALESCE(${body.statusNotes}, status_notes),
               updated_at = CURRENT_TIMESTAMP
             WHERE id = ${id}
           `;
-        } catch (dbErr) {
-          console.warn("Neon update failed:", dbErr);
+        } catch (dbErr: any) {
+          console.error("Neon update error:", dbErr);
+          return NextResponse.json(
+            { success: false, error: dbErr.message || "Failed to update Neon DB" },
+            { status: 500 }
+          );
         }
       }
     }
 
     // 2. Update local store
-    const updated = updateApplicationFull(id, body);
+    const updated = updateApplicationFull(id, {
+      ...body,
+      assignedDeptId: assignedDeptIdClean || undefined,
+    });
     return NextResponse.json({ success: true, data: updated });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: "Failed to update application" }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message || "Failed to update application" }, { status: 500 });
   }
 }
 
@@ -192,8 +226,9 @@ export async function DELETE(request: Request) {
       if (sql) {
         try {
           await sql`DELETE FROM applications WHERE id = ${id}`;
-        } catch (dbErr) {
-          console.warn("Neon delete failed:", dbErr);
+        } catch (dbErr: any) {
+          console.error("Neon delete error:", dbErr);
+          return NextResponse.json({ success: false, error: dbErr.message }, { status: 500 });
         }
       }
     }
@@ -201,7 +236,7 @@ export async function DELETE(request: Request) {
     // 2. Delete from local store
     deleteApplication(id);
     return NextResponse.json({ success: true, message: `Application ${id} deleted` });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: "Failed to delete application" }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message || "Failed to delete application" }, { status: 500 });
   }
 }
