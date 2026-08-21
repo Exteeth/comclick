@@ -124,7 +124,7 @@ export default function HeroCountdown({
           <Clock className={`w-3 h-3 ${isBeforeStart ? "text-cc-yellow" : "text-cc-coral"}`} />
           <span>
             {isBeforeStart
-              ? "นับถอยหลังเปิดรับสมัคร (เริ่ม 24 ส.ค. 09:00 น.)"
+              ? "นับถอยหลังเปิดรับสมัครพี่ค่าย"
               : "ระบบเปิดรับสมัครอยู่ • นับถอยหลังปิดรับสมัคร"}
           </span>
         </div>

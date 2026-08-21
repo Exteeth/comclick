@@ -252,8 +252,7 @@ export default function ApplicationForm() {
               <span className="text-cc-coral">{CAMP_INFO.nameEn}</span> กำลังจะเปิดรับสมัคร!
             </h1>
             <p className="text-sm sm:text-base text-gray-700 font-normal leading-relaxed">
-              เปิดรับสมัครพร้อมกันในวันที่ <strong>24 สิงหาคม 2569 เวลา 09:00 น.</strong> <br />
-              ถึงวันที่ <strong>29 สิงหาคม 2569 เวลา 23:59 น.</strong>
+              เปิดรับสมัครพร้อมกันในวันที่ <strong>{CAMP_INFO.registrationPeriod}</strong>
             </p>
           </div>
 
@@ -385,7 +384,7 @@ export default function ApplicationForm() {
           <div className="pt-2 flex justify-center">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cc-cream border border-cc-navy/20 text-xs font-semibold text-cc-navy">
               <Clock className="w-3.5 h-3.5 text-cc-coral" />
-              <span>เปิดระบบรับสมัคร: <strong>24 ส.ค. 69 (09:00 น.)</strong> ถึง <strong>29 ส.ค. 69 (23:59 น.)</strong></span>
+              <span>เปิดระบบรับสมัคร: <strong>{CAMP_INFO.registrationPeriod}</strong></span>
             </span>
           </div>
         </div>

@@ -150,9 +150,9 @@ export default function Hero() {
                     <Clock className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[10px] text-white/70 font-semibold uppercase tracking-wider">เปิดรับสมัคร</div>
-                    <div className="text-xs sm:text-sm font-bold text-cc-yellow truncate">
-                      24 ส.ค. (09:00) - 29 ส.ค.
+                    <div className="text-[10px] text-white/70 font-semibold uppercase tracking-wider">เปิด - ปิดรับสมัคร</div>
+                    <div className="text-xs sm:text-sm font-bold text-cc-yellow">
+                      {CAMP_INFO.registrationPeriod}
                     </div>
                   </div>
                 </div>

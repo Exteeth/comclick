@@ -61,7 +61,7 @@ export default function HomePage() {
               </h2>
 
               <p className="text-base sm:text-lg text-white/95 max-w-2xl mx-auto font-normal leading-relaxed">
-                เปิดรับสมัคร <strong className="text-cc-yellow font-black underline">เริ่ม 24 ส.ค. (09:00 น.) - 29 ส.ค. 2569 (23:59 น.)</strong> ไม่จำกัดคณะและชั้นปี สมัครได้ทั้งอันดับ 1 และอันดับ 2
+                เปิดรับสมัคร <strong className="text-cc-yellow font-black underline">{CAMP_INFO.registrationPeriod}</strong> ไม่จำกัดคณะและชั้นปี สมัครได้ทั้งอันดับ 1 และอันดับ 2
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
