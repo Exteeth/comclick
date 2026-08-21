@@ -22,6 +22,9 @@ import {
   Utensils,
   Check,
   HeartHandshake,
+  Copy,
+  CheckCheck,
+  ExternalLink,
 } from "lucide-react";
 
 // Preset food allergy & dietary restriction options
@@ -55,8 +58,9 @@ export default function ApplicationForm() {
   const [createdApplication, setCreatedApplication] = useState<Application | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [duplicateInfo, setDuplicateInfo] = useState<{ studentId: string; appId?: string } | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
 
-  // Title prefix state
   // Title prefix state
   const [titlePrefix, setTitlePrefix] = useState<string>("นาย");
   const [nameInput, setNameInput] = useState<string>("");
@@ -109,6 +113,24 @@ export default function ApplicationForm() {
     return () => clearInterval(interval);
   }, []);
 
+  // Prevent accidental page reload/leave while typing form
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const hasUnsavedData =
+        nameInput.trim().length > 0 ||
+        formData.studentId.trim().length > 0 ||
+        formData.phone.trim().length > 0;
+
+      if (hasUnsavedData && !createdApplication) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [nameInput, formData.studentId, formData.phone, createdApplication]);
+
   useEffect(() => {
     if (preselectedDept && DEPARTMENTS.some((d) => d.id === preselectedDept)) {
       setFormData((prev) => ({ ...prev, firstChoiceDeptId: preselectedDept }));
@@ -118,6 +140,27 @@ export default function ApplicationForm() {
   const updateField = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setErrorMessage(null);
+    setDuplicateInfo(null);
+  };
+
+  const handleFirstChoiceChange = (newFirstId: string) => {
+    let newSecondId = formData.secondChoiceDeptId;
+    if (newSecondId === newFirstId) {
+      const alt = DEPARTMENTS.find((d) => d.id !== newFirstId);
+      newSecondId = alt ? alt.id : "";
+    }
+    setFormData((prev) => ({
+      ...prev,
+      firstChoiceDeptId: newFirstId,
+      secondChoiceDeptId: newSecondId,
+    }));
+    setErrorMessage(null);
+  };
+
+  const handleCopyId = (id: string) => {
+    navigator.clipboard.writeText(id);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2500);
   };
 
   const getCleanFullName = () => {
@@ -208,6 +251,12 @@ export default function ApplicationForm() {
       }
     }
 
+    // Strict validation for dietary restrictions
+    if (dietChoice === "แพ้อื่นๆ / มีข้อจำกัดเฉพาะ" && !otherAllergyNote.trim()) {
+      setErrorMessage("กรุณาระบุรายละเอียดในช่องหมายเหตุอาหาร (เนื่องจากเลือก 'แพ้อื่นๆ / มีข้อจำกัดเฉพาะ')");
+      return false;
+    }
+
     if (formData.firstChoiceDeptId === formData.secondChoiceDeptId) {
       setErrorMessage("กรุณาเลือกฝ่ายอันดับที่ 1 และอันดับที่ 2 ไม่ซ้ำกัน");
       return false;
@@ -222,6 +271,8 @@ export default function ApplicationForm() {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    setDuplicateInfo(null);
+
     try {
       const finalFullName = getCleanFullName();
       const finalDiet = getFinalDietString();
@@ -249,6 +300,9 @@ export default function ApplicationForm() {
 
       const result = await res.json();
       if (!res.ok || !result.success) {
+        if (result.duplicate) {
+          setDuplicateInfo({ studentId: formData.studentId.trim(), appId: result.existingId });
+        }
         throw new Error(result.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง");
       }
 
@@ -302,8 +356,34 @@ export default function ApplicationForm() {
           </div>
         </div>
 
+        {/* Duplicate Application Detected Banner */}
+        {duplicateInfo && (
+          <div className="p-5 rounded-2xl bg-amber-50 border-2 border-amber-400 text-amber-900 space-y-3 animate-fadeIn">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-bold text-sm text-amber-950">พบข้อมูลการสมัครในระบบแล้ว</h4>
+                <p className="text-xs text-amber-800 mt-1">
+                  รหัสนักศึกษา <strong>{duplicateInfo.studentId}</strong> ได้ทำการส่งใบสมัครเข้าร่วมโครงการแล้ว
+                  {duplicateInfo.appId && ` (รหัสใบสมัคร: ${duplicateInfo.appId})`}
+                </p>
+              </div>
+            </div>
+            <div className="pt-1">
+              <a
+                href={`/status?q=${encodeURIComponent(duplicateInfo.studentId)}`}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cc-navy hover:bg-cc-blue text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+              >
+                <Search className="w-4 h-4 text-cc-yellow" />
+                <span>ตรวจสอบสถานะของรหัสนักศึกษานี้</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+              </a>
+            </div>
+          </div>
+        )}
+
         {/* Error Alert */}
-        {errorMessage && (
+        {errorMessage && !duplicateInfo && (
           <div className="p-4 rounded-2xl bg-red-50 border-2 border-red-500 text-red-700 flex items-center gap-3 text-xs sm:text-sm font-bold animate-shake">
             <AlertCircle className="w-5 h-5 flex-shrink-0" />
             <span>{errorMessage}</span>
@@ -610,7 +690,7 @@ export default function ApplicationForm() {
                 </label>
                 <select
                   value={formData.firstChoiceDeptId}
-                  onChange={(e) => updateField("firstChoiceDeptId", e.target.value)}
+                  onChange={(e) => handleFirstChoiceChange(e.target.value)}
                   className="w-full px-3 py-2.5 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer"
                 >
                   {DEPARTMENTS.map((dept) => (
@@ -634,11 +714,19 @@ export default function ApplicationForm() {
                   onChange={(e) => updateField("secondChoiceDeptId", e.target.value)}
                   className="w-full px-3 py-2.5 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer"
                 >
-                  {DEPARTMENTS.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.nameTh}
-                    </option>
-                  ))}
+                  {DEPARTMENTS.map((dept) => {
+                    const isSelectedInFirst = dept.id === formData.firstChoiceDeptId;
+                    return (
+                      <option
+                        key={dept.id}
+                        value={dept.id}
+                        disabled={isSelectedInFirst}
+                        className={isSelectedInFirst ? "text-gray-400 bg-gray-100" : ""}
+                      >
+                        {dept.nameTh} {isSelectedInFirst ? "(เลือกในอันดับที่ 1 แล้ว)" : ""}
+                      </option>
+                    );
+                  })}
                 </select>
                 <p className="text-[11px] text-gray-500">
                   {DEPARTMENTS.find((d) => d.id === formData.secondChoiceDeptId)?.shortDesc}
@@ -728,9 +816,26 @@ export default function ApplicationForm() {
 
             {/* Receipt Box */}
             <div className="p-4 rounded-2xl bg-cc-cream border-2 border-cc-navy text-left space-y-2 font-mono text-xs">
-              <div className="flex justify-between border-b border-cc-navy/10 pb-2 font-bold">
+              <div className="flex justify-between items-center border-b border-cc-navy/10 pb-2 font-bold">
                 <span className="text-gray-500">รหัสใบสมัคร:</span>
-                <span className="text-cc-navy">{createdApplication.id}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-cc-navy text-sm font-black">{createdApplication.id}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyId(createdApplication.id)}
+                    className="p-1 rounded-md bg-white border border-cc-navy/30 hover:bg-cc-yellow text-cc-navy transition-all cursor-pointer"
+                    title="คัดลอกรหัสใบสมัคร"
+                  >
+                    {isCopied ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-bold">
+                        <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>คัดลอกแล้ว!</span>
+                      </span>
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">คณะ / สาขาวิชา:</span>

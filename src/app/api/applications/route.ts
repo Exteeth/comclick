@@ -103,6 +103,34 @@ export async function POST(request: Request) {
     }
     const cleanPhone = rawPhoneDigits;
 
+    // Check for existing duplicate student ID in Neon DB
+    if (isNeonConfigured()) {
+      const sql = getNeonSql();
+      if (sql) {
+        try {
+          const existing = await sql`
+            SELECT id, full_name_th 
+            FROM applications 
+            WHERE REPLACE(student_id, '-', '') = ${rawStudentDigits}
+            LIMIT 1
+          `;
+          if (existing && existing.length > 0) {
+            return NextResponse.json(
+              {
+                success: false,
+                duplicate: true,
+                existingId: existing[0].id,
+                error: `รหัสนักศึกษานี้ (${cleanStudentId}) ได้ทำการส่งใบสมัครเข้าระบบเรียบร้อยแล้ว (รหัสใบสมัคร: ${existing[0].id}) สามารถตรวจสอบสถานะได้ที่เมนูตรวจสอบสถานะ`,
+              },
+              { status: 409 }
+            );
+          }
+        } catch (dbCheckErr) {
+          console.warn("Neon duplicate check error:", dbCheckErr);
+        }
+      }
+    }
+
     // Save to Neon DB if connected
     if (isNeonConfigured()) {
       const sql = getNeonSql();
