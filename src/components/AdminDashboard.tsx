@@ -105,8 +105,18 @@ export default function AdminDashboard() {
       setIsAuthenticated(true);
     }
     fetchLiveApplications();
+
     window.addEventListener("comclick_storage_updated", fetchLiveApplications);
-    return () => window.removeEventListener("comclick_storage_updated", fetchLiveApplications);
+
+    // Auto-sync polling every 5 seconds for live realtime dashboard updates
+    const timer = setInterval(() => {
+      fetchLiveApplications();
+    }, 5000);
+
+    return () => {
+      window.removeEventListener("comclick_storage_updated", fetchLiveApplications);
+      clearInterval(timer);
+    };
   }, []);
 
   const handleLogin = (e: React.FormEvent) => {

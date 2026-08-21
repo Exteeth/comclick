@@ -188,18 +188,24 @@ export default function ApplicationForm() {
       };
 
       // 1. Sync with Server API & Neon PostgreSQL Database
-      try {
-        await fetch("/api/applications", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-      } catch (apiErr) {
-        console.warn("API sync error, continuing with local store:", apiErr);
+      const res = await fetch("/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง");
       }
 
-      // 2. Save locally for instantaneous offline receipt
-      const created = addApplication(payload as any);
+      const serverAppId = result.id || (result.data && result.data.id) || undefined;
+
+      // 2. Save locally for instantaneous receipt
+      const created = addApplication({
+        ...payload,
+        ...(serverAppId ? { id: serverAppId } : {}),
+      } as any);
       setCreatedApplication(created);
 
       // Trigger Celebration Confetti
@@ -212,6 +218,7 @@ export default function ApplicationForm() {
         });
       } catch (_) {}
     } catch (err: any) {
+      console.error("Submission error:", err);
       setErrorMessage(err.message || "เกิดข้อผิดพลาดในการส่งใบสมัคร กรุณาลองใหม่อีกครั้ง");
     } finally {
       setIsSubmitting(false);
