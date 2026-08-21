@@ -302,8 +302,13 @@ export default function ApplicationForm() {
       if (!res.ok || !result.success) {
         if (result.duplicate) {
           setDuplicateInfo({ studentId: formData.studentId.trim(), appId: result.existingId });
+          setErrorMessage(null);
+          setIsSubmitting(false);
+          return;
         }
-        throw new Error(result.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง");
+        setErrorMessage(result.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง");
+        setIsSubmitting(false);
+        return;
       }
 
       const serverAppId = result.id || (result.data && result.data.id) || undefined;
@@ -325,7 +330,7 @@ export default function ApplicationForm() {
         });
       } catch (_) {}
     } catch (err: any) {
-      console.error("Submission error:", err);
+      console.warn("Submission error:", err);
       setErrorMessage(err.message || "เกิดข้อผิดพลาดในการส่งใบสมัคร กรุณาลองใหม่อีกครั้ง");
     } finally {
       setIsSubmitting(false);
@@ -897,6 +902,63 @@ export default function ApplicationForm() {
                 className="py-3 px-5 rounded-xl bg-gray-100 hover:bg-gray-200 text-cc-navy font-bold text-xs sm:text-sm border-2 border-cc-navy/20 transition-all cursor-pointer"
               >
                 สมัครเพิ่มอีกคน
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Duplicate Application Popup Modal (เด้งขึ้นมากลางหน้าจอทันทีเมื่อพบการสมัครซ้ำ) */}
+      {duplicateInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border-3 border-cc-navy shadow-solid-lg text-center space-y-5 animate-scaleUp">
+            {/* Warning Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-amber-100 border-2 border-cc-navy text-amber-600 flex items-center justify-center mx-auto shadow-solid-sm">
+              <AlertCircle className="w-8 h-8 text-amber-600" />
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-[11px] font-mono font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 uppercase tracking-wider">
+                DUPLICATE APPLICATION DETECTED
+              </span>
+              <h2 className="font-display font-black text-xl sm:text-2xl text-cc-navy">
+                พบข้อมูลการสมัครในระบบแล้ว
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-600">
+                รหัสนักศึกษา <strong className="text-cc-navy font-mono text-sm">{duplicateInfo.studentId}</strong> ได้ทำการส่งใบสมัครเข้าร่วมโครงการ Comclick 20 เรียบร้อยแล้ว
+              </p>
+            </div>
+
+            {/* Application Detail Box */}
+            {duplicateInfo.appId && (
+              <div className="p-3.5 rounded-2xl bg-cc-cream border-2 border-cc-navy/30 text-left font-mono text-xs space-y-1">
+                <div className="flex justify-between items-center font-bold">
+                  <span className="text-gray-500">รหัสใบสมัครเดิม:</span>
+                  <span className="text-cc-navy font-mono text-sm font-black">{duplicateInfo.appId}</span>
+                </div>
+                <p className="text-[11px] text-gray-500 font-sans">
+                  💡 หากต้องการตรวจสอบผลการคัดเลือกหรือเปลี่ยนฝ่าย สามารถกดปุ่มด้านล่างได้เลย
+                </p>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="space-y-2 pt-2">
+              <a
+                href={`/status?q=${encodeURIComponent(duplicateInfo.studentId)}`}
+                className="w-full py-3.5 rounded-xl bg-cc-navy hover:bg-cc-blue text-white font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Search className="w-4 h-4 text-cc-yellow" />
+                <span>ไปที่หน้าตรวจสอบสถานะทันที</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+              </a>
+
+              <button
+                type="button"
+                onClick={() => setDuplicateInfo(null)}
+                className="w-full py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs border border-gray-300 transition-all cursor-pointer"
+              >
+                ปิดหน้าต่างนี้เพื่อแก้ไขข้อมูล
               </button>
             </div>
           </div>
