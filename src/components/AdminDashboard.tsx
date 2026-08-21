@@ -1066,20 +1066,31 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="font-bold text-gray-700">รหัสนักศึกษา:</label>
+                    <label className="font-bold text-gray-700">รหัสนักศึกษา (10 หลัก):</label>
                     <input
                       type="text"
+                      maxLength={11}
+                      placeholder="663050123-4"
                       value={editFormData.studentId}
-                      onChange={(e) => setEditFormData({ ...editFormData, studentId: e.target.value })}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                        const formatted = digits.length > 9 ? `${digits.slice(0, 9)}-${digits.slice(9, 10)}` : digits;
+                        setEditFormData({ ...editFormData, studentId: formatted });
+                      }}
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-mono font-bold outline-none focus:border-cc-blue"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="font-bold text-gray-700">เบอร์โทรศัพท์:</label>
+                    <label className="font-bold text-gray-700">เบอร์โทรศัพท์ (10 หลัก):</label>
                     <input
                       type="text"
+                      maxLength={10}
+                      placeholder="0812345678"
                       value={editFormData.phone}
-                      onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                        setEditFormData({ ...editFormData, phone: digits });
+                      }}
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-mono outline-none focus:border-cc-blue"
                     />
                   </div>

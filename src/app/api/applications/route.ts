@@ -79,10 +79,28 @@ export async function POST(request: Request) {
     const cleanFirstChoice = body.firstChoiceDeptId?.trim() || null;
     const cleanSecondChoice = body.secondChoiceDeptId?.trim() || cleanFirstChoice;
     const cleanFullName = body.fullNameTh.trim();
-    const cleanStudentId = body.studentId.trim();
-    const cleanPhone = body.phone.trim();
     const cleanMajor = body.major.trim();
     const cleanDiet = body.diet?.trim() || "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)";
+
+    // Strict Student ID Validation (10 digits -> XXXXXXXXX-X)
+    const rawStudentDigits = String(body.studentId).replace(/\D/g, "");
+    if (rawStudentDigits.length !== 10) {
+      return NextResponse.json(
+        { success: false, error: "รหัสนักศึกษาต้องเป็นตัวเลข 10 หลัก (รูปแบบ 663050123-4)" },
+        { status: 400 }
+      );
+    }
+    const cleanStudentId = `${rawStudentDigits.slice(0, 9)}-${rawStudentDigits.slice(9, 10)}`;
+
+    // Strict Phone Number Validation (10 digits starting with 0)
+    const rawPhoneDigits = String(body.phone).replace(/\D/g, "");
+    if (rawPhoneDigits.length !== 10 || !rawPhoneDigits.startsWith("0")) {
+      return NextResponse.json(
+        { success: false, error: "เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลักที่ถูกต้อง (เริ่มต้นด้วย 0 เช่น 0812345678)" },
+        { status: 400 }
+      );
+    }
+    const cleanPhone = rawPhoneDigits;
 
     // Save to Neon DB if connected
     if (isNeonConfigured()) {

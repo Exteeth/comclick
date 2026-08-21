@@ -140,28 +140,54 @@ export default function ApplicationForm() {
     return dietChoice;
   };
 
+  // Helper to format student ID as 9 digits + '-' + 1 digit (Total 10 digits)
+  const formatStudentIdInput = (value: string): string => {
+    const digits = value.replace(/\D/g, "").slice(0, 10);
+    if (digits.length > 9) {
+      return `${digits.slice(0, 9)}-${digits.slice(9, 10)}`;
+    }
+    return digits;
+  };
+
+  // Helper to format phone number as digits only (Max 10 digits)
+  const formatPhoneInput = (value: string): string => {
+    return value.replace(/\D/g, "").slice(0, 10);
+  };
+
   const validateForm = (): boolean => {
     const cleanName = nameInput.trim().replace(/^(นาย|นางสาว|นาง|น\.ส\.)\s*/, "");
     if (!cleanName) {
       setErrorMessage("กรุณากรอก 1. ชื่อ - นามสกุล");
       return false;
     }
-    if (!formData.studentId.trim()) {
-      setErrorMessage("กรุณากรอก 2. รหัสนักศึกษา");
+
+    if (cleanName.length < 3 || !cleanName.includes(" ") || cleanName.split(" ").filter(Boolean).length < 2) {
+      setErrorMessage("กรุณากรอกทั้งชื่อและนามสกุลให้ครบถ้วน (คั่นด้วยการเว้นวรรค เช่น สมชาย ใจดี)");
       return false;
     }
-    if (!formData.phone.trim() || formData.phone.length < 9) {
-      setErrorMessage("กรุณากรอก 3. เบอร์โทรศัพท์ที่ติดต่อได้ (เช่น 0891234567)");
+
+    const studentDigits = formData.studentId.replace(/\D/g, "");
+    if (studentDigits.length !== 10) {
+      setErrorMessage("รหัสนักศึกษาต้องเป็นตัวเลข 10 หลัก (รูปแบบ 663050123-4)");
       return false;
     }
+
+    const phoneDigits = formData.phone.replace(/\D/g, "");
+    if (phoneDigits.length !== 10 || !phoneDigits.startsWith("0")) {
+      setErrorMessage("เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลักที่ถูกต้อง (เริ่มต้นด้วย 0 เช่น 0812345678)");
+      return false;
+    }
+
     if (!formData.major.trim()) {
       setErrorMessage("กรุณากรอก 4. สาขาวิชา");
       return false;
     }
+
     if (formData.firstChoiceDeptId === formData.secondChoiceDeptId) {
       setErrorMessage("กรุณาเลือกฝ่ายอันดับที่ 1 และอันดับที่ 2 ไม่ซ้ำกัน");
       return false;
     }
+
     setErrorMessage(null);
     return true;
   };
@@ -316,37 +342,41 @@ export default function ApplicationForm() {
                 )}
               </div>
 
-              {/* 2. รหัสนักศึกษา */}
+              {/* 2. รหัสนักศึกษา (10 หลัก มีขีดก่อนตัวสุดท้าย) */}
               <div className="space-y-1.5">
-                <label className="block text-xs sm:text-sm font-bold text-cc-navy">
-                  2. รหัสนักศึกษา <span className="text-red-500">*</span>
+                <label className="block text-xs sm:text-sm font-bold text-cc-navy flex items-center justify-between">
+                  <span>2. รหัสนักศึกษา (10 หลัก) <span className="text-red-500">*</span></span>
+                  <span className="text-[10px] font-mono text-gray-500 font-normal">รูปแบบ: XXXXXXXXX-X</span>
                 </label>
                 <div className="relative">
                   <GraduationCap className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     required
+                    maxLength={11}
                     placeholder="เช่น 663050123-4"
                     value={formData.studentId}
-                    onChange={(e) => updateField("studentId", e.target.value)}
+                    onChange={(e) => updateField("studentId", formatStudentIdInput(e.target.value))}
                     className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-mono text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm"
                   />
                 </div>
               </div>
 
-              {/* 3. เบอร์โทร (No dash placeholder) */}
+              {/* 3. เบอร์โทร (เฉพาะตัวเลข 10 หลัก) */}
               <div className="space-y-1.5">
-                <label className="block text-xs sm:text-sm font-bold text-cc-navy">
-                  3. เบอร์โทรศัพท์ <span className="text-red-500">*</span>
+                <label className="block text-xs sm:text-sm font-bold text-cc-navy flex items-center justify-between">
+                  <span>3. เบอร์โทรศัพท์ (10 หลัก) <span className="text-red-500">*</span></span>
+                  <span className="text-[10px] font-mono text-gray-500 font-normal">เฉพาะตัวเลข 0-9</span>
                 </label>
                 <div className="relative">
                   <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="tel"
                     required
+                    maxLength={10}
                     placeholder="เช่น 0891234567"
                     value={formData.phone}
-                    onChange={(e) => updateField("phone", e.target.value)}
+                    onChange={(e) => updateField("phone", formatPhoneInput(e.target.value))}
                     className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-mono text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm"
                   />
                 </div>
