@@ -1251,38 +1251,6 @@ export default function AdminDashboard() {
                     </select>
                   </div>
 
-                  {/* Interview Information (Shows when INTERVIEW_ELIGIBLE) */}
-                  {(editFormData.status === "INTERVIEW_ELIGIBLE" || (editFormData.status as string) === "interview_eligible") && (
-                    <div className="sm:col-span-2 p-3.5 rounded-2xl bg-purple-50 border-2 border-purple-300 space-y-2.5 animate-fadeIn">
-                      <span className="font-bold text-purple-900 text-xs flex items-center gap-1.5">
-                        <Award className="w-3.5 h-3.5 text-purple-600" />
-                        <span>ข้อมูลการนัดสัมภาษณ์ (จะแสดงในหน้าตรวจสอบสถานะของผู้สมัคร)</span>
-                      </span>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        <div className="space-y-1">
-                          <label className="text-[11px] font-bold text-purple-950">วันและเวลาสัมภาษณ์:</label>
-                          <input
-                            type="text"
-                            placeholder="เช่น 25 ส.ค. 2569 เวลา 13:00 - 15:00 น."
-                            value={editFormData.interviewDate}
-                            onChange={(e) => setEditFormData({ ...editFormData, interviewDate: e.target.value })}
-                            className="w-full px-3 py-1.5 rounded-xl border border-purple-300 bg-white text-xs outline-none focus:border-purple-600 font-medium"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[11px] font-bold text-purple-950">สถานที่สัมภาษณ์ / ลิงก์:</label>
-                          <input
-                            type="text"
-                            placeholder="เช่น ห้อง ED-201 คณะศึกษาศาสตร์ หรือ Google Meet"
-                            value={editFormData.interviewLocation}
-                            onChange={(e) => setEditFormData({ ...editFormData, interviewLocation: e.target.value })}
-                            className="w-full px-3 py-1.5 rounded-xl border border-purple-300 bg-white text-xs outline-none focus:border-purple-600 font-medium"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   <div className="sm:col-span-2 space-y-1">
                     <label className="font-bold text-gray-700">บันทึกหมายเหตุเพิ่มเติม (ถ้ามี):</label>
                     <textarea

@@ -337,6 +337,130 @@ export default function ApplicationForm() {
     }
   };
 
+  // If Registration has not opened yet (Upcoming Mode with Countdown)
+  if (mounted && regStatus === "upcoming" && !isPreviewMode) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-12 sm:py-16 animate-fadeIn">
+        <div className="bg-white rounded-3xl border-3 border-cc-navy shadow-solid-lg p-6 sm:p-12 text-center space-y-8">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cc-yellow text-cc-navy border-2 border-cc-navy text-xs font-mono font-bold uppercase shadow-solid-sm">
+            <Clock className="w-4 h-4 text-cc-coral" />
+            <span>COUNTDOWN TO REGISTRATION OPENING</span>
+          </div>
+
+          {/* Title & Description */}
+          <div className="space-y-3">
+            <h1 className="font-display font-black text-2xl sm:text-4xl text-cc-navy tracking-tight">
+              ระบบรับสมัครพี่ค่าย <span className="text-cc-blue">{CAMP_INFO.nameEn}</span>
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 max-w-xl mx-auto font-medium">
+              ระบบจะเปิดให้กรอกแบบฟอร์มรับสมัครอย่างเป็นทางการในวันที่ <strong className="text-cc-navy underline decoration-cc-yellow decoration-4 underline-offset-2">{CAMP_INFO.registrationPeriod}</strong>
+            </p>
+          </div>
+
+          {/* Bento Countdown Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-xl mx-auto">
+            <div className="p-4 sm:p-5 rounded-2xl bg-cc-blue text-white border-3 border-cc-navy shadow-solid text-center">
+              <div className="font-display font-black text-3xl sm:text-5xl text-cc-yellow">
+                {String(countdownTime.days).padStart(2, "0")}
+              </div>
+              <div className="text-[11px] font-mono font-bold uppercase tracking-wider mt-1 opacity-90">
+                วัน (DAYS)
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-5 rounded-2xl bg-cc-coral text-white border-3 border-cc-navy shadow-solid text-center">
+              <div className="font-display font-black text-3xl sm:text-5xl text-white">
+                {String(countdownTime.hours).padStart(2, "0")}
+              </div>
+              <div className="text-[11px] font-mono font-bold uppercase tracking-wider mt-1 opacity-90">
+                ชั่วโมง (HOURS)
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-5 rounded-2xl bg-cc-yellow text-cc-navy border-3 border-cc-navy shadow-solid text-center">
+              <div className="font-display font-black text-3xl sm:text-5xl text-cc-navy">
+                {String(countdownTime.minutes).padStart(2, "0")}
+              </div>
+              <div className="text-[11px] font-mono font-bold uppercase tracking-wider mt-1 text-cc-navy/80">
+                นาที (MINS)
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-5 rounded-2xl bg-emerald-600 text-white border-3 border-cc-navy shadow-solid text-center">
+              <div className="font-display font-black text-3xl sm:text-5xl text-white">
+                {String(countdownTime.seconds).padStart(2, "0")}
+              </div>
+              <div className="text-[11px] font-mono font-bold uppercase tracking-wider mt-1 opacity-90">
+                วินาที (SECS)
+              </div>
+            </div>
+          </div>
+
+          {/* Information & Action Links */}
+          <div className="pt-4 border-t-2 border-cc-navy/10 space-y-4">
+            <p className="text-xs text-gray-500 font-mono">
+              💡 ระหว่างรอเปิดระบบ สามารถอ่านรายละเอียดบทบาทหน้าที่ของทั้ง 13 ฝ่าย เพื่อเตรียมตัวเลือกฝ่ายที่สนใจได้เลย
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <a
+                href="/departments"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-cc-navy hover:bg-cc-blue text-white font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Layers className="w-4 h-4 text-cc-yellow" />
+                <span>ดูรายละเอียด 13 ฝ่ายที่เปิดรับ</span>
+              </a>
+
+              <a
+                href="/status"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-cc-cream hover:bg-white text-cc-navy font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Search className="w-4 h-4 text-cc-coral" />
+                <span>หน้าตรวจสอบสถานะ</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If Registration has already closed
+  if (mounted && regStatus === "closed" && !isPreviewMode) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-12 sm:py-16 animate-fadeIn">
+        <div className="bg-white rounded-3xl border-3 border-cc-navy shadow-solid-lg p-6 sm:p-12 text-center space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-rose-100 border-2 border-cc-navy text-rose-600 flex items-center justify-center mx-auto shadow-solid-sm">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-xs font-mono font-bold text-rose-600 bg-rose-50 px-3 py-1 rounded-full border border-rose-200 uppercase tracking-wider">
+              REGISTRATION CLOSED
+            </span>
+            <h1 className="font-display font-black text-2xl sm:text-4xl text-cc-navy">
+              ระบบปิดรับสมัครพี่ค่าย Comclick 20 แล้ว
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto">
+              สิ้นสุดระยะเวลาเปิดรับสมัครเมื่อวันที่ <strong>{CAMP_INFO.registrationDeadline}</strong> ท่านสามารถตรวจสอบผลการคัดเลือกหรือสถานะใบสมัครได้ที่เมนูด้านล่าง
+            </p>
+          </div>
+
+          <div className="pt-4 border-t border-gray-200">
+            <a
+              href="/status"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-cc-navy hover:bg-cc-blue text-white font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm transition-all cursor-pointer"
+            >
+              <Search className="w-4 h-4 text-cc-yellow" />
+              <span>ไปที่หน้าตรวจสอบสถานะ</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
       {/* Form Card */}
