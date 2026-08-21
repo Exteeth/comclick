@@ -30,6 +30,7 @@ export async function GET(request: Request) {
               phone,
               major,
               faculty,
+              diet,
               first_choice_dept_id as "firstChoiceDeptId",
               second_choice_dept_id as "secondChoiceDeptId",
               fallback_dept_choice as "fallbackDeptChoice",

@@ -62,6 +62,7 @@ export default function AdminDashboard() {
     studentId: string;
     phone: string;
     major: string;
+    diet: string;
     firstChoiceDeptId: string;
     secondChoiceDeptId: string;
     fallbackDeptChoice: string;
@@ -74,8 +75,9 @@ export default function AdminDashboard() {
     studentId: "",
     phone: "",
     major: "",
-    firstChoiceDeptId: "academic",
-    secondChoiceDeptId: "recreation",
+    diet: "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
+    firstChoiceDeptId: DEPARTMENTS[0]?.id ?? "protocol",
+    secondChoiceDeptId: DEPARTMENTS[1]?.id ?? "fundraising",
     fallbackDeptChoice: "ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร",
     assignedDeptId: "",
     status: "SUBMITTED",
@@ -171,8 +173,9 @@ export default function AdminDashboard() {
       studentId: app.studentId || "",
       phone: app.phone || "",
       major: app.major || "",
-      firstChoiceDeptId: app.firstChoiceDeptId || "academic",
-      secondChoiceDeptId: app.secondChoiceDeptId || "recreation",
+      diet: app.diet || "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
+      firstChoiceDeptId: app.firstChoiceDeptId || DEPARTMENTS[0]?.id || "protocol",
+      secondChoiceDeptId: app.secondChoiceDeptId || DEPARTMENTS[1]?.id || "fundraising",
       fallbackDeptChoice: app.fallbackDeptChoice || "ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร",
       assignedDeptId: app.assignedDeptId || app.firstChoiceDeptId || "",
       status: normalizedStatus,
@@ -237,6 +240,7 @@ export default function AdminDashboard() {
       "รหัสนักศึกษา",
       "สาขาวิชา",
       "เบอร์โทรศัพท์",
+      "ข้อมูลอาหาร/แพ้อาหาร",
       "ฝ่ายอันดับที่ 1",
       "ฝ่ายอันดับที่ 2",
       "ถ้าไม่ติด 1 และ 2 อยากลงฝ่ายไหน",
@@ -267,6 +271,7 @@ export default function AdminDashboard() {
         `\t${a.studentId}`,
         a.major,
         `\t${a.phone}`,
+        a.diet || "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
         firstTh,
         secondTh,
         fallbackTh,
@@ -377,7 +382,7 @@ export default function AdminDashboard() {
             ระบบบริหารจัดการและคัดเลือกพี่ค่าย Comclick 20
           </h1>
           <p className="text-xs sm:text-sm text-white/70 mt-1 font-light">
-            สรุปยอดผู้สมัคร 11 ฝ่าย • จัดสรรสตาฟตัวจริง • ส่งออกข้อมูลสรุป
+            สรุปยอดผู้สมัคร 13 ฝ่าย • จัดสรรสตาฟตัวจริง • ส่งออกข้อมูลสรุป
           </p>
         </div>
 
@@ -420,7 +425,7 @@ export default function AdminDashboard() {
             <Users className="w-5 h-5 text-cc-yellow" />
           </div>
           <div className="font-display font-black text-4xl mt-3">{totalCount}</div>
-          <div className="text-[11px] opacity-80 mt-1 font-medium">รวม 11 ฝ่ายที่เปิดรับ</div>
+          <div className="text-[11px] opacity-80 mt-1 font-medium">รวม 13 ฝ่ายที่เปิดรับ</div>
         </div>
 
         <div className="p-5 rounded-3xl bg-emerald-600 text-white border-3 border-cc-navy shadow-solid">
@@ -465,7 +470,7 @@ export default function AdminDashboard() {
             }`}
           >
             <LayoutGrid className="w-4 h-4 text-cc-yellow" />
-            <span>สรุปยอดและโควตารายฝ่าย (11 ฝ่าย)</span>
+            <span>สรุปยอดและโควตารายฝ่าย (13 ฝ่าย)</span>
           </button>
 
           <button
@@ -487,14 +492,14 @@ export default function AdminDashboard() {
       </div>
 
       {/* ========================================================================= */}
-      {/* VIEW 1: 11 DEPARTMENTS BREAKDOWN & ROSTER VIEW                             */}
+      {/* VIEW 1: 13 DEPARTMENTS BREAKDOWN & ROSTER VIEW                             */}
       {/* ========================================================================= */}
       {viewMode === "departments" && (
         <div className="space-y-6 animate-fadeIn">
           <div className="flex items-center justify-between">
             <h3 className="font-display font-black text-xl text-cc-navy flex items-center gap-2">
               <Layers className="w-5 h-5 text-cc-coral" />
-              <span>ภาพรวมยอดผู้สมัครจำแนกตามฝ่าย (11 ฝ่าย)</span>
+              <span>ภาพรวมยอดผู้สมัครจำแนกตามฝ่าย (13 ฝ่าย)</span>
             </h3>
             <span className="text-xs text-gray-500 font-mono">
               คลิกการ์ดเพื่อดูรายชื่อสตาฟตัวจริงและผู้สมัครในแต่ละฝ่าย
@@ -659,7 +664,12 @@ export default function AdminDashboard() {
                                         </span>
                                       </td>
                                       <td className="py-2.5 px-3 font-bold text-cc-navy whitespace-nowrap">
-                                        {app.fullNameTh}
+                                        <div>{app.fullNameTh}</div>
+                                        {app.diet && (
+                                          <div className="text-[10px] font-normal text-emerald-800 flex items-center gap-1 mt-0.5">
+                                            <span>🍽️ {app.diet}</span>
+                                          </div>
+                                        )}
                                       </td>
                                       <td className="py-2.5 px-3 whitespace-nowrap">
                                         <div className="font-mono font-bold text-cc-navy">{app.studentId}</div>
@@ -850,7 +860,7 @@ export default function AdminDashboard() {
                   onChange={(e) => setDeptFilter(e.target.value)}
                   className="px-3 py-2 rounded-xl border-2 border-cc-navy bg-white text-xs font-bold text-cc-navy outline-none flex-1 md:flex-initial cursor-pointer"
                 >
-                  <option value="all">ทุกฝ่าย (11 ฝ่าย)</option>
+                  <option value="all">ทุกฝ่าย (13 ฝ่าย)</option>
                   {DEPARTMENTS.map((d) => (
                     <option key={d.id} value={d.id}>
                       {d.nameTh}
@@ -925,6 +935,17 @@ export default function AdminDashboard() {
                             <div className="text-[11px] text-gray-500 font-mono font-normal">
                               โทร: {app.phone}
                             </div>
+                            {app.diet && (
+                              <div className="mt-1">
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                                  app.diet.includes("ไม่แพ้")
+                                    ? "bg-gray-100 text-gray-600 border-gray-200"
+                                    : "bg-emerald-50 text-emerald-900 border-emerald-300"
+                                }`}>
+                                  🍽️ {app.diet}
+                                </span>
+                              </div>
+                            )}
                           </td>
                           <td className="py-3.5 px-4 whitespace-nowrap">
                             <div className="font-mono text-cc-navy font-bold">{app.studentId}</div>
@@ -1059,6 +1080,16 @@ export default function AdminDashboard() {
                       value={editFormData.major}
                       onChange={(e) => setEditFormData({ ...editFormData, major: e.target.value })}
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue"
+                    />
+                  </div>
+                  <div className="sm:col-span-2 space-y-1">
+                    <label className="font-bold text-emerald-800">ข้อมูลอาหาร / การแพ้อาหาร:</label>
+                    <input
+                      type="text"
+                      placeholder="เช่น ทานได้ทุกอย่าง, แพ้อาหารทะเล, อาหารฮาลาล"
+                      value={editFormData.diet}
+                      onChange={(e) => setEditFormData({ ...editFormData, diet: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-emerald-300 bg-emerald-50/50 font-medium outline-none focus:border-emerald-600 text-cc-navy"
                     />
                   </div>
                 </div>

@@ -8,13 +8,15 @@ interface TimeLeft {
   hours: number;
   minutes: number;
   seconds: number;
-  isExpired: boolean;
+  phase: "before_start" | "active" | "expired";
 }
 
 export default function HeroCountdown({
-  targetDate = "2026-09-30T23:59:59+07:00",
+  startDate = "2026-08-24T09:00:00+07:00",
+  targetDate = "2026-08-29T23:59:59+07:00",
   showTitle = true,
 }: {
+  startDate?: string;
   targetDate?: string;
   showTitle?: boolean;
 }) {
@@ -23,30 +25,49 @@ export default function HeroCountdown({
     hours: 0,
     minutes: 0,
     seconds: 0,
-    isExpired: false,
+    phase: "before_start",
   });
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
 
-    const calculateTimeLeft = () => {
-      const difference = +new Date(targetDate) - +new Date();
-      if (difference > 0) {
+    const calculateTimeLeft = (): TimeLeft => {
+      const now = +new Date();
+      const start = +new Date(startDate);
+      const end = +new Date(targetDate);
+
+      // Phase 1: Before Registration Opens (Countdown to Start Time: 24 ส.ค. 09:00 น.)
+      if (now < start) {
+        const diff = start - now;
         return {
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60),
-          isExpired: false,
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((diff / 1000 / 60) % 60),
+          seconds: Math.floor((diff / 1000) % 60),
+          phase: "before_start",
         };
       }
+
+      // Phase 2: Active Registration (Countdown to Deadline: 29 ส.ค. 23:59 น.)
+      if (now >= start && now < end) {
+        const diff = end - now;
+        return {
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((diff / 1000 / 60) % 60),
+          seconds: Math.floor((diff / 1000) % 60),
+          phase: "active",
+        };
+      }
+
+      // Phase 3: Registration Closed
       return {
         days: 0,
         hours: 0,
         minutes: 0,
         seconds: 0,
-        isExpired: true,
+        phase: "expired",
       };
     };
 
@@ -56,7 +77,7 @@ export default function HeroCountdown({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [targetDate]);
+  }, [startDate, targetDate]);
 
   if (!mounted) {
     return (
@@ -67,7 +88,7 @@ export default function HeroCountdown({
     );
   }
 
-  if (timeLeft.isExpired) {
+  if (timeLeft.phase === "expired") {
     return (
       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-cc-coral/20 border border-cc-coral text-cc-coral text-xs font-bold">
         <span>ปิดรับสมัครเรียบร้อยแล้ว</span>
@@ -82,16 +103,30 @@ export default function HeroCountdown({
     { label: "วิ.", value: timeLeft.seconds },
   ];
 
+  const isBeforeStart = timeLeft.phase === "before_start";
+
   return (
     <div className="flex flex-col items-center lg:items-start gap-1.5 w-full">
       {showTitle && (
-        <div className="flex items-center gap-1.5 text-[10px] font-bold text-white/70 tracking-wider uppercase">
+        <div className="flex items-center gap-1.5 text-[10px] font-bold text-white/80 tracking-wider uppercase">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cc-coral opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-cc-coral"></span>
+            <span
+              className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                isBeforeStart ? "bg-cc-yellow" : "bg-cc-coral"
+              }`}
+            ></span>
+            <span
+              className={`relative inline-flex rounded-full h-2 w-2 ${
+                isBeforeStart ? "bg-cc-yellow" : "bg-cc-coral"
+              }`}
+            ></span>
           </span>
-          <Clock className="w-3 h-3 text-cc-coral" />
-          <span>นับถอยหลังปิดรับสมัคร</span>
+          <Clock className={`w-3 h-3 ${isBeforeStart ? "text-cc-yellow" : "text-cc-coral"}`} />
+          <span>
+            {isBeforeStart
+              ? "นับถอยหลังเปิดรับสมัคร (เริ่ม 24 ส.ค. 09:00 น.)"
+              : "ระบบเปิดรับสมัครอยู่ • นับถอยหลังปิดรับสมัคร"}
+          </span>
         </div>
       )}
 

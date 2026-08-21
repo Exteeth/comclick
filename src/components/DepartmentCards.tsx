@@ -24,6 +24,8 @@ import {
   ChevronUp,
   Layers,
   X,
+  Zap,
+  Crown,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -38,6 +40,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Coins,
   Award,
   Utensils,
+  Zap,
+  Crown,
 };
 
 export default function DepartmentCards({
@@ -67,7 +71,7 @@ export default function DepartmentCards({
   }, [activeModalDept]);
 
   const categories = [
-    { id: "all", label: "ทั้งหมด (11 ฝ่าย)" },
+    { id: "all", label: "ทั้งหมด (13 ฝ่าย)" },
     { id: "tech", label: "วิชาการ & เทคโนโลยี" },
     { id: "activity", label: "กิจกรรม & สันทนาการ" },
     { id: "support", label: "บริหาร ประสานงาน & สวัสดิการ" },
@@ -76,14 +80,17 @@ export default function DepartmentCards({
   const filteredDepts = DEPARTMENTS.filter((dept) => {
     if (selectedCategory === "all") return true;
     if (selectedCategory === "tech") return ["academic", "tech-pr"].includes(dept.id);
-    if (selectedCategory === "activity") return ["recreation", "protocol"].includes(dept.id);
+    if (selectedCategory === "activity") return ["comkitty", "protocol", "recreation"].includes(dept.id);
     if (selectedCategory === "support")
       return [
+        "directorate",
         "fundraising",
         "discipline",
         "registration",
         "coordination",
         "medical",
+        "fast-response",
+        "welfare",
         "venue",
         "catering-welfare",
       ].includes(dept.id);
@@ -101,10 +108,10 @@ export default function DepartmentCards({
         <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-cc-coral text-white text-xs font-mono font-bold uppercase tracking-wider border-2 border-cc-navy shadow-solid-sm">
             <Users className="w-3.5 h-3.5" />
-            <span>11 SPECIALIZED DEPARTMENTS</span>
+            <span>13 SPECIALIZED DEPARTMENTS</span>
           </div>
           <h2 className="font-display font-black text-2xl sm:text-5xl text-cc-navy tracking-tight">
-            ร่วมเป็นส่วนหนึ่งใน <span className="text-cc-blue">11 ฝ่ายหลัก</span>
+            ร่วมเป็นส่วนหนึ่งใน <span className="text-cc-blue">13 ฝ่ายหลัก</span>
           </h2>
           <p className="text-xs sm:text-base text-gray-700 font-normal max-w-2xl mx-auto">
             เลือกฝ่ายที่ตรงกับความชอบและความถนัด คุณสามารถเลือกได้ทั้ง{" "}
@@ -257,7 +264,7 @@ export default function DepartmentCards({
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-white border-3 border-cc-navy text-cc-navy font-bold text-xs sm:text-sm shadow-solid hover:translate-x-0.5 hover:-translate-y-0.5 transition-all"
             >
               <Layers className="w-4 h-4 text-cc-coral" />
-              <span>ดูข้อมูลเจาะลึก 11 ฝ่ายอย่างละเอียดในหน้าแยก →</span>
+              <span>ดูข้อมูลเจาะลึก 13 ฝ่ายอย่างละเอียดในหน้าแยก →</span>
             </a>
           </div>
         )}

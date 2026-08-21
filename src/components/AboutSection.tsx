@@ -24,30 +24,30 @@ export default function AboutSection() {
   const staffObjectives = [
     {
       icon: Compass,
-      title: "ร่วมกระจายโอกาสทางการศึกษา",
+      title: "ส่งเสริมจิตอาสา & จิตวิญญาณความเป็นครู",
       subtitle: "Mission 01",
       description:
-        "ทีมสตาฟจะได้นำองค์ความรู้คอมพิวเตอร์และนวัตกรรมดิจิทัลไปถ่ายทอดให้แก่น้องๆ ณ โรงเรียนโนนสูงพิทยาคาร มุ่งลดความเหลื่อมล้ำทางเทคโนโลยีในพื้นที่ห่างไกล",
+        "ปลูกฝังจิตสำนึกจิตอาสา ส่งเสริมจิตวิญญาณความเป็นครู ถ่ายทอดความรู้ และลงพื้นที่ชุมชนเพื่อสนับสนุนการศึกษา ณ โรงเรียนโนนสูงพิทยาคาร",
       cardBg: "bg-cc-blue text-white",
       iconBg: "bg-white text-cc-blue",
-      badge: "EDUCATION EQUALITY",
+      badge: "VOLUNTEER SPIRIT",
     },
     {
       icon: Cpu,
-      title: "ร่วมปั้นทักษะแห่งอนาคตให้น้องๆ",
+      title: "Comclick Innovation Pitching",
       subtitle: "Mission 02",
       description:
-        "ร่วมจัดกิจกรรมฝึกทักษะดิจิทัลพื้นฐาน (Digital Literacy) และวิทยาการคำนวณ (Computing Science) ผ่านบอร์ดเกม เกมการศึกษา และ AI ในชีวิตประจำวัน",
+        "ร่วมเป็นพี่เลี้ยงจัดกิจกรรม Comclick Innovation Pitching พาน้องๆ ฝึกคิดสร้างสรรค์โครงงานนวัตกรรมดิจิทัล และนำเสนอผลงานอย่างมั่นใจ",
       cardBg: "bg-cc-bronze text-white",
       iconBg: "bg-white text-cc-bronze",
-      badge: "FUTURE SKILLS",
+      badge: "INNOVATION & PITCHING",
     },
     {
       icon: GraduationCap,
-      title: "ร่วมสร้างแรงบันดาลใจ & แนะแนวการเรียน",
+      title: "วิชาการแนะแนวสายอาชีพ & คณะใน มข.",
       subtitle: "Mission 03",
       description:
-        "พี่ค่ายจะได้ถ่ายทอดประสบการณ์จริง ให้คำแนะนำ และเปิดมุมมองแก่น้องๆ ที่สนใจศึกษาต่อระดับอุดมศึกษา สายครูคอมพิวเตอร์และเทคโนโลยีสารสนเทศ",
+        "ถ่ายทอดประสบการณ์ตรง แนะแนวทางศึกษาต่อระดับอุดมศึกษา และสายอาชีพดิจิทัลตามคณะต่าง ๆ ในมหาวิทยาลัยขอนแก่น",
       cardBg: "bg-cc-coral text-white",
       iconBg: "bg-white text-cc-coral",
       badge: "CAREER GUIDANCE",
@@ -56,23 +56,23 @@ export default function AboutSection() {
 
   const staffLearningScopes = [
     {
-      icon: Gamepad2,
-      title: " Computational Thinking & Unplugged",
-      desc: "ออกแบบและดำเนินกิจกรรมบอร์ดเกม (Board Games) และเกมการศึกษา (Unplugged Coding) เพื่อฝึกการแก้ปัญหาอย่างเป็นระบบ",
+      icon: GraduationCap,
+      title: "วิชาการแนะแนวสายอาชีพ & คณะใน มข.",
+      desc: "จัดเวทีย่อยและบูธ ถ่ายทอดประสบการณ์จริง เปิดมุมมองการเรียนต่อในมหาวิทยาลัยขอนแก่นและสายอาชีพเทคโนโลยี",
       color: "border-cc-blue bg-blue-50/50",
       tagColor: "bg-cc-blue text-white",
     },
     {
       icon: Code,
-      title: " Digital Literacy, Coding & AI Lab",
-      desc: "ร่วมเป็นพี่เลขาและวิทยากรประจำแล็บ แนะนำการเขียนโปรแกรม เครื่องมือไอที และนวัตกรรม AI ให้เข้าใจง่าย",
+      title: "Comclick Innovation Pitching Workshop",
+      desc: "ร่วมเป็นโค้ชประจำกลุ่ม ดูแลกิจกรรมเวิร์กช็อปนวัตกรรม ฝึกทักษะการแก้ปัญหา และเตรียมความพร้อมในการ Pitching บนเวที",
       color: "border-cc-coral bg-rose-50/50",
       tagColor: "bg-cc-coral text-white",
     },
     {
       icon: Sparkles,
-      title: " Gamification & Storytelling",
-      desc: "นำเสนอธีมเรื่องราวจำลองที่น่าตื่นเต้น คุมกิจกรรมสันทนาการ ช่วยให้น้องๆ ซึมซับความรู้และสนุกสนานอย่างเป็นธรรมชาติ",
+      title: "นันทนาการฐาน Wild Game, รอบกองไฟ & Big Cleaning",
+      desc: "คุมกิจกรรมฐาน Wild Game สุดเร้าใจ กิจกรรมรอบกองไฟอันแสนอบอุ่น และร่วมจิตอาสา Big Cleaning ทำความสะอาดโรงเรียน",
       color: "border-cc-yellow bg-amber-50/50",
       tagColor: "bg-cc-yellow text-cc-navy",
     },
@@ -175,7 +175,7 @@ export default function AboutSection() {
                   >
                     คณะศึกษาศาสตร์ มข.
                   </a>{" "}
-                  และ<strong>เปิดรับสมัครนักศึกษาทุกชั้นปี ทุกสาขาวิชาใน มข.</strong> มาร่วมเป็นทีมงานพี่ค่าย 11 ฝ่าย
+                  และ<strong>เปิดรับสมัครนักศึกษาทุกชั้นปี ทุกสาขาวิชาใน มข.</strong> มาร่วมเป็นทีมงานพี่ค่าย 13 ฝ่าย
                 </p>
               </div>
             </div>
@@ -244,7 +244,7 @@ export default function AboutSection() {
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cc-yellow text-cc-navy border-2 border-cc-navy text-xs font-mono font-black uppercase">
               <BookOpen className="w-3.5 h-3.5 text-cc-navy" />
-              <span>CONCEPT: "วิชาการเข้มข้น กิจกรรมสร้างสรรค์ เข้าใจง่ายสไตล์ครูคอม"</span>
+              <span>CONCEPT: "ส่งเสริมคุณลักษณะด้านจิตอาสาและจิตวิญญาณความเป็นครู"</span>
             </div>
             <h3 className="font-display font-black text-2xl sm:text-4xl text-cc-navy">
               ขอบเขตกิจกรรมที่พวกเราสตาฟจะร่วมจัด <span className="text-cc-blue">(Scope of Activities)</span>

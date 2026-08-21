@@ -48,7 +48,7 @@ export default function CommitteePage() {
             <span>OFFICIAL STUDENT & STAFF ID DIRECTORY</span>
           </div>
           <h1 className="font-display font-black text-3xl sm:text-5xl text-cc-navy tracking-tight">
-            ทำเนียบบัตรประจำตัว <span className="text-cc-blue">คณะกรรมการ & 11 ฝ่าย</span>
+            ทำเนียบบัตรประจำตัว <span className="text-cc-blue">คณะกรรมการ & 12 ฝ่าย</span>
           </h1>
           <p className="text-sm sm:text-base text-gray-700 font-normal">
             ทำเนียบบัตรประจำตัวนักศึกษา มหาวิทยาลัยขอนแก่น (KKU Student ID Card) ของทีมงานค่าย ComClick 20
@@ -109,7 +109,7 @@ export default function CommitteePage() {
         </div>
 
         {/* ========================================================================= */}
-        {/* 2. หัวหน้าและรองหัวหน้า 11 ฝ่าย (22 ท่าน) - Student ID Cards               */}
+        {/* 2. หัวหน้าและรองหัวหน้า 12 ฝ่าย (24 ท่าน) - Student ID Cards               */}
         {/* ========================================================================= */}
         <div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 pb-4 border-b-2 border-cc-navy/15">
@@ -119,10 +119,10 @@ export default function CommitteePage() {
               </div>
               <div>
                 <span className="text-xs font-mono font-bold text-cc-coral uppercase tracking-wider block">
-                  DEPARTMENT LEADS & CO-LEADS (22 ท่าน)
+                  DEPARTMENT LEADS & CO-LEADS (24 ท่าน)
                 </span>
                 <h2 className="font-display font-black text-2xl sm:text-3xl text-cc-navy">
-                  ทำเนียบบัตรหัวหน้าและรองหัวหน้า 11 ฝ่าย
+                  ทำเนียบบัตรหัวหน้าและรองหัวหน้า 12 ฝ่าย
                 </h2>
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function CommitteePage() {
                     : "bg-white text-cc-navy hover:bg-cc-cream-50"
                 }`}
               >
-                ทั้งหมด (11 ฝ่าย)
+                ทั้งหมด (12 ฝ่าย)
               </button>
             </div>
           </div>

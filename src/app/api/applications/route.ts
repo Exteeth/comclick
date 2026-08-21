@@ -6,6 +6,7 @@ import {
   deleteApplication,
 } from "@/lib/storage";
 import { getNeonSql, isNeonConfigured } from "@/lib/neon";
+import { CAMP_INFO } from "@/lib/constants";
 
 export async function GET(request: Request) {
   try {
@@ -22,6 +23,7 @@ export async function GET(request: Request) {
               phone,
               major,
               faculty,
+              diet,
               first_choice_dept_id as "firstChoiceDeptId",
               second_choice_dept_id as "secondChoiceDeptId",
               fallback_dept_choice as "fallbackDeptChoice",
@@ -61,6 +63,31 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+
+    // Check if registration window is open
+    const now = new Date().getTime();
+    const start = new Date(CAMP_INFO.registrationStartDate).getTime();
+    const end = new Date(CAMP_INFO.registrationEndDate).getTime();
+    const allowBypass = request.headers.get("x-bypass-reg-gate") === "true";
+
+    if (!allowBypass && (now < start || now > end)) {
+      if (now < start) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `ระบบรับสมัครจะเปิดให้ส่งใบสมัครในวันที่ ${CAMP_INFO.registrationStart}`,
+          },
+          { status: 403 }
+        );
+      }
+      return NextResponse.json(
+        {
+          success: false,
+          error: `ระบบปิดรับสมัครเรียบร้อยแล้วเมื่อ ${CAMP_INFO.registrationDeadline}`,
+        },
+        { status: 403 }
+      );
+    }
 
     // Validate required fields
     if (!body.fullNameTh || !body.studentId || !body.phone || !body.major || !body.firstChoiceDeptId) {
@@ -149,6 +176,7 @@ export async function PUT(request: Request) {
               student_id = COALESCE(${body.studentId}, student_id),
               phone = COALESCE(${body.phone}, phone),
               major = COALESCE(${body.major}, major),
+              diet = COALESCE(${body.diet}, diet),
               first_choice_dept_id = COALESCE(${body.firstChoiceDeptId}, first_choice_dept_id),
               second_choice_dept_id = COALESCE(${body.secondChoiceDeptId}, second_choice_dept_id),
               fallback_dept_choice = COALESCE(${body.fallbackDeptChoice}, fallback_dept_choice),

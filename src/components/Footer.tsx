@@ -58,7 +58,7 @@ export default function Footer() {
               href="/departments"
               className="px-3 py-1.5 rounded-lg hover:bg-cc-cream text-gray-600 hover:text-cc-navy transition-colors"
             >
-              11 ฝ่ายที่เปิดรับ
+              13 ฝ่ายที่เปิดรับ
             </a>
             <a
               href="/#schedule"

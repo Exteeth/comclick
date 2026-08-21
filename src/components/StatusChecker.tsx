@@ -330,6 +330,12 @@ export default function StatusChecker() {
                         <span className="text-gray-500">สาขาวิชา:</span>{" "}
                         <span className="text-gray-800 font-medium">{searchResult.major}</span>
                       </div>
+                      {searchResult.diet && (
+                        <div className="pt-1 border-t border-gray-200 text-[11px]">
+                          <span className="text-gray-500">ข้อมูลอาหาร/แพ้อาหาร:</span>{" "}
+                          <span className="text-emerald-700 font-bold">{searchResult.diet}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

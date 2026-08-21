@@ -1,46 +1,46 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronLeft, ChevronRight, Heart, Code2, Sparkles, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, Code2, Sparkles, Users, GraduationCap } from "lucide-react";
 import AnimatedContent from "./ui/AnimatedContent";
 
 export default function ImpressionsGallery() {
   const slides = [
     {
       id: 1,
-      title: "บรรยากาศห้องปฏิบัติการ Coding & AI",
-      tag: "HANDS-ON WORKSHOP",
-      desc: "พี่ค่ายประกบน้องตัวต่อตัว สอนโค้ดดิ้งและหุ่นยนต์อย่างสนุกสนาน",
+      title: "กิจกรรมวิชาการแนะแนวสายอาชีพ & คณะใน มข.",
+      tag: "CAREER & ACADEMIC",
+      desc: "เปิดประตูสู่อนาคต ถ่ายทอดประสบการณ์ตรงจากพี่ๆ นักศึกษา มข. สู่แรงบันดาลใจน้องมัธยม",
       solidBg: "bg-cc-blue text-white",
       tagBg: "bg-cc-navy text-white",
-      icon: Code2,
+      icon: GraduationCap,
     },
     {
       id: 2,
-      title: "สันทนาการสุดมันส์ & ComClick Energy",
-      tag: "ICEBREAKING & DANCE",
-      desc: "ระเบิดเสียงหัวเราะ เอนเนอร์จี้ล้นเวที ละลายพฤติกรรมสร้างรอยยิ้ม",
+      title: "นันทนาการสุดมันส์ ฐาน Wild Game",
+      tag: "WILD GAME & RECREATION",
+      desc: "ระเบิดเสียงหัวเราะ เอนเนอร์จี้ล้นเวที ละลายพฤติกรรม และประลองความสามัคคี",
       solidBg: "bg-cc-yellow text-cc-navy",
       tagBg: "bg-cc-navy text-cc-yellow",
       icon: Sparkles,
     },
     {
       id: 3,
-      title: "มิตรภาพพี่น้อง Comclick Night",
-      tag: "BONDING & MEMORIES",
-      desc: "ค่ำคืนแห่งความทรงจำ ผูกข้อมือ บายศรีสู่ขวัญ และมิตรภาพที่เหนียวแน่น",
+      title: "Comclick Innovation Pitching Workshop",
+      tag: "INNOVATION & PITCHING",
+      desc: "สร้างสรรค์โครงงานนวัตกรรมดิจิทัล และฝึกทักษะการนำเสนอ Pitching ต่อหน้าคณะกรรมการ",
       solidBg: "bg-cc-coral text-white",
       tagBg: "bg-white text-cc-coral",
-      icon: Heart,
+      icon: Code2,
     },
     {
       id: 4,
-      title: "Project Showcase & Pitching",
-      tag: "MINI HACKATHON",
-      desc: "น้องๆ นำเสนอผลงานนวัตกรรมดิจิทัลที่สร้างสรรค์ด้วยตัวเองตลอด 3 วัน",
+      title: "ค่ำคืนกิจกรรมรอบกองไฟ & Big Cleaning",
+      tag: "CAMPFIRE & VOLUNTEER",
+      desc: "ค่ำคืนแห่งความทรงจำรอบกองไฟสุดอบอุ่น และร่วมจิตอาสาทำความสะอาดโรงเรียนส่งท้ายค่าย",
       solidBg: "bg-cc-bronze text-white",
       tagBg: "bg-white text-cc-bronze",
-      icon: Users,
+      icon: Heart,
     },
   ];
 

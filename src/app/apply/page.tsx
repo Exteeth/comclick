@@ -34,7 +34,7 @@ export default function ApplyPage() {
             ใบสมัครเป็นพี่ค่าย <span className="text-cc-blue">COMCLICK 20</span>
           </h1>
           <p className="text-sm text-gray-600 font-light max-w-xl mx-auto">
-            {CAMP_INFO.nameTh} • ปิดรับสมัคร {CAMP_INFO.registrationDeadline}
+            {CAMP_INFO.nameTh} • เปิดระบบรับสมัคร 24 ส.ค. (09:00 น.) ถึง 29 ส.ค. 2569 (23:59 น.)
           </p>
         </div>
       </div>
