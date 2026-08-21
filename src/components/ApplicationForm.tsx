@@ -136,9 +136,6 @@ export default function ApplicationForm() {
 
   const getFinalMajorString = (): string => {
     if (facultyType === "edu") {
-      if (educationMajorChoice === "สาขาอื่นๆ ในคณะศึกษาศาสตร์ (ระบุเอง)") {
-        return customMajorName.trim() || "สาขาอื่นๆ ในคณะศึกษาศาสตร์";
-      }
       return educationMajorChoice;
     }
     return customMajorName.trim() || "ไม่ระบุสาขา";
@@ -207,11 +204,6 @@ export default function ApplicationForm() {
       }
       if (!customMajorName.trim()) {
         setErrorMessage("กรุณากรอกชื่อสาขาวิชาของคุณ");
-        return false;
-      }
-    } else {
-      if (educationMajorChoice === "สาขาอื่นๆ ในคณะศึกษาศาสตร์ (ระบุเอง)" && !customMajorName.trim()) {
-        setErrorMessage("กรุณาระบุชื่อสาขาวิชาในคณะศึกษาศาสตร์ของคุณ");
         return false;
       }
     }
@@ -496,22 +488,6 @@ export default function ApplicationForm() {
                           </option>
                         ))}
                       </select>
-
-                      {educationMajorChoice === "สาขาอื่นๆ ในคณะศึกษาศาสตร์ (ระบุเอง)" && (
-                        <div className="animate-fadeIn pt-1">
-                          <input
-                            type="text"
-                            required
-                            placeholder="พิมพ์ระบุชื่อสาขาวิชาของคุณในคณะศึกษาศาสตร์"
-                            value={customMajorName}
-                            onChange={(e) => {
-                              setCustomMajorName(e.target.value);
-                              setErrorMessage(null);
-                            }}
-                            className="w-full px-3.5 py-2.5 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
-                          />
-                        </div>
-                      )}
                     </div>
                   ) : (
                     <div className="animate-fadeIn">

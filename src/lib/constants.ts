@@ -37,7 +37,6 @@ export const EDUCATION_MAJORS = [
   "สาขาวิชาการประถมศึกษา (วิชาเอกเดี่ยว)",
   "สาขาวิชาการศึกษาปฐมวัยและประถมศึกษา (วิชาเอกคู่)",
   "สาขาวิชาดนตรีศึกษา",
-  "สาขาอื่นๆ ในคณะศึกษาศาสตร์ (ระบุเอง)",
 ] as const;
 
 export function getRegistrationStatus(): "upcoming" | "open" | "closed" {
