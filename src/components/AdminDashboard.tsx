@@ -1077,6 +1077,13 @@ export default function AdminDashboard() {
                             </div>
                             <div className="text-[10px] text-gray-500 font-bold">{app.faculty || "คณะศึกษาศาสตร์"}</div>
                             <div className="text-[11px] text-gray-700">{app.major}</div>
+                            {app.diet && app.diet !== "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)" && (
+                              <div className="mt-1">
+                                <span className="inline-block px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 text-[10px] font-bold border border-rose-200" title={app.diet}>
+                                  🍽️ {app.diet}
+                                </span>
+                              </div>
+                            )}
                           </td>
                           <td className="py-3.5 px-4">
                             <div className="text-[11px] text-gray-700 font-bold">
@@ -1286,6 +1293,16 @@ export default function AdminDashboard() {
                       value={editFormData.facebookUrl}
                       onChange={(e) => setEditFormData({ ...editFormData, facebookUrl: e.target.value })}
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-mono outline-none focus:border-cc-blue"
+                    />
+                  </div>
+                  <div className="sm:col-span-2 space-y-1">
+                    <label className="font-bold text-gray-700">อาหารที่แพ้ / ข้อจำกัดด้านอาหาร:</label>
+                    <input
+                      type="text"
+                      placeholder="เช่น ทานได้ทุกอย่าง, แพ้อาหารทะเล, ฮาลาล ฯลฯ"
+                      value={editFormData.diet || ""}
+                      onChange={(e) => setEditFormData({ ...editFormData, diet: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue"
                     />
                   </div>
                 </div>

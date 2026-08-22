@@ -400,6 +400,12 @@ export default function StatusChecker() {
                           )}
                         </div>
                       )}
+                      {searchResult.diet && (
+                        <div className="pt-1 border-t border-gray-200 text-[11px]">
+                          <span className="text-gray-500">อาหาร / ข้อจำกัด:</span>{" "}
+                          <span className="text-cc-navy font-bold">{searchResult.diet}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

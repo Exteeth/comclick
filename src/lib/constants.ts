@@ -74,6 +74,14 @@ export const STAFF_YEAR_OPTIONS = [
   { value: "ชั้นปีที่ 3", label: "ชั้นปีที่ 3" },
 ] as const;
 
+export const DIET_OPTIONS = [
+  { value: "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)", label: "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)" },
+  { value: "ฮาลาล (อิสลาม)", label: "อาหารฮาลาล (อิสลาม)" },
+  { value: "มังสวิรัติ", label: "มังสวิรัติ (ไม่ทานเนื้อสัตว์)" },
+  { value: "เจ", label: "อาหารเจ" },
+  { value: "แพ้อาหาร / อื่นๆ (โปรดระบุ)", label: "แพ้อาหาร / มีข้อจำกัดเฉพาะ (โปรดระบุ)" },
+] as const;
+
 export function getRegistrationStatus(): "upcoming" | "open" | "closed" {
   const now = new Date().getTime();
   const start = new Date(CAMP_INFO.registrationStartDate).getTime();

@@ -1,13 +1,41 @@
 import { NextResponse } from "next/server";
 import { getApplications } from "@/lib/storage";
 import { DEPARTMENTS, CAMP_INFO } from "@/lib/constants";
-import { isNeonConfigured } from "@/lib/neon";
+import { getNeonSql, isNeonConfigured } from "@/lib/neon";
+import { Application } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const apps = getApplications();
+    let apps: Application[] = [];
+
+    // 1. Query live from Neon Database if configured
+    if (isNeonConfigured()) {
+      const sql = getNeonSql();
+      if (sql) {
+        try {
+          const rows = await sql`
+            SELECT 
+              id,
+              first_choice_dept_id as "firstChoiceDeptId",
+              second_choice_dept_id as "secondChoiceDeptId",
+              assigned_dept_id as "assignedDeptId",
+              status
+            FROM applications
+          `;
+          apps = (rows || []) as Application[];
+        } catch (dbErr) {
+          console.warn("Neon stats query failed, falling back to memory store:", dbErr);
+          apps = getApplications();
+        }
+      } else {
+        apps = getApplications();
+      }
+    } else {
+      apps = getApplications();
+    }
+
     const totalApplicants = apps.length;
 
     const deptCounts: Record<string, number> = {};
@@ -17,9 +45,29 @@ export async function GET() {
       ).length;
     });
 
-    const statusCounts: Record<string, number> = {};
+    const statusCounts: Record<string, number> = {
+      SUBMITTED: 0,
+      INTERVIEW_ELIGIBLE: 0,
+      ACCEPTED: 0,
+      REJECTED: 0,
+    };
+
     apps.forEach((a) => {
-      statusCounts[a.status] = (statusCounts[a.status] || 0) + 1;
+      const rawStatus = (a.status || "submitted").toUpperCase();
+      if (rawStatus === "ACCEPTED" || rawStatus === "CONFIRMED" || rawStatus === "INTERVIEW_PASSED") {
+        statusCounts.ACCEPTED = (statusCounts.ACCEPTED || 0) + 1;
+      } else if (
+        rawStatus === "INTERVIEW_ELIGIBLE" ||
+        rawStatus === "INTERVIEW" ||
+        rawStatus === "INTERVIEW_SCHEDULED" ||
+        rawStatus === "DOCUMENT_PASSED"
+      ) {
+        statusCounts.INTERVIEW_ELIGIBLE = (statusCounts.INTERVIEW_ELIGIBLE || 0) + 1;
+      } else if (rawStatus === "REJECTED") {
+        statusCounts.REJECTED = (statusCounts.REJECTED || 0) + 1;
+      } else {
+        statusCounts.SUBMITTED = (statusCounts.SUBMITTED || 0) + 1;
+      }
     });
 
     return NextResponse.json(

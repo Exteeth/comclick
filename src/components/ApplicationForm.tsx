@@ -10,6 +10,7 @@ import {
   KKU_FACULTIES,
   EDUCATION_MAJORS,
   STAFF_YEAR_OPTIONS,
+  DIET_OPTIONS,
   TECH_PR_DRIVE_URL,
 } from "@/lib/constants";
 import { Application } from "@/lib/types";
@@ -34,6 +35,7 @@ import {
   Car,
   FolderUp,
   Heart,
+  Utensils,
 } from "lucide-react";
 
 export default function ApplicationForm() {
@@ -102,6 +104,8 @@ export default function ApplicationForm() {
   const [phoneInput, setPhoneInput] = useState<string>("");
   const [facebookNameInput, setFacebookNameInput] = useState<string>("");
   const [facebookUrlInput, setFacebookUrlInput] = useState<string>("");
+  const [dietChoice, setDietChoice] = useState<string>("ทานได้ทุกอย่าง (ไม่แพ้อาหาร)");
+  const [dietCustomInput, setDietCustomInput] = useState<string>("");
 
   // ==========================================
   // Section 2: คำถามแสดงทัศนคติ
@@ -314,7 +318,13 @@ export default function ApplicationForm() {
       return false;
     }
 
-    // 9. Section 2: Attitude & Questions validation
+    // 9. Food Allergy / Diet validation
+    if (dietChoice === "แพ้อาหาร / อื่นๆ (โปรดระบุ)" && !dietCustomInput.trim()) {
+      triggerFieldError("input-custom-diet", "กรุณาระบุรายละเอียดอาหารที่แพ้หรือข้อจำกัดด้านอาหารของคุณ");
+      return false;
+    }
+
+    // 10. Section 2: Attitude & Questions validation
     if (!reasonToApply.trim()) {
       triggerFieldError("input-reasonToApply", "กรุณากรอก เหตุผลที่สนใจหรือต้องการสมัครเป็นพี่ค่ายคอมคลิก ครั้งที่ 20 ในส่วนที่ 2");
       return false;
@@ -328,7 +338,7 @@ export default function ApplicationForm() {
       return false;
     }
 
-    // 10. Section 3: Department choices validation
+    // 11. Section 3: Department choices validation
     if (firstChoiceDeptId === "directorate" || secondChoiceDeptId === "directorate") {
       triggerFieldError("select-choice1", "ฝ่ายอำนวยการสงวนสิทธิ์เฉพาะคณะกรรมการบริหารโครงการ ไม่เปิดรับสมัครบุคคลทั่วไป");
       return false;
@@ -360,6 +370,10 @@ export default function ApplicationForm() {
       const finalFullName = getCleanFullName();
       const finalFaculty = getFinalFacultyString();
       const finalMajor = getFinalMajorString();
+      const finalDiet =
+        dietChoice === "แพ้อาหาร / อื่นๆ (โปรดระบุ)"
+          ? (dietCustomInput.trim() ? `แพ้อาหาร: ${dietCustomInput.trim()}` : "แพ้อาหาร / มีข้อจำกัดเฉพาะ")
+          : dietChoice;
 
       const payload = {
         titleTh: titlePrefix,
@@ -382,7 +396,7 @@ export default function ApplicationForm() {
         hasCar: hasCar,
         carType: carType,
         carTypeOther: carTypeOther.trim(),
-        diet: "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
+        diet: finalDiet,
       };
 
       let serverAppId: string | undefined = undefined;
@@ -960,6 +974,55 @@ export default function ApplicationForm() {
                   />
                 </div>
               </div>
+
+              {/* 1.10 อาหารที่แพ้ / การรับประทานอาหาร */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="block text-xs sm:text-sm font-bold text-cc-navy flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Utensils className="w-4 h-4 text-cc-blue" />
+                    <span>อาหารที่แพ้ / การรับประทานอาหาร <span className="text-red-500">*</span></span>
+                  </span>
+                  <span className="text-[10px] text-gray-500 font-normal">สำหรับจัดเตรียมอาหารและสวัสดิการในค่าย</span>
+                </label>
+                <div className="space-y-2">
+                  <select
+                    id="select-diet"
+                    value={dietChoice}
+                    onChange={(e) => {
+                      setDietChoice(e.target.value);
+                      clearFieldError("input-custom-diet");
+                    }}
+                    className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm focus:bg-cc-cream-50 focus:border-cc-blue transition-all"
+                  >
+                    {DIET_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  {dietChoice === "แพ้อาหาร / อื่นๆ (โปรดระบุ)" && (
+                    <div className="pt-1 animate-fadeIn">
+                      <input
+                        id="input-custom-diet"
+                        type="text"
+                        required
+                        placeholder="ระบุอาหารที่แพ้ หรือข้อจำกัดด้านอาหาร เช่น แพ้อาหารทะเล, แพ้ถั่วลิสง, แพ้นมวัว, ไม่ทานเนื้อวัว ฯลฯ"
+                        value={dietCustomInput}
+                        onChange={(e) => {
+                          setDietCustomInput(e.target.value);
+                          clearFieldError("input-custom-diet");
+                        }}
+                        className={`w-full px-3.5 py-2.5 rounded-xl border-2 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 outline-none transition-all shadow-sm font-medium ${
+                          fieldErrors["input-custom-diet"]
+                            ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                            : "border-cc-navy focus:bg-cc-cream-50 focus:border-cc-blue"
+                        }`}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1423,6 +1486,14 @@ export default function ApplicationForm() {
                     {DEPARTMENTS.find((d) => d.id === createdApplication.secondChoiceDeptId)?.nameTh}
                   </span>
                 </div>
+                {createdApplication.diet && (
+                  <div className="flex justify-between border-t border-cc-navy/10 pt-1.5">
+                    <span className="text-gray-500">อาหาร / ข้อจำกัด:</span>
+                    <span className="font-bold text-gray-800 text-right truncate max-w-[210px]" title={createdApplication.diet}>
+                      {createdApplication.diet}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
@@ -1448,6 +1519,8 @@ export default function ApplicationForm() {
                     setPhoneInput("");
                     setFacebookNameInput("");
                     setFacebookUrlInput("");
+                    setDietChoice("ทานได้ทุกอย่าง (ไม่แพ้อาหาร)");
+                    setDietCustomInput("");
                     setReasonToApply("");
                     setStrengths("");
                     setWeaknesses("");

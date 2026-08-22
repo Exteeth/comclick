@@ -6,10 +6,7 @@
  * If not connected yet, the application seamlessly runs using the local storage / in-memory store.
  */
 
-import { neon, neonConfig } from "@neondatabase/serverless";
-
-// Optional: Enable caching or connection pooling if desired
-neonConfig.fetchConnectionCache = true;
+import { neon } from "@neondatabase/serverless";
 
 export const isNeonConfigured = (): boolean => {
   return Boolean(process.env.DATABASE_URL || process.env.NEON_DATABASE_URL);

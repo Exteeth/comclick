@@ -25,15 +25,27 @@ export async function GET(request: Request) {
           const rows = await sql`
             SELECT 
               id,
+              title_th as "titleTh",
               full_name_th as "fullNameTh",
+              nickname_th as "nicknameTh",
               student_id as "studentId",
+              year,
               phone,
               major,
               faculty,
               diet,
+              facebook_name as "facebookName",
+              facebook_url as "facebookUrl",
+              reason_to_apply as "reasonToApply",
+              strengths,
+              weaknesses,
               first_choice_dept_id as "firstChoiceDeptId",
               second_choice_dept_id as "secondChoiceDeptId",
               fallback_dept_choice as "fallbackDeptChoice",
+              tech_portfolio_url as "techPortfolioUrl",
+              has_car as "hasCar",
+              car_type as "carType",
+              car_type_other as "carTypeOther",
               assigned_dept_id as "assignedDeptId",
               status,
               status_notes as "statusNotes",
@@ -49,6 +61,8 @@ export async function GET(request: Request) {
               OR REPLACE(phone, '-', '') = ${cleanNoDash}
               OR phone ILIKE ${'%' + clean + '%'}
               OR full_name_th ILIKE ${'%' + clean + '%'}
+              OR nickname_th ILIKE ${'%' + clean + '%'}
+              OR facebook_name ILIKE ${'%' + clean + '%'}
             ORDER BY created_at DESC
             LIMIT 1
           `;
