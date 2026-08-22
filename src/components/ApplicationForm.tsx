@@ -514,14 +514,6 @@ export default function ApplicationForm() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <a
-                href="/apply?preview=true"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-cc-coral hover:bg-cc-coral-dark text-white font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 text-cc-yellow" />
-                <span>เปิดดูแบบฟอร์มกรอกใบสมัคร (Preview Mode)</span>
-              </a>
-
-              <a
                 href="/departments"
                 className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-cc-navy hover:bg-cc-blue text-white font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
