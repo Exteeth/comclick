@@ -50,7 +50,7 @@ export default function DepartmentCards({
   showAll?: boolean;
 }) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [expandedDeptId, setExpandedDeptId] = useState<string | null>(null);
+  const [expandedDeptIds, setExpandedDeptIds] = useState<Record<string, boolean>>({});
   const [activeModalDept, setActiveModalDept] = useState<Department | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -98,7 +98,10 @@ export default function DepartmentCards({
   });
 
   const toggleExpand = (id: string) => {
-    setExpandedDeptId((prev) => (prev === id ? null : id));
+    setExpandedDeptIds((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
   };
 
   return (
@@ -141,7 +144,7 @@ export default function DepartmentCards({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
           {filteredDepts.map((dept) => {
             const IconComponent = iconMap[dept.icon] || Code2;
-            const isExpanded = expandedDeptId === dept.id || showAll;
+            const isExpanded = Boolean(expandedDeptIds[dept.id]);
 
             return (
               <div

@@ -25,7 +25,7 @@ export default function DepartmentsPage() {
         </div>
       </div>
 
-      <DepartmentCards showAll={true} />
+      <DepartmentCards />
 
       {/* Direct Apply CTA */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mt-10">
