@@ -104,28 +104,30 @@ export default function ApplicationSlipModal({
             </div>
           </div>
 
-          {/* Details Grid: 4 Core Info */}
+          {/* Details Grid: Core Info */}
           <div className="grid grid-cols-2 gap-2.5 text-xs">
             <div className="p-3 bg-white rounded-xl border border-cc-navy/20">
-              <span className="text-gray-500 block text-[10px] font-bold">1. ชื่อ - นามสกุล</span>
+              <span className="text-gray-500 block text-[10px] font-bold">ชื่อ - นามสกุล (ชื่อเล่น)</span>
               <span className="font-bold text-cc-navy block truncate">
-                {application.fullNameTh}
+                {application.fullNameTh} {application.nicknameTh && `(${application.nicknameTh})`}
               </span>
             </div>
             <div className="p-3 bg-white rounded-xl border border-cc-navy/20">
-              <span className="text-gray-500 block text-[10px] font-bold">2. รหัสนักศึกษา</span>
-              <span className="font-bold text-cc-navy font-mono block">{application.studentId}</span>
+              <span className="text-gray-500 block text-[10px] font-bold">รหัสนักศึกษา / ชั้นปี</span>
+              <span className="font-bold text-cc-navy font-mono block">
+                {application.studentId} • {application.year || "ปี 1"}
+              </span>
             </div>
             <div className="p-3 bg-white rounded-xl border border-cc-navy/20">
-              <span className="text-gray-500 block text-[10px] font-bold">3. เบอร์โทรศัพท์</span>
+              <span className="text-gray-500 block text-[10px] font-bold">คณะ / สาขาวิชา</span>
+              <span className="font-bold text-cc-navy block truncate" title={`${application.faculty} • ${application.major}`}>
+                {application.faculty} • {application.major}
+              </span>
+            </div>
+            <div className="p-3 bg-white rounded-xl border border-cc-navy/20">
+              <span className="text-gray-500 block text-[10px] font-bold">เบอร์โทรศัพท์</span>
               <span className="font-bold text-cc-navy block truncate font-mono">
                 {application.phone}
-              </span>
-            </div>
-            <div className="p-3 bg-white rounded-xl border border-cc-navy/20">
-              <span className="text-gray-500 block text-[10px] font-bold">4. สาขาวิชา</span>
-              <span className="font-bold text-cc-navy block truncate">
-                {application.major}
               </span>
             </div>
           </div>

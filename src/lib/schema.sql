@@ -41,33 +41,44 @@ CREATE TABLE IF NOT EXISTS applications (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
-    -- 6 Core Registration Fields
+    -- Section 1: General Info
+    title_th VARCHAR(20) DEFAULT 'นาย',
     full_name_th VARCHAR(255) NOT NULL,
+    nickname_th VARCHAR(100),
     student_id VARCHAR(50) NOT NULL,
-    phone VARCHAR(50) NOT NULL,
+    faculty VARCHAR(255) DEFAULT 'คณะศึกษาศาสตร์',
     major VARCHAR(255) NOT NULL,
+    year VARCHAR(50) NOT NULL,
+    phone VARCHAR(50) NOT NULL,
+    facebook_name VARCHAR(255),
+    facebook_url TEXT,
+
+    -- Section 2: Questions & Attitude
+    reason_to_apply TEXT,
+    strengths TEXT,
+    weaknesses TEXT,
+
+    -- Section 3: Department Choices & Special Questions
     first_choice_dept_id VARCHAR(50) REFERENCES departments(id) ON DELETE SET NULL,
     second_choice_dept_id VARCHAR(50) REFERENCES departments(id) ON DELETE SET NULL,
     fallback_dept_choice TEXT DEFAULT 'ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร',
 
-    -- Optional / Extended Fields
-    title_th VARCHAR(20),
-    nickname_th VARCHAR(100),
+    tech_portfolio_url TEXT,
+    has_car VARCHAR(10),
+    car_type VARCHAR(50),
+    car_type_other TEXT,
+
+    -- Additional / Compatibility Fields
     full_name_en VARCHAR(255),
-    faculty VARCHAR(255) DEFAULT 'คณะศึกษาศาสตร์',
-    year VARCHAR(50),
     line_id VARCHAR(100),
     facebook_or_ig VARCHAR(255),
     emergency_contact JSONB,
-
     shirt_size VARCHAR(10),
-    diet VARCHAR(100),
+    diet VARCHAR(100) DEFAULT 'ทานได้ทุกอย่าง (ไม่แพ้อาหาร)',
     diet_note TEXT,
     medical_conditions TEXT,
     can_join_preparation BOOLEAN DEFAULT TRUE,
     can_join_camp_dates BOOLEAN DEFAULT TRUE,
-
-    reason_to_apply TEXT,
     past_experience TEXT,
     skills_and_strengths TEXT,
     problem_solving_scenario TEXT,

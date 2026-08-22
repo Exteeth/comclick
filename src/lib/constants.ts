@@ -25,6 +25,34 @@ export const CAMP_INFO = {
   lineOfficial: "@comclick20",
 };
 
+export const TECH_PR_DRIVE_URL = "https://drive.google.com/drive/folders/1zFSBnlQhxPH9Y-3nOSOQ-kj-d5FfrXFB";
+
+export const KKU_FACULTIES = [
+  "คณะศึกษาศาสตร์",
+  "คณะวิทยาศาสตร์",
+  "คณะวิศวกรรมศาสตร์",
+  "คณะแพทยศาสตร์",
+  "คณะพยาบาลศาสตร์",
+  "คณะทันตแพทยศาสตร์",
+  "คณะเภสัชศาสตร์",
+  "คณะสาธารณสุขศาสตร์",
+  "คณะเกษตรศาสตร์",
+  "คณะเทคโนโลยี",
+  "คณะสัตวแพทยศาสตร์",
+  "คณะมนุษยศาสตร์และสังคมศาสตร์",
+  "คณะบริหารธุรกิจและการบัญชี",
+  "คณะศิลปกรรมศาสตร์",
+  "คณะเศรษฐศาสตร์",
+  "คณะสถาปัตยกรรมศาสตร์",
+  "คณะนิติศาสตร์",
+  "วิทยาลัยการปกครองท้องถิ่น",
+  "วิทยาลัยนานาชาติ",
+  "วิทยาลัยการคอมพิวเตอร์",
+  "คณะสหวิทยาการ (วิทยาเขตหนองคาย)",
+  "บัณฑิตวิทยาลัย",
+  "อื่นๆ (โปรดระบุ)",
+] as const;
+
 export const EDUCATION_MAJORS = [
   "สาขาวิชาคอมพิวเตอร์ศึกษา",
   "สาขาวิชาคณิตศาสตรศึกษา",
@@ -37,6 +65,13 @@ export const EDUCATION_MAJORS = [
   "สาขาวิชาการประถมศึกษา (วิชาเอกเดี่ยว)",
   "สาขาวิชาการศึกษาปฐมวัยและประถมศึกษา (วิชาเอกคู่)",
   "สาขาวิชาดนตรีศึกษา",
+  "อื่นๆ (โปรดระบุ)",
+] as const;
+
+export const STAFF_YEAR_OPTIONS = [
+  { value: "ชั้นปีที่ 1", label: "ชั้นปีที่ 1 (ปี 1)" },
+  { value: "ชั้นปีที่ 2", label: "ชั้นปีที่ 2 (ปี 2)" },
+  { value: "ชั้นปีที่ 3", label: "ชั้นปีที่ 3 (ปี 3)" },
 ] as const;
 
 export function getRegistrationStatus(): "upcoming" | "open" | "closed" {
@@ -53,12 +88,12 @@ export const DEPARTMENTS: Department[] = [
     id: "directorate",
     nameTh: "ฝ่ายอำนวยการ",
     nameEn: "Executive Camp Directorate",
-    badge: "อำนวยการ & บริหาร",
+    badge: "อำนวยการ (ไม่เปิดรับสมัคร)",
     icon: "Crown",
     color: "#213966",
-    shortDesc: "กำกับดูแลนโยบาย บริหารภาพรวม ประสานงานระดับผู้บริหาร และควบคุมมาตรฐานการดำเนินงานค่าย",
+    shortDesc: "คณะกรรมการบริหารระดับสูง ผู้นำทัพและวางยุทธศาสตร์ค่าย Comclick 20 (สงวนสิทธิ์เฉพาะคณะกรรมการโครงการ ไม่เปิดรับสมัครบุคคลทั่วไป)",
     description:
-      "คณะกรรมการบริหารระดับสูง ผู้นำทัพและวางยุทธศาสตร์ค่าย Comclick 20 ทำหน้าที่กำหนดนโยบายภาพรวม ควบคุมงบประมาณ ดูแลความปลอดภัย ประสานงานกับคณาจารย์และผู้บริหารคณะศึกษาศาสตร์ มข.",
+      "คณะกรรมการบริหารระดับสูง ผู้นำทัพและวางยุทธศาสตร์ค่าย Comclick 20 ทำหน้าที่กำหนดนโยบายภาพรวม ควบคุมงบประมาณ ดูแลความปลอดภัย ประสานงานกับคณาจารย์และผู้บริหารคณะศึกษาศาสตร์ มข. (ฝ่ายนี้สงวนสิทธิ์เฉพาะคณะกรรมการบริหารโครงการ ไม่เปิดรับสมัครบุคคลทั่วไป)",
     responsibilities: [
       "กำหนดทิศทาง นโยบาย และแผนปฏิบัติการหลักของค่าย Comclick 20",
       "ควบคุม ดูแล และติดตามความคืบหน้าการทำงานของทุกฝ่ายปฏิบัติการ",
@@ -66,11 +101,12 @@ export const DEPARTMENTS: Department[] = [
       "บริหารจัดการงบประมาณรวม และตัดสินใจในประเด็นสำคัญของโครงการ",
     ],
     qualifications: [
+      "สงวนสิทธิ์เฉพาะคณะกรรมการบริหารโครงการ Comclick 20 เท่านั้น",
       "มีภาวะผู้นำ มีความรับผิดชอบสูง และมีทักษะการตัดสินใจเชิงกลยุทธ์",
-      "มีทักษะการสื่อสาร ประสานงาน และบริหารจัดการทีมงานขนาดใหญ่",
       "มีความเข้าใจในโครงสร้างและวัฒนธรรมของค่าย Comclick เป็นอย่างดี",
     ],
-    openSlots: 5,
+    openSlots: 0,
+    isOpenForApplication: false,
     tags: ["Leadership", "Management", "Strategy", "Executive"],
     bannerGradient: "from-[#213966]/20 via-[#5e97d3]/20 to-white",
   },
@@ -376,6 +412,11 @@ export const DEPARTMENTS: Department[] = [
     bannerGradient: "from-[#b08b5f]/20 via-[#d98e89]/20 to-white",
   },
 ];
+
+// 12 Departments open for general applicant registration (Excludes Directorate/Executive)
+export const OPEN_DEPARTMENTS: Department[] = DEPARTMENTS.filter(
+  (dept) => dept.isOpenForApplication !== false && dept.id !== "directorate"
+);
 
 export const TIMELINE: CampTimelineItem[] = [
   {

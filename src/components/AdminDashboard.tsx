@@ -59,10 +59,21 @@ export default function AdminDashboard() {
   const [editFormData, setEditFormData] = useState<{
     id: string;
     fullNameTh: string;
+    nicknameTh: string;
     studentId: string;
+    year: string;
     phone: string;
     faculty: string;
     major: string;
+    facebookName: string;
+    facebookUrl: string;
+    reasonToApply: string;
+    strengths: string;
+    weaknesses: string;
+    techPortfolioUrl: string;
+    hasCar: string;
+    carType: string;
+    carTypeOther: string;
     diet: string;
     firstChoiceDeptId: string;
     secondChoiceDeptId: string;
@@ -75,10 +86,21 @@ export default function AdminDashboard() {
   }>({
     id: "",
     fullNameTh: "",
+    nicknameTh: "",
     studentId: "",
+    year: "ชั้นปีที่ 1",
     phone: "",
     faculty: "คณะศึกษาศาสตร์",
     major: "",
+    facebookName: "",
+    facebookUrl: "",
+    reasonToApply: "",
+    strengths: "",
+    weaknesses: "",
+    techPortfolioUrl: "",
+    hasCar: "",
+    carType: "",
+    carTypeOther: "",
     diet: "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
     firstChoiceDeptId: DEPARTMENTS[0]?.id ?? "protocol",
     secondChoiceDeptId: DEPARTMENTS[1]?.id ?? "fundraising",
@@ -168,8 +190,10 @@ export default function AdminDashboard() {
   const filteredApps = applications.filter((app) => {
     const matchSearch =
       (app.fullNameTh || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (app.nicknameTh || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (app.studentId || "").includes(searchQuery) ||
       (app.phone || "").includes(searchQuery) ||
+      (app.facebookName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (app.id || "").toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchStatus =
@@ -198,10 +222,21 @@ export default function AdminDashboard() {
     setEditFormData({
       id: app.id,
       fullNameTh: app.fullNameTh || "",
+      nicknameTh: app.nicknameTh || "",
       studentId: app.studentId || "",
+      year: app.year || "ชั้นปีที่ 1",
       phone: app.phone || "",
       faculty: app.faculty || "คณะศึกษาศาสตร์",
       major: app.major || "",
+      facebookName: app.facebookName || "",
+      facebookUrl: app.facebookUrl || "",
+      reasonToApply: app.reasonToApply || "",
+      strengths: app.strengths || "",
+      weaknesses: app.weaknesses || "",
+      techPortfolioUrl: app.techPortfolioUrl || "",
+      hasCar: String(app.hasCar || ""),
+      carType: app.carType || "",
+      carTypeOther: app.carTypeOther || "",
       diet: app.diet || "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
       firstChoiceDeptId: app.firstChoiceDeptId || DEPARTMENTS[0]?.id || "protocol",
       secondChoiceDeptId: app.secondChoiceDeptId || DEPARTMENTS[1]?.id || "fundraising",
@@ -268,14 +303,23 @@ export default function AdminDashboard() {
     const headers = [
       "รหัสใบสมัคร",
       "ชื่อ-นามสกุล",
+      "ชื่อเล่น",
       "รหัสนักศึกษา",
+      "ชั้นปี",
       "คณะ",
       "สาขาวิชา",
       "เบอร์โทรศัพท์",
-      "ข้อมูลอาหาร/แพ้อาหาร",
+      "ชื่อ Facebook",
+      "ลิงก์ Facebook",
+      "เหตุผลที่สนใจสมัคร",
+      "ข้อดีของตนเอง",
+      "ข้อเสียของตนเอง",
       "ฝ่ายอันดับที่ 1",
       "ฝ่ายอันดับที่ 2",
       "ถ้าไม่ติด 1 และ 2 อยากลงฝ่ายไหน",
+      "ลิงก์พอร์ตโฟลิโอ (ฝ่ายเทคโนฯ)",
+      "มีรถยนต์ (ฝ่ายรถเร็ว)",
+      "ประเภทรถ (ฝ่ายรถเร็ว)",
       "ฝ่ายที่ได้รับคัดเลือกจริง",
       "สถานะการคัดเลือก",
       "หมายเหตุ",
@@ -302,14 +346,23 @@ export default function AdminDashboard() {
       return [
         a.id,
         a.fullNameTh,
+        a.nicknameTh || "-",
         `\t${a.studentId}`,
+        a.year || "ปี 1",
         a.faculty || "คณะศึกษาศาสตร์",
         a.major,
         `\t${a.phone}`,
-        a.diet || "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
+        a.facebookName || "-",
+        a.facebookUrl || "-",
+        a.reasonToApply || "-",
+        a.strengths || "-",
+        a.weaknesses || "-",
         firstTh,
         secondTh,
         fallbackTh,
+        a.techPortfolioUrl || "-",
+        a.hasCar ? `ใช่ (${a.carType || ""})` : "ไม่",
+        a.carType || "-",
         assignedTh,
         statusTh,
         a.statusNotes || "-",
@@ -584,9 +637,15 @@ export default function AdminDashboard() {
                       <span className="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase bg-cc-cream text-cc-navy border border-cc-navy/20 truncate">
                         {dept.badge}
                       </span>
-                      <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-cc-cream text-cc-navy border border-cc-navy/20 whitespace-nowrap">
-                        เปิดรับสมัคร
-                      </span>
+                      {dept.isOpenForApplication === false || dept.id === "directorate" ? (
+                        <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-rose-100 text-rose-800 border border-rose-300 whitespace-nowrap">
+                          ไม่เปิดรับสมัครทั่วไป
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-cc-cream text-cc-navy border border-cc-navy/20 whitespace-nowrap">
+                          เปิดรับสมัคร
+                        </span>
+                      )}
                     </div>
 
                     {/* Department Name & Short Desc */}
@@ -976,24 +1035,28 @@ export default function AdminDashboard() {
                             </div>
                           </td>
                           <td className="py-3.5 px-4 font-bold text-cc-navy">
-                            <div>{app.fullNameTh}</div>
+                            <div>
+                              {app.fullNameTh} {app.nicknameTh && <span className="text-gray-500 font-normal">({app.nicknameTh})</span>}
+                            </div>
                             <div className="text-[11px] text-gray-500 font-mono font-normal">
                               โทร: {app.phone}
                             </div>
-                            {app.diet && (
-                              <div className="mt-1">
-                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                                  app.diet.includes("ไม่แพ้")
-                                    ? "bg-gray-100 text-gray-600 border-gray-200"
-                                    : "bg-emerald-50 text-emerald-900 border-emerald-300"
-                                }`}>
-                                  🍽️ {app.diet}
-                                </span>
+                            {app.facebookName && (
+                              <div className="text-[11px] text-blue-600 font-normal truncate max-w-[150px]">
+                                {app.facebookUrl ? (
+                                  <a href={app.facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                    FB: {app.facebookName}
+                                  </a>
+                                ) : (
+                                  <span>FB: {app.facebookName}</span>
+                                )}
                               </div>
                             )}
                           </td>
                           <td className="py-3.5 px-4">
-                            <div className="font-mono text-cc-navy font-bold">{app.studentId}</div>
+                            <div className="font-mono text-cc-navy font-bold">
+                              {app.studentId} • <span className="text-gray-600 font-sans">{app.year || "ปี 1"}</span>
+                            </div>
                             <div className="text-[10px] text-gray-500 font-bold">{app.faculty || "คณะศึกษาศาสตร์"}</div>
                             <div className="text-[11px] text-gray-700">{app.major}</div>
                           </td>
@@ -1095,11 +1158,11 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-4 text-xs">
-              {/* Personal Info Edit Grid */}
+              {/* 1. Personal Info Edit Grid */}
               <div className="p-4 rounded-2xl bg-gray-50 border-2 border-cc-navy/15 space-y-3">
                 <span className="font-bold text-cc-navy block text-sm flex items-center gap-1.5">
                   <User className="w-4 h-4 text-cc-blue" />
-                  <span>1. ข้อมูลส่วนตัวผู้สมัคร</span>
+                  <span>1. ข้อมูลส่วนตัวและการติดต่อ</span>
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
@@ -1108,6 +1171,16 @@ export default function AdminDashboard() {
                       type="text"
                       value={editFormData.fullNameTh}
                       onChange={(e) => setEditFormData({ ...editFormData, fullNameTh: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700">ชื่อเล่น:</label>
+                    <input
+                      type="text"
+                      placeholder="เช่น ปอนด์, ติน"
+                      value={editFormData.nicknameTh}
+                      onChange={(e) => setEditFormData({ ...editFormData, nicknameTh: e.target.value })}
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue"
                     />
                   </div>
@@ -1127,17 +1200,13 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="font-bold text-gray-700">เบอร์โทรศัพท์ (10 หลัก):</label>
+                    <label className="font-bold text-gray-700">ชั้นปี (1-3):</label>
                     <input
                       type="text"
-                      maxLength={10}
-                      placeholder="0812345678"
-                      value={editFormData.phone}
-                      onChange={(e) => {
-                        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
-                        setEditFormData({ ...editFormData, phone: digits });
-                      }}
-                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-mono outline-none focus:border-cc-blue"
+                      placeholder="ชั้นปีที่ 1"
+                      value={editFormData.year}
+                      onChange={(e) => setEditFormData({ ...editFormData, year: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue"
                     />
                   </div>
                   <div className="space-y-1">
@@ -1159,24 +1228,87 @@ export default function AdminDashboard() {
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue"
                     />
                   </div>
-                  <div className="sm:col-span-2 space-y-1">
-                    <label className="font-bold text-emerald-800">ข้อมูลอาหาร / การแพ้อาหาร:</label>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700">เบอร์โทรศัพท์ (10 หลัก):</label>
                     <input
                       type="text"
-                      placeholder="เช่น ทานได้ทุกอย่าง, แพ้อาหารทะเล, อาหารฮาลาล"
-                      value={editFormData.diet}
-                      onChange={(e) => setEditFormData({ ...editFormData, diet: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-emerald-300 bg-emerald-50/50 font-medium outline-none focus:border-emerald-600 text-cc-navy"
+                      maxLength={10}
+                      placeholder="0812345678"
+                      value={editFormData.phone}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                        setEditFormData({ ...editFormData, phone: digits });
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-mono outline-none focus:border-cc-blue"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700">ชื่อ Facebook:</label>
+                    <input
+                      type="text"
+                      placeholder="เช่น Somchai Jaidee"
+                      value={editFormData.facebookName}
+                      onChange={(e) => setEditFormData({ ...editFormData, facebookName: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue"
+                    />
+                  </div>
+                  <div className="sm:col-span-2 space-y-1">
+                    <label className="font-bold text-gray-700">Link Facebook:</label>
+                    <input
+                      type="url"
+                      placeholder="https://facebook.com/..."
+                      value={editFormData.facebookUrl}
+                      onChange={(e) => setEditFormData({ ...editFormData, facebookUrl: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-mono outline-none focus:border-cc-blue"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Department Preferences Edit */}
+              {/* 2. Section 2 Answers: Attitude & Reasons */}
+              <div className="p-4 rounded-2xl bg-purple-50/50 border-2 border-purple-200 space-y-3">
+                <span className="font-bold text-cc-navy block text-sm flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-purple-600" />
+                  <span>2. คำถามแสดงทัศนคติและความตั้งใจ</span>
+                </span>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-purple-950">เหตุผลที่สนใจสมัครเป็นพี่ค่าย Comclick 20:</label>
+                    <textarea
+                      rows={2}
+                      value={editFormData.reasonToApply}
+                      onChange={(e) => setEditFormData({ ...editFormData, reasonToApply: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-purple-200 bg-white font-medium outline-none focus:border-purple-500 text-gray-800"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-bold text-emerald-900">ข้อดีของตนเอง:</label>
+                      <textarea
+                        rows={2}
+                        value={editFormData.strengths}
+                        onChange={(e) => setEditFormData({ ...editFormData, strengths: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-emerald-200 bg-white font-medium outline-none focus:border-emerald-500 text-gray-800"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="font-bold text-amber-900">ข้อเสียของตนเอง:</label>
+                      <textarea
+                        rows={2}
+                        value={editFormData.weaknesses}
+                        onChange={(e) => setEditFormData({ ...editFormData, weaknesses: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-amber-200 bg-white font-medium outline-none focus:border-amber-500 text-gray-800"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Department Preferences & Special Questions */}
               <div className="p-4 rounded-2xl bg-blue-50/50 border-2 border-cc-blue/40 space-y-3">
                 <span className="font-bold text-cc-navy block text-sm flex items-center gap-1.5">
                   <Layers className="w-4 h-4 text-cc-coral" />
-                  <span>2. ฝ่ายที่เลือกสมัคร</span>
+                  <span>3. ฝ่ายที่เลือกสมัคร & คำถามพิเศษ</span>
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
@@ -1212,14 +1344,56 @@ export default function AdminDashboard() {
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue"
                     />
                   </div>
+
+                  {/* Tech PR Portfolio Link */}
+                  {(editFormData.firstChoiceDeptId === "tech-pr" || editFormData.secondChoiceDeptId === "tech-pr" || editFormData.techPortfolioUrl) && (
+                    <div className="sm:col-span-2 space-y-1 pt-1 border-t border-indigo-200">
+                      <label className="font-bold text-indigo-950">ลิงก์ Portfolio / ผลงาน (ฝ่ายเทคโนฯ):</label>
+                      <input
+                        type="url"
+                        placeholder="https://..."
+                        value={editFormData.techPortfolioUrl}
+                        onChange={(e) => setEditFormData({ ...editFormData, techPortfolioUrl: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-indigo-300 bg-white font-mono outline-none focus:border-indigo-600"
+                      />
+                    </div>
+                  )}
+
+                  {/* Fast Response Car details */}
+                  {(editFormData.firstChoiceDeptId === "fast-response" || editFormData.secondChoiceDeptId === "fast-response" || editFormData.hasCar) && (
+                    <div className="sm:col-span-2 grid grid-cols-2 gap-3 pt-1 border-t border-amber-200">
+                      <div className="space-y-1">
+                        <label className="font-bold text-amber-950">มีรถยนต์หรือไม่ (ฝ่ายรถเร็ว):</label>
+                        <select
+                          value={editFormData.hasCar}
+                          onChange={(e) => setEditFormData({ ...editFormData, hasCar: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-amber-300 bg-white font-bold outline-none"
+                        >
+                          <option value="">-- ระบุ --</option>
+                          <option value="ใช่">ใช่ (มีรถยนต์)</option>
+                          <option value="ไม่">ไม่ (ไม่มีรถยนต์)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-bold text-amber-950">ประเภทรถยนต์:</label>
+                        <input
+                          type="text"
+                          placeholder="รถเก๋ง, รถกระบะ, อื่นๆ"
+                          value={editFormData.carType}
+                          onChange={(e) => setEditFormData({ ...editFormData, carType: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-amber-300 bg-white font-medium outline-none"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Committee Decision & Evaluation (4 Statuses) */}
+              {/* 4. Committee Decision & Evaluation */}
               <div className="p-4 rounded-2xl bg-cc-yellow/30 border-2 border-cc-navy space-y-3">
                 <span className="font-bold text-cc-navy block text-sm flex items-center gap-1.5">
                   <Award className="w-4 h-4 text-cc-navy" />
-                  <span>3. การตัดสินของคณะกรรมการ & จัดสรรฝ่ายจริง</span>
+                  <span>4. การตัดสินของคณะกรรมการ & จัดสรรฝ่ายจริง</span>
                 </span>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

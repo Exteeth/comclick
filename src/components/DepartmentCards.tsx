@@ -157,9 +157,15 @@ export default function DepartmentCards({
                     >
                       <IconComponent className="w-6 h-6" />
                     </div>
-                    <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-cc-cream text-cc-navy border-2 border-cc-navy">
-                      เปิดรับสมัคร
-                    </span>
+                    {dept.isOpenForApplication === false || dept.id === "directorate" ? (
+                      <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-rose-100 text-rose-700 border-2 border-rose-400">
+                        ไม่เปิดรับสมัคร
+                      </span>
+                    ) : (
+                      <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-cc-cream text-cc-navy border-2 border-cc-navy">
+                        เปิดรับสมัคร
+                      </span>
+                    )}
                   </div>
 
                   <div>
@@ -243,13 +249,19 @@ export default function DepartmentCards({
                     )}
                   </button>
 
-                  <a
-                    href={`/apply?dept=${dept.id}`}
-                    className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-cc-coral hover:bg-cc-coral-dark transition-colors flex items-center justify-center gap-2 border-2 border-cc-navy shadow-solid-sm touch-manipulation active:translate-y-0.5"
-                  >
-                    <span>สมัครฝ่ายนี้</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </a>
+                  {dept.isOpenForApplication === false || dept.id === "directorate" ? (
+                    <div className="w-full py-2.5 px-3 rounded-xl text-xs font-bold text-gray-500 bg-gray-100 border-2 border-gray-300 text-center select-none flex items-center justify-center gap-1.5 cursor-not-allowed">
+                      <span>🔒 ไม่เปิดรับสมัครทั่วไป (ฝ่ายบริหาร)</span>
+                    </div>
+                  ) : (
+                    <a
+                      href={`/apply?dept=${dept.id}`}
+                      className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-cc-coral hover:bg-cc-coral-dark transition-colors flex items-center justify-center gap-2 border-2 border-cc-navy shadow-solid-sm touch-manipulation active:translate-y-0.5"
+                    >
+                      <span>สมัครฝ่ายนี้</span>
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </a>
+                  )}
                 </div>
               </div>
             );
@@ -299,9 +311,15 @@ export default function DepartmentCards({
                   })}
                 </div>
                 <div>
-                  <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-cc-cream text-cc-navy border border-cc-navy inline-block">
-                    เปิดรับสมัคร
-                  </span>
+                  {activeModalDept.isOpenForApplication === false || activeModalDept.id === "directorate" ? (
+                    <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-400 inline-block">
+                      ไม่เปิดรับสมัครบุคคลทั่วไป (ฝ่ายบริหารโครงการ)
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-cc-cream text-cc-navy border border-cc-navy inline-block">
+                      เปิดรับสมัคร
+                    </span>
+                  )}
                   <h3 className="font-display font-black text-lg sm:text-2xl text-cc-navy mt-1">
                     {activeModalDept.nameTh}
                   </h3>

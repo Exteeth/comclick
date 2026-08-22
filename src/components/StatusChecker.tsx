@@ -393,17 +393,33 @@ export default function StatusChecker() {
                     </span>
                     <div className="space-y-1">
                       <div>
+                        <span className="text-gray-500">ชื่อเล่น:</span>{" "}
+                        <strong className="text-cc-navy">{searchResult.nicknameTh || "-"}</strong> • <span className="text-gray-500">ชั้นปี:</span>{" "}
+                        <strong className="text-cc-navy">{searchResult.year || "ปี 1"}</strong>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">คณะ / สาขาวิชา:</span>{" "}
+                        <span className="text-gray-800 font-medium">{searchResult.faculty || "คณะศึกษาศาสตร์"} • {searchResult.major}</span>
+                      </div>
+                      <div>
                         <span className="text-gray-500">เบอร์โทรศัพท์:</span>{" "}
                         <strong className="text-cc-navy font-mono">{searchResult.phone}</strong>
                       </div>
-                      <div>
-                        <span className="text-gray-500">สาขาวิชา:</span>{" "}
-                        <span className="text-gray-800 font-medium">{searchResult.major}</span>
-                      </div>
-                      {searchResult.diet && (
+                      {searchResult.facebookName && (
                         <div className="pt-1 border-t border-gray-200 text-[11px]">
-                          <span className="text-gray-500">ข้อมูลอาหาร/แพ้อาหาร:</span>{" "}
-                          <span className="text-emerald-700 font-bold">{searchResult.diet}</span>
+                          <span className="text-gray-500">Facebook:</span>{" "}
+                          {searchResult.facebookUrl ? (
+                            <a
+                              href={searchResult.facebookUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 font-bold underline hover:text-blue-800"
+                            >
+                              {searchResult.facebookName} ↗
+                            </a>
+                          ) : (
+                            <span className="text-gray-800 font-bold">{searchResult.facebookName}</span>
+                          )}
                         </div>
                       )}
                     </div>

@@ -35,6 +35,7 @@ export interface Department {
   openSlots: number;
   tags: string[];
   bannerGradient: string;
+  isOpenForApplication?: boolean;
 }
 
 export interface Application {
@@ -42,37 +43,45 @@ export interface Application {
   createdAt: string;               // ISO String
   updatedAt: string;
 
-  // Core 6 Required Fields
-  fullNameTh: string;              // 1. ชื่อ - นามสกุล
-  studentId: string;               // 2. รหัสนักศึกษา
-  phone: string;                   // 3. เบอร์โทรศัพท์
-  major: string;                   // 4. สาขาวิชา
-  firstChoiceDeptId: string;       // 5. ฝ่ายที่ต้องการลง อันดับที่ 1
-  secondChoiceDeptId: string;      // 5. ฝ่ายที่ต้องการลง อันดับที่ 2
-  fallbackDeptChoice: string;      // 6. ถ้าไม่ติดอยากลงฝ่ายไหน
+  // Section 1: ข้อมูลทั่วไป
+  titleTh?: "นาย" | "นางสาว" | "นาง" | "อื่นๆ" | string;
+  fullNameTh: string;              // ชื่อ - นามสกุล
+  nicknameTh?: string;             // ชื่อเล่น
+  studentId: string;               // รหัสนักศึกษา (รูปแบบ 663050123-4)
+  faculty: string;                 // คณะ
+  major: string;                   // สาขาวิชา
+  year: string;                    // ชั้นปี (ปี 1 - ปี 3)
+  phone: string;                   // เบอร์โทรศัพท์ (10 หลัก ไม่มีขีด)
+  facebookName?: string;           // ชื่อ Facebook ของตนเอง
+  facebookUrl?: string;            // Link Facebook ของตนเอง
 
-  // Additional / Optional Fields
-  titleTh?: "นาย" | "นางสาว" | "นาง" | "อื่นๆ";
-  nicknameTh?: string;
-  fullNameEn?: string;
-  faculty?: string;
-  year?: YearLevel | string;
-  lineId?: string;
-  facebookOrIg?: string;
+  // Section 2: คำถามแสดงทัศนคติ
+  reasonToApply?: string;          // เพราะเหตุใดผู้สมัครจึงสนใจหรือต้องการสมัครเป็นพี่ค่าย...
+  strengths?: string;              // ข้อดีของตนเอง (พอสังเขป)
+  weaknesses?: string;             // ข้อเสียของตนเอง (พอสังเขป)
+
+  // Section 3: ฝ่ายที่ต้องการลงสมัคร
+  firstChoiceDeptId: string;       // ฝ่ายที่ต้องการลง อันดับที่ 1
+  secondChoiceDeptId: string;      // ฝ่ายที่ต้องการลง อันดับที่ 2
+  fallbackDeptChoice: string;      // ถ้าไม่ติดอยากลงฝ่ายไหน
+
+  // Special Questions
+  techPortfolioUrl?: string;       // สำหรับฝ่ายเทคโนโลยีและประชาสัมพันธ์
+  hasCar?: boolean | string;       // มีรถยนต์หรือไม่ (ใช่ / ไม่)
+  carType?: string;                // รถเก๋ง / รถกระบะ / อื่นๆ
+  carTypeOther?: string;           // ระบุประเภทรถอื่นๆ
+
+  // Additional / Compatibility Fields
+  diet?: DietRequirement | string;
+  dietNote?: string;
+  shirtSize?: ShirtSize | string;
   emergencyContact?: {
     name: string;
     relation: string;
     phone: string;
   };
-
-  shirtSize?: ShirtSize | string;
-  diet?: DietRequirement | string;
-  dietNote?: string;
-  medicalConditions?: string;
   canJoinPreparation?: boolean;
   canJoinCampDates?: boolean;
-
-  reasonToApply?: string;
   pastExperience?: string;
   skillsAndStrengths?: string;
   problemSolvingScenario?: string;

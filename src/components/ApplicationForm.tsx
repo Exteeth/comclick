@@ -2,7 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { CAMP_INFO, DEPARTMENTS, EDUCATION_MAJORS } from "@/lib/constants";
+import {
+  CAMP_INFO,
+  DEPARTMENTS,
+  OPEN_DEPARTMENTS,
+  KKU_FACULTIES,
+  EDUCATION_MAJORS,
+  STAFF_YEAR_OPTIONS,
+  TECH_PR_DRIVE_URL,
+} from "@/lib/constants";
 import { addApplication } from "@/lib/storage";
 import { Application } from "@/lib/types";
 import confetti from "canvas-confetti";
@@ -19,31 +27,19 @@ import {
   Clock,
   Layers,
   ShieldAlert,
-  Utensils,
-  Check,
-  HeartHandshake,
   Copy,
   CheckCheck,
   ExternalLink,
+  Facebook,
+  Car,
+  FolderUp,
+  Heart,
 } from "lucide-react";
-
-// Preset food allergy & dietary restriction options
-const FOOD_ALLERGY_OPTIONS = [
-  { id: "none", label: "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)", desc: "อาหารทั่วไปปกติ ไม่มีข้อจำกัด" },
-  { id: "halal", label: "อาหารฮาลาล (อิสลาม)", desc: "ต้องการอาหารตามหลักศาสนาอิสลาม" },
-  { id: "veg", label: "มังสวิรัติ (ไม่ทานเนื้อสัตว์)", desc: "ทานผัก/ไข่/นม หรือตามระบุ" },
-  { id: "vegan", label: "อาหารเจ / วีแกน", desc: "งดเนื้อสัตว์และผักฉุน" },
-  { id: "seafood", label: "แพ้อาหารทะเล", desc: "กุ้ง, ปู, หอย, หมึก ฯลฯ" },
-  { id: "peanuts", label: "แพ้ถั่วลิสง / ถั่วเปลือกแข็ง", desc: "ถั่วลิสง, เม็ดมะม่วงฯ" },
-  { id: "dairy", label: "แพ้นมวัว / แลคโตส", desc: "นม, เนย, ชีส" },
-  { id: "egg", label: "แพ้ไข่", desc: "ไข่ไก่ / เมนูที่มีไข่" },
-  { id: "gluten", label: "แพ้แป้งสาลี / กลูเตน", desc: "ขนมปัง, เบเกอรี่, เส้นบะหมี่" },
-  { id: "no_beef", label: "ไม่ทานเนื้อวัว", desc: "งดเนื้อวัวทุกเมนู" },
-];
 
 export default function ApplicationForm() {
   const searchParams = useSearchParams();
-  const preselectedDept = searchParams ? searchParams.get("dept") : null;
+  const rawDept = searchParams ? searchParams.get("dept") : null;
+  const preselectedDept = rawDept && rawDept !== "directorate" ? rawDept : null;
   const isPreviewMode = searchParams ? searchParams.get("preview") === "true" : false;
 
   const [regStatus, setRegStatus] = useState<"upcoming" | "open" | "closed">("upcoming");
@@ -61,28 +57,47 @@ export default function ApplicationForm() {
   const [duplicateInfo, setDuplicateInfo] = useState<{ studentId: string; appId?: string } | null>(null);
   const [isCopied, setIsCopied] = useState(false);
 
-  // Title prefix state
+  // ==========================================
+  // Section 1: ข้อมูลทั่วไป
+  // ==========================================
   const [titlePrefix, setTitlePrefix] = useState<string>("นาย");
   const [nameInput, setNameInput] = useState<string>("");
-
-  // Food Allergy / Dietary Drop box State
-  const [dietChoice, setDietChoice] = useState<string>("ทานได้ทุกอย่าง (ไม่แพ้อาหาร)");
-  const [otherAllergyNote, setOtherAllergyNote] = useState<string>("");
-
-  // Faculty & Major State
-  const [facultyType, setFacultyType] = useState<"edu" | "other">("edu");
-  const [customFacultyName, setCustomFacultyName] = useState<string>("");
+  const [nicknameInput, setNicknameInput] = useState<string>("");
+  const [studentIdInput, setStudentIdInput] = useState<string>("");
+  const [facultyChoice, setFacultyChoice] = useState<string>("คณะศึกษาศาสตร์");
+  const [customFacultyInput, setCustomFacultyInput] = useState<string>("");
   const [educationMajorChoice, setEducationMajorChoice] = useState<string>("สาขาวิชาคอมพิวเตอร์ศึกษา");
-  const [customMajorName, setCustomMajorName] = useState<string>("");
+  const [customMajorInput, setCustomMajorInput] = useState<string>("");
+  const [yearLevel, setYearLevel] = useState<string>("ชั้นปีที่ 1");
+  const [phoneInput, setPhoneInput] = useState<string>("");
+  const [facebookNameInput, setFacebookNameInput] = useState<string>("");
+  const [facebookUrlInput, setFacebookUrlInput] = useState<string>("");
 
-  // Form State: Core Fields
-  const [formData, setFormData] = useState({
-    studentId: "",
-    phone: "",
-    firstChoiceDeptId: preselectedDept || (DEPARTMENTS[0]?.id ?? "protocol"),
-    secondChoiceDeptId: DEPARTMENTS[1]?.id ?? "fundraising",
-    fallbackDeptChoice: "ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร",
-  });
+  // ==========================================
+  // Section 2: คำถามแสดงทัศนคติ
+  // ==========================================
+  const [reasonToApply, setReasonToApply] = useState<string>("");
+  const [strengths, setStrengths] = useState<string>("");
+  const [weaknesses, setWeaknesses] = useState<string>("");
+
+  // ==========================================
+  // Section 3: ฝ่ายที่ต้องการลงสมัคร & คำถามพิเศษ
+  // ==========================================
+  const [firstChoiceDeptId, setFirstChoiceDeptId] = useState<string>(preselectedDept || OPEN_DEPARTMENTS[0]?.id || "protocol");
+  const [secondChoiceDeptId, setSecondChoiceDeptId] = useState<string>(OPEN_DEPARTMENTS[1]?.id || "fundraising");
+  const [fallbackDeptChoice, setFallbackDeptChoice] = useState<string>("ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร");
+
+  // Special Question: Tech & PR
+  const [techPortfolioUrl, setTechPortfolioUrl] = useState<string>("");
+
+  // Special Question: Fast Response
+  const [hasCar, setHasCar] = useState<"ใช่" | "ไม่" | "">("");
+  const [carType, setCarType] = useState<"รถเก๋ง" | "รถกระบะ" | "อื่นๆ" | "">("");
+  const [carTypeOther, setCarTypeOther] = useState<string>("");
+
+  // Check if Tech & PR or Fast Response is selected in Choice 1 or Choice 2
+  const isTechPRSelected = firstChoiceDeptId === "tech-pr" || secondChoiceDeptId === "tech-pr";
+  const isFastResponseSelected = firstChoiceDeptId === "fast-response" || secondChoiceDeptId === "fast-response";
 
   useEffect(() => {
     setMounted(true);
@@ -113,13 +128,14 @@ export default function ApplicationForm() {
     return () => clearInterval(interval);
   }, []);
 
-  // Prevent accidental page reload/leave while typing form
+  // Prevent accidental unload while filling form
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       const hasUnsavedData =
         nameInput.trim().length > 0 ||
-        formData.studentId.trim().length > 0 ||
-        formData.phone.trim().length > 0;
+        studentIdInput.trim().length > 0 ||
+        phoneInput.trim().length > 0 ||
+        reasonToApply.trim().length > 0;
 
       if (hasUnsavedData && !createdApplication) {
         e.preventDefault();
@@ -129,31 +145,22 @@ export default function ApplicationForm() {
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [nameInput, formData.studentId, formData.phone, createdApplication]);
+  }, [nameInput, studentIdInput, phoneInput, reasonToApply, createdApplication]);
 
   useEffect(() => {
-    if (preselectedDept && DEPARTMENTS.some((d) => d.id === preselectedDept)) {
-      setFormData((prev) => ({ ...prev, firstChoiceDeptId: preselectedDept }));
+    if (preselectedDept && OPEN_DEPARTMENTS.some((d) => d.id === preselectedDept)) {
+      setFirstChoiceDeptId(preselectedDept);
     }
   }, [preselectedDept]);
 
-  const updateField = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setErrorMessage(null);
-    setDuplicateInfo(null);
-  };
-
   const handleFirstChoiceChange = (newFirstId: string) => {
-    let newSecondId = formData.secondChoiceDeptId;
+    let newSecondId = secondChoiceDeptId;
     if (newSecondId === newFirstId) {
-      const alt = DEPARTMENTS.find((d) => d.id !== newFirstId);
+      const alt = OPEN_DEPARTMENTS.find((d) => d.id !== newFirstId);
       newSecondId = alt ? alt.id : "";
     }
-    setFormData((prev) => ({
-      ...prev,
-      firstChoiceDeptId: newFirstId,
-      secondChoiceDeptId: newSecondId,
-    }));
+    setFirstChoiceDeptId(newFirstId);
+    setSecondChoiceDeptId(newSecondId);
     setErrorMessage(null);
   };
 
@@ -163,47 +170,8 @@ export default function ApplicationForm() {
     setTimeout(() => setIsCopied(false), 2500);
   };
 
-  const getCleanFullName = () => {
-    let clean = nameInput.trim();
-    // Strip redundant typed prefixes if already typed
-    clean = clean.replace(/^(นาย|นางสาว|นาง|น\.ส\.)\s*/, "");
-    return `${titlePrefix}${clean}`;
-  };
-
-  const getFinalFacultyString = (): string => {
-    if (facultyType === "edu") {
-      return "คณะศึกษาศาสตร์";
-    }
-    return customFacultyName.trim() || "คณะอื่นๆ (มข.)";
-  };
-
-  const getFinalMajorString = (): string => {
-    if (facultyType === "edu") {
-      return educationMajorChoice;
-    }
-    return customMajorName.trim() || "ไม่ระบุสาขา";
-  };
-
-  const getFinalDietString = () => {
-    if (dietChoice === "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)") {
-      if (otherAllergyNote.trim()) {
-        return `ทานได้ทุกอย่าง (หมายเหตุ: ${otherAllergyNote.trim()})`;
-      }
-      return "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)";
-    }
-    if (dietChoice === "แพ้อื่นๆ / มีข้อจำกัดเฉพาะ") {
-      return otherAllergyNote.trim()
-        ? `แพ้อื่นๆ (${otherAllergyNote.trim()})`
-        : "แพ้อื่นๆ (มีข้อจำกัดเฉพาะ)";
-    }
-    if (otherAllergyNote.trim()) {
-      return `${dietChoice} (ระบุเพิ่มเติม: ${otherAllergyNote.trim()})`;
-    }
-    return dietChoice;
-  };
-
-  // Helper to format student ID as 9 digits + '-' + 1 digit (Total 10 digits)
-  const formatStudentIdInput = (value: string): string => {
+  // Helper formatters
+  const formatStudentId = (value: string): string => {
     const digits = value.replace(/\D/g, "").slice(0, 10);
     if (digits.length > 9) {
       return `${digits.slice(0, 9)}-${digits.slice(9, 10)}`;
@@ -211,54 +179,109 @@ export default function ApplicationForm() {
     return digits;
   };
 
-  // Helper to format phone number as digits only (Max 10 digits)
-  const formatPhoneInput = (value: string): string => {
+  const formatPhone = (value: string): string => {
     return value.replace(/\D/g, "").slice(0, 10);
   };
 
+  const getCleanFullName = () => {
+    let clean = nameInput.trim();
+    clean = clean.replace(/^(นาย|นางสาว|นาง|น\.ส\.)\s*/, "");
+    return `${titlePrefix}${clean}`;
+  };
+
+  const getFinalFacultyString = (): string => {
+    if (facultyChoice === "อื่นๆ (โปรดระบุ)") {
+      return customFacultyInput.trim() || "อื่นๆ (มข.)";
+    }
+    return facultyChoice;
+  };
+
+  const getFinalMajorString = (): string => {
+    if (facultyChoice === "คณะศึกษาศาสตร์") {
+      if (educationMajorChoice === "อื่นๆ (โปรดระบุ)") {
+        return customMajorInput.trim() || "สาขาอื่นๆ (คณะศึกษาศาสตร์)";
+      }
+      return educationMajorChoice;
+    }
+    return customMajorInput.trim() || "ไม่ระบุสาขา";
+  };
+
   const validateForm = (): boolean => {
+    // 1. Full name validation
     const cleanName = nameInput.trim().replace(/^(นาย|นางสาว|นาง|น\.ส\.)\s*/, "");
     if (!cleanName) {
-      setErrorMessage("กรุณากรอก 1. ชื่อ - นามสกุล");
+      setErrorMessage("กรุณากรอก ชื่อ - สกุล ของตนเอง");
       return false;
     }
-
     if (cleanName.length < 3 || !cleanName.includes(" ") || cleanName.split(" ").filter(Boolean).length < 2) {
       setErrorMessage("กรุณากรอกทั้งชื่อและนามสกุลให้ครบถ้วน (คั่นด้วยการเว้นวรรค เช่น สมชาย ใจดี)");
       return false;
     }
 
-    const studentDigits = formData.studentId.replace(/\D/g, "");
+    // 2. Nickname validation
+    if (!nicknameInput.trim()) {
+      setErrorMessage("กรุณากรอก ชื่อเล่น ของตนเอง");
+      return false;
+    }
+
+    // 3. Student ID validation (10 digits)
+    const studentDigits = studentIdInput.replace(/\D/g, "");
     if (studentDigits.length !== 10) {
       setErrorMessage("รหัสนักศึกษาต้องเป็นตัวเลข 10 หลัก (รูปแบบ 663050123-4)");
       return false;
     }
 
-    const phoneDigits = formData.phone.replace(/\D/g, "");
+    // 4. Faculty validation
+    if (facultyChoice === "อื่นๆ (โปรดระบุ)" && !customFacultyInput.trim()) {
+      setErrorMessage("กรุณาระบุชื่อคณะของคุณ");
+      return false;
+    }
+
+    // 5. Major validation
+    if (facultyChoice === "คณะศึกษาศาสตร์" && educationMajorChoice === "อื่นๆ (โปรดระบุ)" && !customMajorInput.trim()) {
+      setErrorMessage("กรุณาระบุชื่อสาขาวิชาของคุณ");
+      return false;
+    }
+    if (facultyChoice !== "คณะศึกษาศาสตร์" && !customMajorInput.trim()) {
+      setErrorMessage("กรุณากรอกชื่อสาขาวิชาของคุณ");
+      return false;
+    }
+
+    // 6. Phone validation (10 digits, starts with 0)
+    const phoneDigits = phoneInput.replace(/\D/g, "");
     if (phoneDigits.length !== 10 || !phoneDigits.startsWith("0")) {
-      setErrorMessage("เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลักที่ถูกต้อง (เริ่มต้นด้วย 0 เช่น 0812345678)");
+      setErrorMessage("เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลักที่ถูกต้อง (ไม่มีขีด เช่น 0812345678)");
       return false;
     }
 
-    if (facultyType === "other") {
-      if (!customFacultyName.trim()) {
-        setErrorMessage("กรุณากรอกชื่อคณะของคุณ (เช่น คณะวิทยาศาสตร์, คณะวิศวกรรมศาสตร์)");
-        return false;
-      }
-      if (!customMajorName.trim()) {
-        setErrorMessage("กรุณากรอกชื่อสาขาวิชาของคุณ");
-        return false;
-      }
+    // 7. Section 2: Attitude & Questions validation
+    if (!reasonToApply.trim()) {
+      setErrorMessage("กรุณากรอก เหตุผลที่สนใจหรือต้องการสมัครเป็นพี่ค่ายคอมคลิก ครั้งที่ 20 ในส่วนที่ 2");
+      return false;
     }
-
-    // Strict validation for dietary restrictions
-    if (dietChoice === "แพ้อื่นๆ / มีข้อจำกัดเฉพาะ" && !otherAllergyNote.trim()) {
-      setErrorMessage("กรุณาระบุรายละเอียดในช่องหมายเหตุอาหาร (เนื่องจากเลือก 'แพ้อื่นๆ / มีข้อจำกัดเฉพาะ')");
+    if (!strengths.trim()) {
+      setErrorMessage("กรุณากรอก ข้อดีของตนเอง (พอสังเขป) ในส่วนที่ 2");
+      return false;
+    }
+    if (!weaknesses.trim()) {
+      setErrorMessage("กรุณากรอก ข้อเสียของตนเอง (พอสังเขป) ในส่วนที่ 2");
       return false;
     }
 
-    if (formData.firstChoiceDeptId === formData.secondChoiceDeptId) {
+    // 8. Section 3: Department choices validation
+    if (firstChoiceDeptId === "directorate" || secondChoiceDeptId === "directorate") {
+      setErrorMessage("ฝ่ายอำนวยการสงวนสิทธิ์เฉพาะคณะกรรมการบริหารโครงการ ไม่เปิดรับสมัครบุคคลทั่วไป");
+      return false;
+    }
+
+    if (firstChoiceDeptId === secondChoiceDeptId) {
       setErrorMessage("กรุณาเลือกฝ่ายอันดับที่ 1 และอันดับที่ 2 ไม่ซ้ำกัน");
+      return false;
+    }
+
+    // Special validation for Fast response
+    if (isFastResponseSelected && !hasCar) {
+      setErrorMessage("เนื่องจากคุณเลือกฝ่ายรถเร็ว กรุณาตอบคำถามพิเศษ 'คุณมีรถยนต์หรือไม่'");
       return false;
     }
 
@@ -275,20 +298,31 @@ export default function ApplicationForm() {
 
     try {
       const finalFullName = getCleanFullName();
-      const finalDiet = getFinalDietString();
       const finalFaculty = getFinalFacultyString();
       const finalMajor = getFinalMajorString();
 
       const payload = {
+        titleTh: titlePrefix,
         fullNameTh: finalFullName,
-        studentId: formData.studentId.trim(),
-        phone: formData.phone.trim().replace(/-/g, ""),
+        nicknameTh: nicknameInput.trim(),
+        studentId: studentIdInput.trim(),
         faculty: finalFaculty,
         major: finalMajor,
-        diet: finalDiet,
-        firstChoiceDeptId: formData.firstChoiceDeptId,
-        secondChoiceDeptId: formData.secondChoiceDeptId,
-        fallbackDeptChoice: formData.fallbackDeptChoice,
+        year: yearLevel,
+        phone: phoneInput.trim().replace(/-/g, ""),
+        facebookName: facebookNameInput.trim(),
+        facebookUrl: facebookUrlInput.trim(),
+        reasonToApply: reasonToApply.trim(),
+        strengths: strengths.trim(),
+        weaknesses: weaknesses.trim(),
+        firstChoiceDeptId: firstChoiceDeptId,
+        secondChoiceDeptId: secondChoiceDeptId,
+        fallbackDeptChoice: fallbackDeptChoice,
+        techPortfolioUrl: techPortfolioUrl.trim(),
+        hasCar: hasCar,
+        carType: carType,
+        carTypeOther: carTypeOther.trim(),
+        diet: "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
       };
 
       // 1. Sync with Server API & Neon PostgreSQL Database
@@ -301,7 +335,7 @@ export default function ApplicationForm() {
       const result = await res.json();
       if (!res.ok || !result.success) {
         if (result.duplicate) {
-          setDuplicateInfo({ studentId: formData.studentId.trim(), appId: result.existingId });
+          setDuplicateInfo({ studentId: studentIdInput.trim(), appId: result.existingId });
           setErrorMessage(null);
           setIsSubmitting(false);
           return;
@@ -323,10 +357,10 @@ export default function ApplicationForm() {
       // Trigger Celebration Confetti
       try {
         confetti({
-          particleCount: 100,
-          spread: 70,
+          particleCount: 120,
+          spread: 80,
           origin: { y: 0.6 },
-          colors: ["#FF5E36", "#FFC700", "#1B3B6F", "#2A9D8F"],
+          colors: ["#FF5E36", "#FFC700", "#1B3B6F", "#2A9D8F", "#8338EC"],
         });
       } catch (_) {}
     } catch (err: any) {
@@ -342,13 +376,11 @@ export default function ApplicationForm() {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12 sm:py-16 animate-fadeIn">
         <div className="bg-white rounded-3xl border-3 border-cc-navy shadow-solid-lg p-6 sm:p-12 text-center space-y-8">
-          {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cc-yellow text-cc-navy border-2 border-cc-navy text-xs font-mono font-bold uppercase shadow-solid-sm">
             <Clock className="w-4 h-4 text-cc-coral" />
             <span>COUNTDOWN TO REGISTRATION OPENING</span>
           </div>
 
-          {/* Title & Description */}
           <div className="space-y-3">
             <h1 className="font-display font-black text-2xl sm:text-4xl text-cc-navy tracking-tight">
               ระบบรับสมัครพี่ค่าย <span className="text-cc-blue">{CAMP_INFO.nameEn}</span>
@@ -397,7 +429,6 @@ export default function ApplicationForm() {
             </div>
           </div>
 
-          {/* Information & Action Links */}
           <div className="pt-4 border-t-2 border-cc-navy/10 space-y-4">
             <p className="text-xs text-gray-500 font-mono">
               💡 ระหว่างรอเปิดระบบ สามารถอ่านรายละเอียดบทบาทหน้าที่ของทั้ง 13 ฝ่าย เพื่อเตรียมตัวเลือกฝ่ายที่สนใจได้เลย
@@ -475,12 +506,15 @@ export default function ApplicationForm() {
             แบบฟอร์มรับสมัครพี่ค่าย <span className="text-cc-blue">{CAMP_INFO.nameEn}</span>
           </h1>
           <p className="text-xs sm:text-sm text-gray-600 font-normal">
-            กรุณากรอกข้อมูลให้ครบถ้วนเพื่อใช้ในการคัดเลือกและติดต่อประสานงานทีมสตาฟ
+            สาขาคอมพิวเตอร์ศึกษา คณะศึกษาศาสตร์ มหาวิทยาลัยขอนแก่น
           </p>
-          <div className="pt-2 flex justify-center">
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cc-cream border border-cc-navy/20 text-xs font-semibold text-cc-navy">
               <Clock className="w-3.5 h-3.5 text-cc-coral" />
-              <span>เปิดระบบรับสมัคร: <strong>{CAMP_INFO.registrationPeriod}</strong></span>
+              <span>เปิดรับสมัคร: <strong>{CAMP_INFO.registrationPeriod}</strong></span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700">
+              <span>*เปิดรับนักศึกษาชั้นปีที่ 1 - 3 (ทุกคณะใน มข.)</span>
             </span>
           </div>
         </div>
@@ -519,48 +553,55 @@ export default function ApplicationForm() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-10">
           {/* ========================================================= */}
-          {/* Section 1: ข้อมูลส่วนตัว (1 - 4) */}
+          {/* ส่วนที่ 1: ข้อมูลทั่วไป                                    */}
           {/* ========================================================= */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-              <div className="w-8 h-8 rounded-xl bg-cc-blue text-white flex items-center justify-center font-bold text-xs border border-cc-navy">
+          <div className="space-y-5">
+            <div className="flex items-center gap-2.5 pb-2.5 border-b-2 border-cc-navy/15">
+              <div className="w-8 h-8 rounded-xl bg-cc-blue text-white flex items-center justify-center font-bold text-xs border border-cc-navy shadow-sm">
                 01
               </div>
-              <h3 className="font-display font-black text-lg text-cc-navy">
-                ข้อมูลส่วนตัวผู้สมัคร
-              </h3>
+              <div>
+                <h3 className="font-display font-black text-lg text-cc-navy">
+                  ส่วนที่ 1: ข้อมูลทั่วไป
+                </h3>
+                <p className="text-xs text-gray-500 font-medium">
+                  ข้อมูลพื้นฐานของผู้สมัครและการติดต่อ
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* 1. ชื่อ - นามสกุล (Single Line Dropdown + Input) */}
+              {/* 1.1 คำนำหน้า + ชื่อ - สกุล */}
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="block text-xs sm:text-sm font-bold text-cc-navy">
-                  1. ชื่อ - นามสกุล <span className="text-red-500">*</span>
+                  คำนำหน้า และ ชื่อ - สกุล <span className="text-red-500">*</span>
                 </label>
 
                 <div className="flex gap-2">
-                  {/* Prefix Dropdown */}
+                  {/* Title Prefix Dropdown */}
                   <select
                     value={titlePrefix}
                     onChange={(e) => {
                       setTitlePrefix(e.target.value);
                       setErrorMessage(null);
                     }}
-                    className="w-24 sm:w-28 px-3 py-3 rounded-xl border-2 border-cc-navy bg-cc-cream/40 text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer focus:bg-white focus:border-cc-blue shadow-sm flex-shrink-0"
+                    className="w-28 sm:w-32 px-3 py-3 rounded-xl border-2 border-cc-navy bg-cc-cream/40 text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer focus:bg-white focus:border-cc-blue shadow-sm flex-shrink-0"
                   >
                     <option value="นาย">นาย</option>
                     <option value="นางสาว">นางสาว</option>
+                    <option value="นาง">นาง</option>
+                    <option value="อื่นๆ">อื่นๆ</option>
                   </select>
 
-                  {/* Name & Surname Input */}
+                  {/* Name Input */}
                   <div className="relative flex-1">
                     <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       required
-                      placeholder="กรอกชื่อและนามสกุล เช่น สมชาย ใจดี"
+                      placeholder="ชื่อและนามสกุล (เช่น สมชาย ใจดี)"
                       value={nameInput}
                       onChange={(e) => {
                         setNameInput(e.target.value);
@@ -573,16 +614,37 @@ export default function ApplicationForm() {
 
                 {nameInput.trim() && (
                   <p className="text-[11px] text-gray-500">
-                    ชื่อเต็มที่จะบันทึก: <strong className="text-cc-navy">{getCleanFullName()}</strong>
+                    ชื่อที่จะบันทึก: <strong className="text-cc-navy">{getCleanFullName()}</strong>
                   </p>
                 )}
               </div>
 
-              {/* 2. รหัสนักศึกษา (10 หลัก มีขีดก่อนตัวสุดท้าย) */}
+              {/* 1.2 ชื่อเล่น */}
+              <div className="space-y-1.5">
+                <label className="block text-xs sm:text-sm font-bold text-cc-navy">
+                  ชื่อเล่น <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Heart className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="เช่น ปอนด์, ติน, ก้อง"
+                    value={nicknameInput}
+                    onChange={(e) => {
+                      setNicknameInput(e.target.value);
+                      setErrorMessage(null);
+                    }}
+                    className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* 1.3 รหัสนักศึกษา (มีขีด XXXXXXXXX-X) */}
               <div className="space-y-1.5">
                 <label className="block text-xs sm:text-sm font-bold text-cc-navy flex items-center justify-between">
-                  <span>2. รหัสนักศึกษา (10 หลัก) <span className="text-red-500">*</span></span>
-                  <span className="text-[10px] font-mono text-gray-500 font-normal">รูปแบบ: XXXXXXXXX-X</span>
+                  <span>รหัสนักศึกษา (มีขีด) <span className="text-red-500">*</span></span>
+                  <span className="text-[10px] font-mono text-gray-500 font-normal">10 หลัก</span>
                 </label>
                 <div className="relative">
                   <GraduationCap className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -591,18 +653,133 @@ export default function ApplicationForm() {
                     required
                     maxLength={11}
                     placeholder="เช่น 663050123-4"
-                    value={formData.studentId}
-                    onChange={(e) => updateField("studentId", formatStudentIdInput(e.target.value))}
-                    className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-mono text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm"
+                    value={studentIdInput}
+                    onChange={(e) => {
+                      setStudentIdInput(formatStudentId(e.target.value));
+                      setErrorMessage(null);
+                    }}
+                    className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-mono text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
                   />
                 </div>
               </div>
 
-              {/* 3. เบอร์โทร (เฉพาะตัวเลข 10 หลัก) */}
+              {/* 1.4 คณะ (เปิดรับทุกคณะใน มข.) */}
+              <div className="space-y-1.5">
+                <label className="block text-xs sm:text-sm font-bold text-cc-navy">
+                  คณะที่สังกัด (มหาวิทยาลัยขอนแก่น) <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={facultyChoice}
+                  onChange={(e) => {
+                    setFacultyChoice(e.target.value);
+                    setErrorMessage(null);
+                  }}
+                  className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm focus:border-cc-blue focus:bg-cc-cream-50"
+                >
+                  {KKU_FACULTIES.map((fac) => (
+                    <option key={fac} value={fac}>
+                      {fac}
+                    </option>
+                  ))}
+                </select>
+
+                {facultyChoice === "อื่นๆ (โปรดระบุ)" && (
+                  <div className="pt-1 animate-fadeIn">
+                    <input
+                      type="text"
+                      required
+                      placeholder="กรอกชื่อคณะของคุณ เช่น วิทยาลัยนานาชาติ, คณะเกษตรศาสตร์ ฯลฯ"
+                      value={customFacultyInput}
+                      onChange={(e) => setCustomFacultyInput(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* 1.5 สาขาวิชา */}
+              <div className="space-y-1.5">
+                <label className="block text-xs sm:text-sm font-bold text-cc-navy">
+                  สาขาวิชา <span className="text-red-500">*</span>
+                </label>
+
+                {facultyChoice === "คณะศึกษาศาสตร์" ? (
+                  <div className="space-y-1.5">
+                    <select
+                      value={educationMajorChoice}
+                      onChange={(e) => {
+                        setEducationMajorChoice(e.target.value);
+                        setErrorMessage(null);
+                      }}
+                      className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm focus:border-cc-blue focus:bg-cc-cream-50"
+                    >
+                      {EDUCATION_MAJORS.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+
+                    {educationMajorChoice === "อื่นๆ (โปรดระบุ)" && (
+                      <input
+                        type="text"
+                        required
+                        placeholder="กรอกชื่อสาขาวิชาของคุณ"
+                        value={customMajorInput}
+                        onChange={(e) => setCustomMajorInput(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium animate-fadeIn"
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <BookOpen className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      required
+                      placeholder="กรอกชื่อสาขาวิชา เช่น วิทยาการคอมพิวเตอร์, การตลาด ฯลฯ"
+                      value={customMajorInput}
+                      onChange={(e) => {
+                        setCustomMajorInput(e.target.value);
+                        setErrorMessage(null);
+                      }}
+                      className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* 1.6 ชั้นปี (1 - 3 เท่านั้น *ไม่รับปี 4) */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="block text-xs sm:text-sm font-bold text-cc-navy flex items-center justify-between">
+                  <span>ชั้นปี (เปิดรับเฉพาะปี 1 - 3) <span className="text-red-500">*</span></span>
+                  <span className="text-[10px] text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                    *ไม่รับนักศึกษาชั้นปีที่ 4
+                  </span>
+                </label>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {STAFF_YEAR_OPTIONS.map((y) => (
+                    <button
+                      key={y.value}
+                      type="button"
+                      onClick={() => setYearLevel(y.value)}
+                      className={`py-3 rounded-xl border-2 font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                        yearLevel === y.value
+                          ? "bg-cc-navy text-white border-cc-navy shadow-solid-sm scale-[1.01]"
+                          : "bg-white text-gray-700 border-gray-300 hover:border-cc-navy hover:bg-cc-cream/40"
+                      }`}
+                    >
+                      {y.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 1.7 เบอร์โทรศัพท์ (ไม่มีขีด 10 หลัก) */}
               <div className="space-y-1.5">
                 <label className="block text-xs sm:text-sm font-bold text-cc-navy flex items-center justify-between">
-                  <span>3. เบอร์โทรศัพท์ (10 หลัก) <span className="text-red-500">*</span></span>
-                  <span className="text-[10px] font-mono text-gray-500 font-normal">เฉพาะตัวเลข 0-9</span>
+                  <span>เบอร์โทรศัพท์ (ไม่มีขีด) <span className="text-red-500">*</span></span>
+                  <span className="text-[10px] font-mono text-gray-500 font-normal">ตัวเลข 10 หลัก</span>
                 </label>
                 <div className="relative">
                   <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -611,204 +788,145 @@ export default function ApplicationForm() {
                     required
                     maxLength={10}
                     placeholder="เช่น 0891234567"
-                    value={formData.phone}
-                    onChange={(e) => updateField("phone", formatPhoneInput(e.target.value))}
-                    className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-mono text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm"
+                    value={phoneInput}
+                    onChange={(e) => {
+                      setPhoneInput(formatPhone(e.target.value));
+                      setErrorMessage(null);
+                    }}
+                    className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-mono text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
                   />
                 </div>
               </div>
 
-              {/* 4. คณะ & 5. สาขาวิชา */}
-              <div className="sm:col-span-2 space-y-4 pt-3 border-t border-gray-200">
-                {/* 4. คณะที่สังกัด */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs sm:text-sm font-bold text-cc-navy flex items-center gap-1.5">
-                    <GraduationCap className="w-4 h-4 text-cc-blue" />
-                    <span>4. คณะที่สังกัดในมหาวิทยาลัยขอนแก่น <span className="text-red-500">*</span></span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFacultyType("edu");
-                        setErrorMessage(null);
-                      }}
-                      className={`p-3 rounded-xl border-2 font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
-                        facultyType === "edu"
-                          ? "bg-cc-navy text-white border-cc-navy shadow-solid-sm"
-                          : "bg-white text-gray-700 border-gray-300 hover:border-cc-navy hover:bg-cc-cream/30"
-                      }`}
-                    >
-                      คณะศึกษาศาสตร์
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFacultyType("other");
-                        setErrorMessage(null);
-                      }}
-                      className={`p-3 rounded-xl border-2 font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
-                        facultyType === "other"
-                          ? "bg-cc-navy text-white border-cc-navy shadow-solid-sm"
-                          : "bg-white text-gray-700 border-gray-300 hover:border-cc-navy hover:bg-cc-cream/30"
-                      }`}
-                    >
-                      คณะอื่นๆ (มข.)
-                    </button>
-                  </div>
-
-                  {facultyType === "other" && (
-                    <div className="pt-1.5 animate-fadeIn">
-                      <input
-                        type="text"
-                        required
-                        placeholder="กรอกชื่อคณะของคุณ เช่น คณะวิทยาศาสตร์, คณะวิศวกรรมศาสตร์, คณะมนุษยศาสตร์ฯ"
-                        value={customFacultyName}
-                        onChange={(e) => {
-                          setCustomFacultyName(e.target.value);
-                          setErrorMessage(null);
-                        }}
-                        className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
-                      />
-                    </div>
-                  )}
+              {/* 1.8 ชื่อ Facebook ของตนเอง */}
+              <div className="space-y-1.5">
+                <label className="block text-xs sm:text-sm font-bold text-cc-navy">
+                  ชื่อ Facebook ของตนเอง <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Facebook className="w-4 h-4 text-blue-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="เช่น Somchai Jaidee"
+                    value={facebookNameInput}
+                    onChange={(e) => setFacebookNameInput(e.target.value)}
+                    className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                  />
                 </div>
+              </div>
 
-                {/* 5. สาขาวิชา */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs sm:text-sm font-bold text-cc-navy flex items-center gap-1.5">
-                    <BookOpen className="w-4 h-4 text-cc-coral" />
-                    <span>5. สาขาวิชา <span className="text-red-500">*</span></span>
-                  </label>
-
-                  {facultyType === "edu" ? (
-                    <div className="space-y-2">
-                      <select
-                        value={educationMajorChoice}
-                        onChange={(e) => {
-                          setEducationMajorChoice(e.target.value);
-                          setErrorMessage(null);
-                        }}
-                        className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm focus:border-cc-blue focus:bg-cc-cream-50"
-                      >
-                        {EDUCATION_MAJORS.map((m) => (
-                          <option key={m} value={m}>
-                            {m}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  ) : (
-                    <div className="animate-fadeIn">
-                      <input
-                        type="text"
-                        required
-                        placeholder="กรอกชื่อสาขาวิชาของคุณ เช่น วิทยาการคอมพิวเตอร์, เทคโนโลยีสารสนเทศ, การตลาด ฯลฯ"
-                        value={customMajorName}
-                        onChange={(e) => {
-                          setCustomMajorName(e.target.value);
-                          setErrorMessage(null);
-                        }}
-                        className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
-                      />
-                    </div>
-                  )}
-
-                  <p className="text-[11px] text-gray-500 pt-0.5">
-                    สังกัดที่จะบันทึก: <strong className="text-cc-navy">{getFinalFacultyString()}</strong> • <strong className="text-cc-blue">{getFinalMajorString()}</strong>
-                  </p>
+              {/* 1.9 Link Facebook ของตนเอง */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="block text-xs sm:text-sm font-bold text-cc-navy">
+                  Link Facebook ของตนเอง <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <ExternalLink className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="url"
+                    required
+                    placeholder="เช่น https://www.facebook.com/username หรือ https://facebook.com/profile.php?id=..."
+                    value={facebookUrlInput}
+                    onChange={(e) => setFacebookUrlInput(e.target.value)}
+                    className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-mono text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                  />
                 </div>
               </div>
             </div>
           </div>
 
           {/* ========================================================= */}
-          {/* Section 2: ข้อมูลอาหาร & การแพ้อาหาร (Dietary Drop box)    */}
+          {/* ส่วนที่ 2: คำถามแสดงทัศนคติและความตั้งใจ                  */}
           {/* ========================================================= */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-              <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xs border border-cc-navy">
+          <div className="space-y-5">
+            <div className="flex items-center gap-2.5 pb-2.5 border-b-2 border-cc-navy/15">
+              <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-xs border border-cc-navy shadow-sm">
                 02
               </div>
               <div>
-                <h3 className="font-display font-black text-lg text-cc-navy flex items-center gap-2">
-                  <span>ข้อมูลอาหาร & การแพ้อาหาร</span>
-                  <Utensils className="w-4 h-4 text-emerald-600" />
+                <h3 className="font-display font-black text-lg text-cc-navy">
+                  ส่วนที่ 2: ทัศนคติและความตั้งใจ
                 </h3>
-                <p className="text-xs text-gray-500">
-                  เลือกประเภทอาหารหรืออาหารที่แพ้ เพื่อให้ฝ่ายสวัสดิการและอาหารเตรียมอาหารได้อย่างถูกต้อง
+                <p className="text-xs text-gray-500 font-medium">
+                  บอกเล่าตัวตนและเหตุผลที่คุณอยากมาร่วมสร้างค่ายด้วยกัน
                 </p>
               </div>
             </div>
 
-            <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50/60 border-2 border-emerald-300 space-y-4">
-              {/* Drop box (Select Dropdown) */}
-              <div className="space-y-1.5">
-                <label className="block text-xs sm:text-sm font-bold text-cc-navy flex items-center gap-1.5">
-                  <Utensils className="w-4 h-4 text-emerald-700" />
-                  <span>ประเภทอาหาร / ข้อจำกัดด้านอาหาร <span className="text-red-500">*</span></span>
+            <div className="space-y-4">
+              {/* 2.1 เพราะเหตุใดจึงสนใจสมัคร */}
+              <div className="space-y-2 p-4 sm:p-5 rounded-2xl bg-purple-50/50 border-2 border-purple-300">
+                <label className="block text-xs sm:text-sm font-bold text-cc-navy leading-relaxed">
+                  2.1 เพราะเหตุใดผู้สมัครจึงสนใจหรือต้องการสมัครเป็นพี่ค่ายคอมคลิก ครั้งที่ 20 สาขาคอมพิวเตอร์ศึกษา คณะศึกษาศาสตร์ มหาวิทยาลัยขอนแก่น ? (พอสังเขป) <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={dietChoice}
-                  onChange={(e) => setDietChoice(e.target.value)}
-                  className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm focus:border-cc-blue focus:bg-cc-cream-50"
-                >
-                  <option value="ทานได้ทุกอย่าง (ไม่แพ้อาหาร)">
-                    ทานได้ทุกอย่าง (ไม่แพ้อาหาร) — อาหารทั่วไปปกติ
-                  </option>
-                  <optgroup label="อาหารตามหลักศาสนา / มังสวิรัติ">
-                    <option value="อาหารฮาลาล (อิสลาม)">อาหารฮาลาล (อิสลาม) — ตามหลักศาสนาอิสลาม</option>
-                    <option value="มังสวิรัติ (ไม่ทานเนื้อสัตว์)">มังสวิรัติ (ไม่ทานเนื้อสัตว์)</option>
-                    <option value="อาหารเจ / วีแกน">อาหารเจ / วีแกน — งดเนื้อสัตว์และผักฉุน</option>
-                  </optgroup>
-                  <optgroup label="แพ้อาหารเฉพาะ / ข้อจำกัดพิเศษ">
-                    <option value="แพ้อาหารทะเล (กุ้ง, ปู, หอย, หมึก)">แพ้อาหารทะเล (กุ้ง, ปู, หอย, หมึก)</option>
-                    <option value="แพ้ถั่วลิสง / ถั่วเปลือกแข็ง">แพ้ถั่วลิสง / ถั่วเปลือกแข็ง</option>
-                    <option value="แพ้นมวัว / ผลิตภัณฑ์จากนม">แพ้นมวัว / ผลิตภัณฑ์จากนม (แลคโตส)</option>
-                    <option value="แพ้ไข่">แพ้ไข่ (ไข่ไก่ / เมนูที่มีไข่)</option>
-                    <option value="แพ้แป้งสาลี / กลูเตน">แพ้แป้งสาลี / กลูเตน</option>
-                    <option value="ไม่ทานเนื้อวัว">ไม่ทานเนื้อวัว</option>
-                    <option value="แพ้อื่นๆ / มีข้อจำกัดเฉพาะ">แพ้อื่นๆ / มีข้อจำกัดเฉพาะ (โปรดระบุด้านล่าง)</option>
-                  </optgroup>
-                </select>
-              </div>
-
-              {/* Specific Allergy / Dietary Note Input */}
-              <div className="space-y-1.5 pt-1">
-                <label className="block text-xs font-bold text-cc-navy flex items-center gap-1.5">
-                  <HeartHandshake className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>ระบุรายละเอียดอาหารที่แพ้ หรือข้อจำกัดเพิ่มเติม (ถ้ามี):</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="เช่น แพ้กุ้งอย่างรุนแรง (ห้ามมีส่วนผสมเด็ดขาด), ไม่ทานผักชี, ทานมังสวิรัติแบบดื่มนมได้ เป็นต้น"
-                  value={otherAllergyNote}
-                  onChange={(e) => setOtherAllergyNote(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border-2 border-emerald-300 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:border-cc-navy outline-none shadow-sm font-medium"
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="เขียนอธิบายเหตุผล ความตั้งใจ หรือแรงบันดาลใจในการสมัครเป็นพี่ค่าย Comclick 20 พอสังเขป..."
+                  value={reasonToApply}
+                  onChange={(e) => {
+                    setReasonToApply(e.target.value);
+                    setErrorMessage(null);
+                  }}
+                  className="w-full p-3.5 rounded-xl border-2 border-purple-300 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:border-cc-navy focus:bg-white outline-none transition-all shadow-sm font-medium resize-y"
                 />
               </div>
 
-              {/* Summary Preview */}
-              <div className="p-3 rounded-xl bg-white border border-emerald-300/80 text-[11px] text-gray-700 flex items-center gap-2">
-                <span className="font-bold text-emerald-800 flex-shrink-0">🍽️ ข้อมูลอาหารที่จะบันทึก:</span>
-                <span className="font-medium text-cc-navy truncate">
-                  {getFinalDietString()}
-                </span>
+              {/* 2.2 ข้อดีของตนเอง */}
+              <div className="space-y-2 p-4 sm:p-5 rounded-2xl bg-emerald-50/50 border-2 border-emerald-300">
+                <label className="block text-xs sm:text-sm font-bold text-cc-navy">
+                  2.2 ข้อดีของตนเอง (พอสังเขป) <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  required
+                  rows={2}
+                  placeholder="เช่น เป็นคนตรงต่อเวลา มีความรับผิดชอบ เข้ากับคนง่าย มีทักษะการทำงานเป็นทีม เป็นต้น"
+                  value={strengths}
+                  onChange={(e) => {
+                    setStrengths(e.target.value);
+                    setErrorMessage(null);
+                  }}
+                  className="w-full p-3.5 rounded-xl border-2 border-emerald-300 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:border-cc-navy focus:bg-white outline-none transition-all shadow-sm font-medium resize-y"
+                />
+              </div>
+
+              {/* 2.3 ข้อเสียของตนเอง */}
+              <div className="space-y-2 p-4 sm:p-5 rounded-2xl bg-amber-50/50 border-2 border-amber-300">
+                <label className="block text-xs sm:text-sm font-bold text-cc-navy">
+                  2.3 ข้อเสียของตนเอง (พอสังเขป) <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  required
+                  rows={2}
+                  placeholder="เช่น บางครั้งเป็นคนคิดมาก แต่พยายามปรับตัวและรับฟังความเห็นผู้อื่นอยู่เสมอ เป็นต้น"
+                  value={weaknesses}
+                  onChange={(e) => {
+                    setWeaknesses(e.target.value);
+                    setErrorMessage(null);
+                  }}
+                  className="w-full p-3.5 rounded-xl border-2 border-amber-300 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:border-cc-navy focus:bg-white outline-none transition-all shadow-sm font-medium resize-y"
+                />
               </div>
             </div>
           </div>
 
           {/* ========================================================= */}
-          {/* Section 3: ฝ่ายที่ต้องการลงสมัคร (5 & 6) */}
+          {/* ส่วนที่ 3: ฝ่ายที่ต้องการสมัคร & คำถามพิเศษเฉพาะฝ่าย        */}
           {/* ========================================================= */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-              <div className="w-8 h-8 rounded-xl bg-cc-coral text-white flex items-center justify-center font-bold text-xs border border-cc-navy">
+          <div className="space-y-5">
+            <div className="flex items-center gap-2.5 pb-2.5 border-b-2 border-cc-navy/15">
+              <div className="w-8 h-8 rounded-xl bg-cc-coral text-white flex items-center justify-center font-bold text-xs border border-cc-navy shadow-sm">
                 03
               </div>
-              <h3 className="font-display font-black text-lg text-cc-navy">
-                5. ฝ่ายที่ต้องการลงสมัคร (2 อันดับ)
-              </h3>
+              <div>
+                <h3 className="font-display font-black text-lg text-cc-navy">
+                  ส่วนที่ 3: ฝ่ายที่ต้องการสมัคร & คำถามพิเศษ
+                </h3>
+                <p className="text-xs text-gray-500 font-medium">
+                  เลือกฝ่ายที่ต้องการลงปฏิบัติงานตามความถนัดและความสนใจ (12 ฝ่ายที่เปิดรับสมัคร *ไม่รวมฝ่ายอำนวยการ)
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -818,18 +936,18 @@ export default function ApplicationForm() {
                   ฝ่ายที่ต้องการลง ฝ่ายที่ 1 (อันดับ 1) <span className="text-red-500">*</span>
                 </label>
                 <select
-                  value={formData.firstChoiceDeptId}
+                  value={firstChoiceDeptId}
                   onChange={(e) => handleFirstChoiceChange(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer"
+                  className="w-full px-3 py-2.5 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm"
                 >
-                  {DEPARTMENTS.map((dept) => (
+                  {OPEN_DEPARTMENTS.map((dept) => (
                     <option key={dept.id} value={dept.id}>
                       {dept.nameTh}
                     </option>
                   ))}
                 </select>
-                <p className="text-[11px] text-gray-500">
-                  {DEPARTMENTS.find((d) => d.id === formData.firstChoiceDeptId)?.shortDesc}
+                <p className="text-[11px] text-gray-500 font-medium">
+                  {OPEN_DEPARTMENTS.find((d) => d.id === firstChoiceDeptId)?.shortDesc}
                 </p>
               </div>
 
@@ -839,12 +957,15 @@ export default function ApplicationForm() {
                   ฝ่ายที่ต้องการลง ฝ่ายที่ 2 (อันดับ 2) <span className="text-red-500">*</span>
                 </label>
                 <select
-                  value={formData.secondChoiceDeptId}
-                  onChange={(e) => updateField("secondChoiceDeptId", e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer"
+                  value={secondChoiceDeptId}
+                  onChange={(e) => {
+                    setSecondChoiceDeptId(e.target.value);
+                    setErrorMessage(null);
+                  }}
+                  className="w-full px-3 py-2.5 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm"
                 >
-                  {DEPARTMENTS.map((dept) => {
-                    const isSelectedInFirst = dept.id === formData.firstChoiceDeptId;
+                  {OPEN_DEPARTMENTS.map((dept) => {
+                    const isSelectedInFirst = dept.id === firstChoiceDeptId;
                     return (
                       <option
                         key={dept.id}
@@ -857,37 +978,27 @@ export default function ApplicationForm() {
                     );
                   })}
                 </select>
-                <p className="text-[11px] text-gray-500">
-                  {DEPARTMENTS.find((d) => d.id === formData.secondChoiceDeptId)?.shortDesc}
+                <p className="text-[11px] text-gray-500 font-medium">
+                  {OPEN_DEPARTMENTS.find((d) => d.id === secondChoiceDeptId)?.shortDesc}
                 </p>
               </div>
             </div>
-          </div>
 
-          {/* ========================================================= */}
-          {/* Section 4: ถ้าไม่ติดอยากลงฝ่ายไหน (ข้อ 6) */}
-          {/* ========================================================= */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-              <div className="w-8 h-8 rounded-xl bg-cc-yellow text-cc-navy flex items-center justify-center font-bold text-xs border border-cc-navy">
-                04
-              </div>
-              <h3 className="font-display font-black text-lg text-cc-navy">
-                6. ถ้าไม่ติดอันดับที่ 1 และ 2 อยากลงฝ่ายไหน?
-              </h3>
-            </div>
-
+            {/* Fallback Dept Choice */}
             <div className="p-4 sm:p-5 rounded-2xl bg-cc-cream border-2 border-cc-navy space-y-2">
+              <label className="block text-xs sm:text-sm font-bold text-cc-navy">
+                ถ้าไม่ติดอันดับที่ 1 และ 2 อยากลงฝ่ายไหน? <span className="text-red-500">*</span>
+              </label>
               <select
-                value={formData.fallbackDeptChoice}
-                onChange={(e) => updateField("fallbackDeptChoice", e.target.value)}
+                value={fallbackDeptChoice}
+                onChange={(e) => setFallbackDeptChoice(e.target.value)}
                 className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm"
               >
                 <option value="ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร">
                   ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร (แนะนำ)
                 </option>
                 <optgroup label="หรือระบุเลือกฝ่ายสำรองเฉพาะเจาะจง">
-                  {DEPARTMENTS.map((dept) => (
+                  {OPEN_DEPARTMENTS.map((dept) => (
                     <option key={dept.id} value={dept.nameTh}>
                       {dept.nameTh}
                     </option>
@@ -898,6 +1009,150 @@ export default function ApplicationForm() {
                 💡 หากฝ่ายที่คุณเลือกทั้ง 2 อันดับมีผู้สมัครเต็ม คณะกรรมการจะพิจารณาจัดสรรตามตัวเลือกนี้
               </p>
             </div>
+
+            {/* ========================================================= */}
+            {/* Special Question 1: ฝ่ายเทคโนโลยีและประชาสัมพันธ์          */}
+            {/* ========================================================= */}
+            {isTechPRSelected && (
+              <div className="p-5 rounded-3xl bg-indigo-50/80 border-3 border-indigo-500 shadow-solid space-y-4 animate-fadeIn">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 border-2 border-cc-navy shadow-sm">
+                    <FolderUp className="w-5 h-5 text-cc-yellow" />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-wider text-indigo-700 bg-indigo-100 px-2.5 py-0.5 rounded-full border border-indigo-300">
+                      คำถามพิเศษ: ฝ่ายเทคโนโลยีและประชาสัมพันธ์
+                    </span>
+                    <h4 className="font-display font-black text-base text-cc-navy">
+                      อัปโหลดผลงาน (Portfolio / ตัวอย่างผลงานมีเดีย)
+                    </h4>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      สำหรับผู้ที่สมัครฝ่ายเทคโนโลยีและประชาสัมพันธ์ (ไม่ว่าจะเลือกอันดับ 1 หรืออันดับ 2) ให้กดปุ่มด้านล่างเพื่ออัปโหลดผลงานลงในโฟลเดอร์ Google Drive หรือแนบลิงก์ผลงานของคุณ
+                    </p>
+                  </div>
+                </div>
+
+                {/* Google Drive Action Button */}
+                <div className="pt-1">
+                  <a
+                    href={TECH_PR_DRIVE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2.5 px-5 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm transition-all transform hover:-translate-y-0.5 cursor-pointer"
+                  >
+                    <FolderUp className="w-4 h-4 text-cc-yellow" />
+                    <span>กดเปิด Google Drive เพื่ออัปโหลดผลงาน</span>
+                    <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                  </a>
+                </div>
+
+                {/* Optional Portfolio Link input */}
+                <div className="space-y-1.5 pt-2 border-t border-indigo-200">
+                  <label className="block text-xs font-bold text-indigo-950">
+                    หรือแนบลิงก์ผลงาน / Portfolio เพิ่มเติม (Google Drive / Canva / Behance / อื่นๆ):
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="เช่น https://drive.google.com/... หรือ https://canva.com/..."
+                    value={techPortfolioUrl}
+                    onChange={(e) => setTechPortfolioUrl(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-indigo-300 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:border-cc-navy outline-none shadow-sm font-medium"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* ========================================================= */}
+            {/* Special Question 2: ฝ่ายรถเร็ว                             */}
+            {/* ========================================================= */}
+            {isFastResponseSelected && (
+              <div className="p-5 rounded-3xl bg-amber-50/80 border-3 border-amber-500 shadow-solid space-y-4 animate-fadeIn">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center flex-shrink-0 border-2 border-cc-navy shadow-sm">
+                    <Car className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300">
+                      คำถามพิเศษ: ฝ่ายรถเร็ว
+                    </span>
+                    <h4 className="font-display font-black text-base text-cc-navy">
+                      ข้อมูลยานพาหนะสำหรับภารกิจฝ่ายรถเร็ว
+                    </h4>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      สำหรับผู้ที่สมัครฝ่ายรถเร็ว (ไม่ว่าจะเลือกอันดับ 1 หรืออันดับ 2) เพื่อใช้ในการวางแผนจัดสรรยานพาหนะและภารกิจเดินทาง
+                    </p>
+                  </div>
+                </div>
+
+                {/* Question: Do you have a car? (ใช่ / ไม่) */}
+                <div className="space-y-2 pt-1">
+                  <label className="block text-xs sm:text-sm font-bold text-amber-950">
+                    คุณมีรถยนต์หรือไม่? <span className="text-red-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setHasCar("ใช่")}
+                      className={`py-3 rounded-xl border-2 font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                        hasCar === "ใช่"
+                          ? "bg-amber-500 text-white border-cc-navy shadow-solid-sm"
+                          : "bg-white text-gray-700 border-amber-300 hover:bg-amber-100/50"
+                      }`}
+                    >
+                      ✓ ใช่ (มีรถยนต์)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHasCar("ไม่")}
+                      className={`py-3 rounded-xl border-2 font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                        hasCar === "ไม่"
+                          ? "bg-amber-500 text-white border-cc-navy shadow-solid-sm"
+                          : "bg-white text-gray-700 border-amber-300 hover:bg-amber-100/50"
+                      }`}
+                    >
+                      ✗ ไม่ (ไม่มีรถยนต์)
+                    </button>
+                  </div>
+                </div>
+
+                {/* If Yes: Select Car Type (รถเก๋ง / รถกระบะ / อื่นๆ) */}
+                {hasCar === "ใช่" && (
+                  <div className="space-y-2 pt-2 border-t border-amber-200 animate-fadeIn">
+                    <label className="block text-xs sm:text-sm font-bold text-amber-950">
+                      ประเภทรถยนต์ของคุณ:
+                    </label>
+                    <div className="grid grid-cols-3 gap-2.5">
+                      {(["รถเก๋ง", "รถกระบะ", "อื่นๆ"] as const).map((type) => (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => setCarType(type)}
+                          className={`py-2.5 rounded-xl border-2 font-bold text-xs transition-all cursor-pointer ${
+                            carType === type
+                              ? "bg-cc-navy text-white border-cc-navy shadow-solid-sm"
+                              : "bg-white text-gray-700 border-amber-300 hover:bg-amber-100/50"
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+
+                    {carType === "อื่นๆ" && (
+                      <div className="pt-1 animate-fadeIn">
+                        <input
+                          type="text"
+                          placeholder="ระบุประเภทรถยนต์ เช่น รถ SUV, รถตู้, มอเตอร์ไซค์ ฯลฯ"
+                          value={carTypeOther}
+                          onChange={(e) => setCarTypeOther(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-xl border-2 border-amber-300 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:border-cc-navy outline-none shadow-sm font-medium"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Submit Button */}
@@ -923,7 +1178,7 @@ export default function ApplicationForm() {
         </form>
       </div>
 
-      {/* Success Modal / Slip */}
+      {/* Success Modal / Digital Slip */}
       {createdApplication && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 border-3 border-cc-navy shadow-solid-lg text-center space-y-6 animate-scaleUp">
@@ -967,20 +1222,26 @@ export default function ApplicationForm() {
                 </div>
               </div>
               <div className="flex justify-between">
+                <span className="text-gray-500">ชื่อ - สกุล (ชื่อเล่น):</span>
+                <span className="font-bold text-gray-800">
+                  {createdApplication.fullNameTh} {createdApplication.nicknameTh && `(${createdApplication.nicknameTh})`}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">รหัสนักศึกษา / ชั้นปี:</span>
+                <span className="font-bold text-gray-800">
+                  {createdApplication.studentId} • {createdApplication.year || "ปี 1"}
+                </span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-gray-500">คณะ / สาขาวิชา:</span>
                 <span className="font-bold text-gray-800 text-right truncate max-w-[210px]" title={`${createdApplication.faculty} • ${createdApplication.major}`}>
-                  {createdApplication.faculty || "คณะศึกษาศาสตร์"} • {createdApplication.major}
+                  {createdApplication.faculty} • {createdApplication.major}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">เบอร์โทรศัพท์:</span>
                 <span className="font-bold text-gray-800">{createdApplication.phone}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">ข้อมูลอาหาร/แพ้อาหาร:</span>
-                <span className="font-bold text-emerald-700">
-                  {createdApplication.diet || "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)"}
-                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">ฝ่ายอันดับ 1:</span>
@@ -1009,19 +1270,26 @@ export default function ApplicationForm() {
                 onClick={() => {
                   setCreatedApplication(null);
                   setNameInput("");
-                  setDietChoice("ทานได้ทุกอย่าง (ไม่แพ้อาหาร)");
-                  setOtherAllergyNote("");
-                  setFacultyType("edu");
-                  setCustomFacultyName("");
+                  setNicknameInput("");
+                  setStudentIdInput("");
+                  setFacultyChoice("คณะศึกษาศาสตร์");
+                  setCustomFacultyInput("");
                   setEducationMajorChoice("สาขาวิชาคอมพิวเตอร์ศึกษา");
-                  setCustomMajorName("");
-                  setFormData({
-                    studentId: "",
-                    phone: "",
-                    firstChoiceDeptId: DEPARTMENTS[0]?.id ?? "protocol",
-                    secondChoiceDeptId: DEPARTMENTS[1]?.id ?? "fundraising",
-                    fallbackDeptChoice: "ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร",
-                  });
+                  setCustomMajorInput("");
+                  setYearLevel("ชั้นปีที่ 1");
+                  setPhoneInput("");
+                  setFacebookNameInput("");
+                  setFacebookUrlInput("");
+                  setReasonToApply("");
+                  setStrengths("");
+                  setWeaknesses("");
+                  setTechPortfolioUrl("");
+                  setHasCar("");
+                  setCarType("");
+                  setCarTypeOther("");
+                  setFirstChoiceDeptId(DEPARTMENTS[0]?.id || "protocol");
+                  setSecondChoiceDeptId(DEPARTMENTS[1]?.id || "fundraising");
+                  setFallbackDeptChoice("ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร");
                 }}
                 className="py-3 px-5 rounded-xl bg-gray-100 hover:bg-gray-200 text-cc-navy font-bold text-xs sm:text-sm border-2 border-cc-navy/20 transition-all cursor-pointer"
               >
@@ -1032,11 +1300,10 @@ export default function ApplicationForm() {
         </div>
       )}
 
-      {/* Duplicate Application Popup Modal (เด้งขึ้นมากลางหน้าจอทันทีเมื่อพบการสมัครซ้ำ) */}
+      {/* Duplicate Application Popup Modal */}
       {duplicateInfo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border-3 border-cc-navy shadow-solid-lg text-center space-y-5 animate-scaleUp">
-            {/* Warning Icon */}
             <div className="w-16 h-16 rounded-2xl bg-amber-100 border-2 border-cc-navy text-amber-600 flex items-center justify-center mx-auto shadow-solid-sm">
               <AlertCircle className="w-8 h-8 text-amber-600" />
             </div>
@@ -1053,7 +1320,6 @@ export default function ApplicationForm() {
               </p>
             </div>
 
-            {/* Application Detail Box */}
             {duplicateInfo.appId && (
               <div className="p-3.5 rounded-2xl bg-cc-cream border-2 border-cc-navy/30 text-left font-mono text-xs space-y-1">
                 <div className="flex justify-between items-center font-bold">
@@ -1066,7 +1332,6 @@ export default function ApplicationForm() {
               </div>
             )}
 
-            {/* Action Buttons */}
             <div className="space-y-2 pt-2">
               <a
                 href={`/status?q=${encodeURIComponent(duplicateInfo.studentId)}`}

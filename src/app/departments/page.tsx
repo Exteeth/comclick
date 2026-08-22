@@ -4,8 +4,8 @@ import { ArrowLeft, Users, Send } from "lucide-react";
 import { CAMP_INFO } from "@/lib/constants";
 
 export const metadata = {
-  title: "13 ฝ่ายที่เปิดรับสมัครพี่ค่าย Comclick 20 | ComClick Camp #20",
-  description: "รายละเอียด 13 ฝ่ายงาน ภาระหน้าที่ และคุณสมบัติในการสมัครพี่ค่าย Comclick 20",
+  title: "ฝ่ายปฏิบัติการและรายละเอียดงานพี่ค่าย Comclick 20 | ComClick Camp #20",
+  description: "รายละเอียด 12 ฝ่ายที่เปิดรับสมัคร และฝ่ายอำนวยการบริหารโครงการ Comclick 20",
 };
 
 export default function DepartmentsPage() {

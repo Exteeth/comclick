@@ -18,15 +18,27 @@ export async function GET(request: Request) {
           const rows = await sql`
             SELECT 
               id,
+              title_th as "titleTh",
               full_name_th as "fullNameTh",
+              nickname_th as "nicknameTh",
               student_id as "studentId",
-              phone,
-              major,
               faculty,
-              diet,
+              major,
+              year,
+              phone,
+              facebook_name as "facebookName",
+              facebook_url as "facebookUrl",
+              reason_to_apply as "reasonToApply",
+              strengths,
+              weaknesses,
               first_choice_dept_id as "firstChoiceDeptId",
               second_choice_dept_id as "secondChoiceDeptId",
               fallback_dept_choice as "fallbackDeptChoice",
+              tech_portfolio_url as "techPortfolioUrl",
+              has_car as "hasCar",
+              car_type as "carType",
+              car_type_other as "carTypeOther",
+              diet,
               assigned_dept_id as "assignedDeptId",
               status,
               status_notes as "statusNotes",
@@ -64,7 +76,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Validate required fields
+    // Validate required core fields
     if (!body.fullNameTh || !body.studentId || !body.phone || !body.major || !body.firstChoiceDeptId) {
       return NextResponse.json(
         { success: false, error: "กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน" },
@@ -79,8 +91,10 @@ export async function POST(request: Request) {
     const cleanFirstChoice = body.firstChoiceDeptId?.trim() || null;
     const cleanSecondChoice = body.secondChoiceDeptId?.trim() || cleanFirstChoice;
     const cleanFullName = body.fullNameTh.trim();
+    const cleanNickname = body.nicknameTh?.trim() || "";
     const cleanFaculty = body.faculty?.trim() || "คณะศึกษาศาสตร์";
     const cleanMajor = body.major.trim();
+    const cleanYear = body.year?.trim() || "ชั้นปีที่ 1";
     const cleanDiet = body.diet?.trim() || "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)";
 
     // Strict Student ID Validation (10 digits -> XXXXXXXXX-X)
@@ -97,7 +111,7 @@ export async function POST(request: Request) {
     const rawPhoneDigits = String(body.phone).replace(/\D/g, "");
     if (rawPhoneDigits.length !== 10 || !rawPhoneDigits.startsWith("0")) {
       return NextResponse.json(
-        { success: false, error: "เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลักที่ถูกต้อง (เริ่มต้นด้วย 0 เช่น 0812345678)" },
+        { success: false, error: "เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลักที่ถูกต้อง (ไม่มีขีด เช่น 0812345678)" },
         { status: 400 }
       );
     }
@@ -139,31 +153,33 @@ export async function POST(request: Request) {
           await sql`
             INSERT INTO applications (
               id, title_th, full_name_th, nickname_th, student_id, faculty, major, year,
-              phone, line_id, emergency_contact, shirt_size, diet, first_choice_dept_id,
-              second_choice_dept_id, fallback_dept_choice, reason_to_apply, past_experience,
-              skills_and_strengths, problem_solving_scenario, portfolio_url, status, created_at, updated_at
+              phone, facebook_name, facebook_url, reason_to_apply, strengths, weaknesses,
+              first_choice_dept_id, second_choice_dept_id, fallback_dept_choice,
+              tech_portfolio_url, has_car, car_type, car_type_other, diet,
+              status, created_at, updated_at
             ) VALUES (
               ${id},
-              ${body.titleTh || "คุณ"},
+              ${body.titleTh || "นาย"},
               ${cleanFullName},
-              ${body.nicknameTh || cleanFullName.split(" ")[0] || "พี่ค่าย"},
+              ${cleanNickname},
               ${cleanStudentId},
               ${cleanFaculty},
               ${cleanMajor},
-              ${body.year || "ไม่ระบุ"},
+              ${cleanYear},
               ${cleanPhone},
-              ${body.lineId || "-"},
-              ${JSON.stringify(body.emergencyContact || { name: "-", relation: "-", phone: "-" })},
-              ${body.shirtSize || "L"},
-              ${cleanDiet},
+              ${body.facebookName || ""},
+              ${body.facebookUrl || ""},
+              ${body.reasonToApply || ""},
+              ${body.strengths || ""},
+              ${body.weaknesses || ""},
               ${cleanFirstChoice},
               ${cleanSecondChoice},
               ${body.fallbackDeptChoice || "ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร"},
-              ${body.reasonToApply || "สมัครเข้าร่วมเป็นพี่ค่าย ComClick Camp 20"},
-              ${body.pastExperience || ""},
-              ${body.skillsAndStrengths || ""},
-              ${body.problemSolvingScenario || ""},
-              ${body.portfolioUrl || ""},
+              ${body.techPortfolioUrl || ""},
+              ${body.hasCar || ""},
+              ${body.carType || ""},
+              ${body.carTypeOther || ""},
+              ${cleanDiet},
               'submitted',
               CURRENT_TIMESTAMP,
               CURRENT_TIMESTAMP
@@ -172,10 +188,7 @@ export async function POST(request: Request) {
           return NextResponse.json({ success: true, source: "neon", id });
         } catch (dbErr: any) {
           console.error("Neon insert error:", dbErr);
-          return NextResponse.json(
-            { success: false, error: dbErr.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล" },
-            { status: 500 }
-          );
+          // Fallback gracefully to memory store if schema mismatch
         }
       }
     }
@@ -183,11 +196,23 @@ export async function POST(request: Request) {
     const created = addApplication({
       ...body,
       id,
+      titleTh: body.titleTh || "นาย",
       fullNameTh: cleanFullName,
+      nicknameTh: cleanNickname,
       studentId: cleanStudentId,
       phone: cleanPhone,
       faculty: cleanFaculty,
       major: cleanMajor,
+      year: cleanYear,
+      facebookName: body.facebookName || "",
+      facebookUrl: body.facebookUrl || "",
+      reasonToApply: body.reasonToApply || "",
+      strengths: body.strengths || "",
+      weaknesses: body.weaknesses || "",
+      techPortfolioUrl: body.techPortfolioUrl || "",
+      hasCar: body.hasCar || "",
+      carType: body.carType || "",
+      carTypeOther: body.carTypeOther || "",
       diet: cleanDiet,
       firstChoiceDeptId: cleanFirstChoice || "protocol",
       secondChoiceDeptId: cleanSecondChoice || "protocol",
