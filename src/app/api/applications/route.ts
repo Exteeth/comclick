@@ -289,6 +289,22 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
+    const all = searchParams.get("all");
+
+    // Clear all applications
+    if (all === "true" || id === "ALL") {
+      if (isNeonConfigured()) {
+        const sql = getNeonSql();
+        if (sql) {
+          try {
+            await sql`DELETE FROM applications;`;
+          } catch (dbErr: any) {
+            console.error("Neon delete all error:", dbErr);
+          }
+        }
+      }
+      return NextResponse.json({ success: true, message: "ล้างข้อมูลผู้สมัครทั้งหมดเรียบร้อยแล้ว" });
+    }
 
     if (!id) {
       return NextResponse.json({ success: false, error: "Missing application id" }, { status: 400 });

@@ -298,52 +298,44 @@ export default function StatusChecker() {
                   </div>
                 ) : isInterview ? (
                   /* 🎙️ HERO 2: INTERVIEW DETAILS (WHEN INTERVIEW ELIGIBLE) */
-                  <div className="p-6 rounded-3xl bg-purple-50 border-3 border-purple-600 shadow-solid-sm space-y-3 animate-fadeIn">
+                  <div className="p-6 rounded-3xl bg-purple-50 border-3 border-purple-600 shadow-solid-sm space-y-4 animate-fadeIn">
                     <div className="flex items-center gap-2 text-xs font-mono font-bold text-purple-900 uppercase">
                       <Mic className="w-4 h-4 text-purple-700" />
-                      <span>ข้อมูลและกำหนดการสอบสัมภาษณ์พี่ค่าย Comclick 20</span>
+                      <span>ประกาศผลการคัดเลือกรอบเอกสาร</span>
                     </div>
 
-                    <div className="bg-white p-5 rounded-2xl border-2 border-purple-400 space-y-3">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-purple-100 border border-purple-300 text-purple-700 flex items-center justify-center flex-shrink-0 text-lg">
+                    <div className="bg-white p-5 sm:p-6 rounded-2xl border-2 border-purple-400 space-y-4">
+                      <div className="flex items-start gap-3.5">
+                        <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center flex-shrink-0 text-2xl border-2 border-cc-navy shadow-solid-sm">
                           🎙️
                         </div>
                         <div>
-                          <div className="font-display font-black text-xl text-purple-950">
-                            คุณมีสิทธิ์เข้ารับการสัมภาษณ์
+                          <div className="font-display font-black text-xl sm:text-2xl text-purple-950">
+                            คุณมีสิทธิ์เข้ารับการสัมภาษณ์พี่ค่าย Comclick 20!
                           </div>
-                          <p className="text-xs text-gray-600 mt-0.5">
-                            กรุณาเตรียมตัวและเข้ารับการสัมภาษณ์ตามวัน เวลา และสถานที่ที่กำหนด
+                          <p className="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">
+                            ขอแสดงความยินดีด้วย! คุณผ่านการพิจารณาคุณสมบัติรอบเอกสารเรียบร้อยแล้ว
                           </p>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-purple-100 font-sans text-xs">
-                        <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-200">
-                          <span className="font-bold text-purple-950 flex items-center gap-1.5 mb-1">
-                            <Calendar className="w-3.5 h-3.5 text-purple-700" />
-                            <span>วันและเวลาสัมภาษณ์:</span>
-                          </span>
-                          <span className="text-gray-800 font-medium block">
-                            {searchResult.interviewDate || "จะประกาศวันและเวลาให้ทราบทางเพจค่ายและกลุ่มประสานงาน"}
-                          </span>
+                      {/* Notice: Interview schedule selection coming soon */}
+                      <div className="p-4 sm:p-5 rounded-2xl bg-purple-100/60 border-2 border-purple-300 text-purple-950 text-xs sm:text-sm space-y-2">
+                        <div className="font-bold flex items-center gap-2 text-purple-950 text-sm">
+                          <Calendar className="w-4 h-4 text-purple-700 flex-shrink-0" />
+                          <span>กำหนดการและตารางนัดหมายการสัมภาษณ์:</span>
                         </div>
-
-                        <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-200">
-                          <span className="font-bold text-purple-950 flex items-center gap-1.5 mb-1">
-                            <MapPin className="w-3.5 h-3.5 text-purple-700" />
-                            <span>สถานที่สัมภาษณ์ / ช่องทาง:</span>
-                          </span>
-                          <span className="text-gray-800 font-medium block">
-                            {searchResult.interviewLocation || "ห้องประชุมสาขาวิชาคอมพิวเตอร์ศึกษา (หรือ Online)"}
-                          </span>
-                        </div>
+                        <p className="text-xs sm:text-sm text-purple-900 leading-relaxed font-medium">
+                          📌 <strong>วันและเวลาสัมภาษณ์:</strong> ทางคณะกรรมการกำลังจัดเตรียมระบบตารางนัดหมาย เพื่อให้น้องๆ ผู้มีสิทธิ์สัมภาษณ์สามารถ <strong>เลือกวันและช่วงเวลาที่สะดวกได้ด้วยตนเอง</strong> ในเร็วๆ นี้
+                        </p>
+                        <p className="text-[11px] sm:text-xs text-purple-700 pt-1 border-t border-purple-200/80">
+                          💡 กรุณาติดตามลิงก์ตารางเลือกวันสัมภาษณ์ผ่านทางหน้าตรวจสอบสถานะนี้ หรือทางเพจ Facebook ประชาสัมพันธ์ของค่าย
+                        </p>
                       </div>
 
                       {searchResult.statusNotes && (
-                        <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs">
-                          <strong>💡 หมายเหตุเพิ่มเติมจากคณะกรรมการ:</strong> {searchResult.statusNotes}
+                        <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs">
+                          <strong>💡 ข้อความเพิ่มเติมจากคณะกรรมการ:</strong> {searchResult.statusNotes}
                         </div>
                       )}
                     </div>

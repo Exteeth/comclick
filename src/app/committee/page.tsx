@@ -238,7 +238,7 @@ export default function CommitteePage() {
             พร้อมมาร่วมงานกับพวกเราใน ComClick 20 แล้วหรือยัง?
           </h3>
           <p className="text-xs sm:text-sm text-white/80 max-w-lg mx-auto font-light">
-            เปิดรับสมัครพี่ค่ายทุกคณะ ทุกชั้นปี ไม่จำกัดประสบการณ์ สมัครได้ทั้งอันดับ 1 และอันดับ 2
+            เปิดรับสมัครพี่ค่ายทุกคณะ ชั้นปีที่ 1 - 3 ไม่จำกัดประสบการณ์ สมัครได้ทั้งอันดับ 1 และอันดับ 2
           </p>
           <div className="pt-2">
             <a

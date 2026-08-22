@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Application, ApplicationStatus } from "@/lib/types";
 import { DEPARTMENTS } from "@/lib/constants";
+import { getApplications, updateApplicationFull, clearAllApplications } from "@/lib/storage";
 import {
   ShieldCheck,
   Users,
@@ -118,31 +119,48 @@ export default function AdminDashboard() {
       const res = await fetch("/api/applications", { cache: "no-store" });
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
-        setApplications(json.data);
+        const sorted = [...json.data].sort(
+          (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+        );
+        setApplications(sorted);
+        saveApplications(sorted);
+        return;
       }
+      setApplications(getApplications());
     } catch (err) {
-      console.warn("Failed to fetch from API, reading local storage", err);
+      console.warn("Failed to fetch applications:", err);
+      setApplications(getApplications());
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
+    // Initial load from storage / API
+    const initialLocal = getApplications();
+    setApplications(initialLocal);
+
     const auth = sessionStorage.getItem("cc20_admin_auth");
     if (auth === "true") {
       setIsAuthenticated(true);
     }
     fetchLiveApplications();
 
-    window.addEventListener("comclick_storage_updated", fetchLiveApplications);
+    const handleStorageUpdate = () => {
+      fetchLiveApplications();
+    };
 
-    // Auto-sync polling every 5 seconds for live realtime dashboard updates
+    window.addEventListener("comclick_storage_updated", handleStorageUpdate);
+    window.addEventListener("storage", handleStorageUpdate);
+
+    // Auto-sync polling every 3 seconds for live realtime dashboard updates
     const timer = setInterval(() => {
       fetchLiveApplications();
-    }, 5000);
+    }, 3000);
 
     return () => {
-      window.removeEventListener("comclick_storage_updated", fetchLiveApplications);
+      window.removeEventListener("comclick_storage_updated", handleStorageUpdate);
+      window.removeEventListener("storage", handleStorageUpdate);
       clearInterval(timer);
     };
   }, []);
@@ -214,10 +232,14 @@ export default function AdminDashboard() {
 
   // Open Edit Modal
   const handleOpenEdit = (app: Application) => {
+    const isAccepted = isAppAccepted(app);
+    const isInterview = isAppInterview(app);
+    const isRejected = isAppRejected(app);
+
     let normalizedStatus: ApplicationStatus = "SUBMITTED";
-    if (isAppAccepted(app)) normalizedStatus = "ACCEPTED";
-    else if (isAppRejected(app)) normalizedStatus = "REJECTED";
-    else if (isAppInterview(app)) normalizedStatus = "INTERVIEW_ELIGIBLE";
+    if (isAccepted) normalizedStatus = "ACCEPTED";
+    else if (isRejected) normalizedStatus = "REJECTED";
+    else if (isInterview) normalizedStatus = "INTERVIEW_ELIGIBLE";
 
     setEditFormData({
       id: app.id,
@@ -241,7 +263,7 @@ export default function AdminDashboard() {
       firstChoiceDeptId: app.firstChoiceDeptId || DEPARTMENTS[0]?.id || "protocol",
       secondChoiceDeptId: app.secondChoiceDeptId || DEPARTMENTS[1]?.id || "fundraising",
       fallbackDeptChoice: app.fallbackDeptChoice || "ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร",
-      assignedDeptId: app.assignedDeptId || app.firstChoiceDeptId || "",
+      assignedDeptId: isAccepted ? (app.assignedDeptId || app.firstChoiceDeptId || "") : "",
       status: normalizedStatus,
       statusNotes: app.statusNotes || "",
       interviewDate: app.interviewDate || "",
@@ -256,15 +278,32 @@ export default function AdminDashboard() {
     setIsSaving(true);
 
     try {
-      await fetch("/api/applications", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editFormData),
-      });
+      // If status is not ACCEPTED, assignedDeptId should not be set
+      const payloadToSave: typeof editFormData = {
+        ...editFormData,
+        assignedDeptId:
+          editFormData.status === "ACCEPTED"
+            ? (editFormData.assignedDeptId || editFormData.firstChoiceDeptId || "")
+            : "",
+      };
 
-      // Update local state
+      // 1. Sync with Server API / Database
+      try {
+        await fetch("/api/applications", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payloadToSave),
+        });
+      } catch (apiErr) {
+        console.warn("API PUT error, saving locally:", apiErr);
+      }
+
+      // 2. Sync with local storage
+      updateApplicationFull(payloadToSave.id, payloadToSave as any);
+
+      // 3. Update local state
       setApplications((prev) =>
-        prev.map((a) => (a.id === editFormData.id ? { ...a, ...editFormData } : a))
+        prev.map((a) => (a.id === payloadToSave.id ? { ...a, ...payloadToSave } : a))
       );
 
       setIsEditModalOpen(false);
@@ -288,6 +327,21 @@ export default function AdminDashboard() {
       if (isEditModalOpen) setIsEditModalOpen(false);
     } catch (err) {
       alert("เกิดข้อผิดพลาดในการลบข้อมูล");
+    }
+  };
+
+  // Clear all applicants (Test data cleanup)
+  const handleClearAllApplicants = async () => {
+    if (!confirm("⚠️ คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลผู้สมัครทั้งหมดในระบบ? (การกระทำนี้ไม่สามารถย้อนกลับได้)")) return;
+    if (!confirm("ยืนยันอีกครั้ง: ลบข้อมูลผู้สมัครทั้งหมดออกจากฐานข้อมูล?")) return;
+
+    try {
+      await fetch("/api/applications?all=true", { method: "DELETE" });
+      clearAllApplications();
+      setApplications([]);
+      alert("ล้างข้อมูลผู้สมัครทั้งหมดเรียบร้อยแล้ว");
+    } catch (err) {
+      alert("เกิดข้อผิดพลาดในการล้างข้อมูล");
     }
   };
 
@@ -494,6 +548,17 @@ export default function AdminDashboard() {
             <FileSpreadsheet className="w-4 h-4" />
             <span>ส่งออก Excel/CSV</span>
           </button>
+
+          {applications.length > 0 && (
+            <button
+              onClick={handleClearAllApplicants}
+              className="px-4 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500 text-rose-200 hover:text-white font-bold text-xs border border-rose-400/40 transition-colors flex items-center gap-1.5 cursor-pointer"
+              title="ล้างข้อมูลผู้สมัครทดสอบทั้งหมดออกจากฐานข้อมูล"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>ล้างข้อมูลทั้งหมด</span>
+            </button>
+          )}
 
           <button
             onClick={handleLogout}
@@ -1192,8 +1257,16 @@ export default function AdminDashboard() {
                       placeholder="663050123-4"
                       value={editFormData.studentId}
                       onChange={(e) => {
-                        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
-                        const formatted = digits.length > 9 ? `${digits.slice(0, 9)}-${digits.slice(9, 10)}` : digits;
+                        const val = e.target.value;
+                        const prev = editFormData.studentId;
+                        if (prev.endsWith("-") && !val.endsWith("-") && val.length === 9) {
+                          setEditFormData({ ...editFormData, studentId: val.slice(0, 8) });
+                          return;
+                        }
+                        const digits = val.replace(/\D/g, "").slice(0, 10);
+                        let formatted = digits;
+                        if (digits.length === 9) formatted = `${digits}-`;
+                        else if (digits.length === 10) formatted = `${digits.slice(0, 9)}-${digits.slice(9, 10)}`;
                         setEditFormData({ ...editFormData, studentId: formatted });
                       }}
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-mono font-bold outline-none focus:border-cc-blue"
@@ -1393,7 +1466,7 @@ export default function AdminDashboard() {
               <div className="p-4 rounded-2xl bg-cc-yellow/30 border-2 border-cc-navy space-y-3">
                 <span className="font-bold text-cc-navy block text-sm flex items-center gap-1.5">
                   <Award className="w-4 h-4 text-cc-navy" />
-                  <span>4. การตัดสินของคณะกรรมการ & จัดสรรฝ่ายจริง</span>
+                  <span>4. การตัดสินของคณะกรรมการ & จัดสรรฝ่าย</span>
                 </span>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1401,7 +1474,17 @@ export default function AdminDashboard() {
                     <label className="font-bold text-cc-navy">สถานะผู้สมัคร (Status):</label>
                     <select
                       value={editFormData.status}
-                      onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value as ApplicationStatus })}
+                      onChange={(e) => {
+                        const newStatus = e.target.value as ApplicationStatus;
+                        setEditFormData({
+                          ...editFormData,
+                          status: newStatus,
+                          assignedDeptId:
+                            newStatus === "ACCEPTED"
+                              ? (editFormData.assignedDeptId || editFormData.firstChoiceDeptId || "")
+                              : "",
+                        });
+                      }}
                       className="w-full px-3 py-2 rounded-xl border-2 border-cc-navy bg-white font-bold text-cc-navy outline-none cursor-pointer"
                     >
                       <option value="SUBMITTED">รอดำเนินการ (พิจารณาเอกสาร)</option>
@@ -1411,19 +1494,40 @@ export default function AdminDashboard() {
                     </select>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="font-bold text-cc-navy">ฝ่ายที่จัดสรรให้จริง (Assigned Dept):</label>
-                    <select
-                      value={editFormData.assignedDeptId}
-                      onChange={(e) => setEditFormData({ ...editFormData, assignedDeptId: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border-2 border-cc-navy bg-white font-bold text-emerald-900 outline-none cursor-pointer"
-                    >
-                      <option value="">-- จัดสรรตามอันดับ 1 ({DEPARTMENTS.find(d => d.id === editFormData.firstChoiceDeptId)?.nameTh}) --</option>
-                      {DEPARTMENTS.map((d) => (
-                        <option key={d.id} value={d.id}>{d.nameTh}</option>
-                      ))}
-                    </select>
-                  </div>
+                  {/* If ACCEPTED: Show Assigned Department selection */}
+                  {editFormData.status === "ACCEPTED" ? (
+                    <div className="space-y-1 animate-fadeIn">
+                      <label className="font-bold text-emerald-950 flex items-center gap-1">
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>ฝ่ายที่จัดสรรให้จริง (สตาฟตัวจริง):</span>
+                      </label>
+                      <select
+                        value={editFormData.assignedDeptId || editFormData.firstChoiceDeptId}
+                        onChange={(e) => setEditFormData({ ...editFormData, assignedDeptId: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border-2 border-emerald-600 bg-emerald-50 font-bold text-emerald-900 outline-none cursor-pointer"
+                      >
+                        <option value="">-- จัดสรรตามอันดับ 1 ({DEPARTMENTS.find(d => d.id === editFormData.firstChoiceDeptId)?.nameTh}) --</option>
+                        {DEPARTMENTS.map((d) => (
+                          <option key={d.id} value={d.id}>{d.nameTh}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : editFormData.status === "INTERVIEW_ELIGIBLE" ? (
+                    /* If INTERVIEW_ELIGIBLE: Notice that department is NOT assigned yet */
+                    <div className="space-y-1 p-3 rounded-xl bg-purple-100/80 border border-purple-300 text-purple-950 text-xs flex flex-col justify-center animate-fadeIn">
+                      <span className="font-bold flex items-center gap-1 text-purple-900">
+                        🎙️ มีสิทธิ์เข้าสัมภาษณ์ (ยังไม่ต้องจัดสรรฝ่าย)
+                      </span>
+                      <span className="text-[11px] text-purple-800">
+                        ผู้สมัครจะอยู่ในสถานะมีสิทธิ์สัมภาษณ์ โดยน้องๆ จะได้เลือกวันเวลาสัมภาษณ์จากตารางนัดหมายในภายหลัง และจะจัดสรรฝ่ายเมื่อสัมภาษณ์ผ่านแล้ว
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="space-y-1 p-2.5 rounded-xl bg-gray-100 border border-gray-300 text-gray-600 text-xs flex flex-col justify-center">
+                      <span className="font-bold">สถานะ: {editFormData.status === "REJECTED" ? "ไม่ผ่านการคัดเลือก" : "รอดำเนินการ"}</span>
+                      <span className="text-[11px]">ไม่มีการจัดสรรฝ่าย</span>
+                    </div>
+                  )}
 
                   <div className="sm:col-span-2 space-y-1">
                     <label className="font-bold text-gray-700">บันทึกหมายเหตุเพิ่มเติม (ถ้ามี):</label>

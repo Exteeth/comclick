@@ -1,16 +1,29 @@
-import { Application } from "./types";
+import { Application, ApplicationStatus } from "./types";
 import { INITIAL_APPLICANTS } from "./constants";
 
-const STORAGE_KEY = "comclick_20_applications_v1";
+const STORAGE_KEY = "comclick_20_applications_v2";
 
-// In-memory fallback for SSR / Server routes
-let memoryApplications: Application[] = [...INITIAL_APPLICANTS];
+// In-memory global fallback for SSR / Server routes (persists across Next.js dev requests)
+declare global {
+  var __comclick_memory_apps: Application[] | undefined;
+}
+
+const getMemoryStore = (): Application[] => {
+  if (!globalThis.__comclick_memory_apps || !Array.isArray(globalThis.__comclick_memory_apps)) {
+    globalThis.__comclick_memory_apps = [...INITIAL_APPLICANTS];
+  }
+  return globalThis.__comclick_memory_apps;
+};
+
+const setMemoryStore = (apps: Application[]): void => {
+  globalThis.__comclick_memory_apps = apps;
+};
 
 export const getApplications = (): Application[] => {
   if (typeof window !== "undefined") {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored && stored !== "[]") {
+      if (stored !== null) {
         return JSON.parse(stored);
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_APPLICANTS));
@@ -19,11 +32,15 @@ export const getApplications = (): Application[] => {
       console.warn("Could not read from localStorage, using memory state", e);
     }
   }
-  return memoryApplications.length > 0 ? memoryApplications : [...INITIAL_APPLICANTS];
+  return getMemoryStore();
+};
+
+export const clearAllApplications = (): void => {
+  saveApplications([]);
 };
 
 export const saveApplications = (apps: Application[]): void => {
-  memoryApplications = apps;
+  setMemoryStore(apps);
   if (typeof window !== "undefined") {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
@@ -34,22 +51,23 @@ export const saveApplications = (apps: Application[]): void => {
   }
 };
 
-export const addApplication = (app: Omit<Application, "id" | "createdAt" | "updatedAt" | "status">): Application => {
+export const addApplication = (app: Omit<Application, "id" | "createdAt" | "updatedAt" | "status"> & { id?: string; status?: ApplicationStatus }): Application => {
   const all = getApplications();
   const year = new Date().getFullYear();
   const randomNum = Math.floor(1000 + Math.random() * 9000);
-  const id = `CC20-${year}-${randomNum}`;
+  const id = app.id || `CC20-${year}-${randomNum}`;
   const now = new Date().toISOString();
 
   const newApp: Application = {
     ...app,
     id,
-    createdAt: now,
+    createdAt: (app as any).createdAt || now,
     updatedAt: now,
-    status: "SUBMITTED",
+    status: app.status || "SUBMITTED",
   };
 
-  const updated = [newApp, ...all];
+  const filtered = all.filter((a) => a.id !== id);
+  const updated = [newApp, ...filtered];
   saveApplications(updated);
   return newApp;
 };

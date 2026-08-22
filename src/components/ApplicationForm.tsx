@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import {
   CAMP_INFO,
@@ -54,8 +55,38 @@ export default function ApplicationForm() {
   const [createdApplication, setCreatedApplication] = useState<Application | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({});
   const [duplicateInfo, setDuplicateInfo] = useState<{ studentId: string; appId?: string } | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+
+  // Helper to trigger red error border and smoothly scroll into view
+  const triggerFieldError = (fieldId: string, errorMsg: string) => {
+    setErrorMessage(errorMsg);
+    setFieldErrors({ [fieldId]: true });
+    setTimeout(() => {
+      const el = document.getElementById(fieldId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        if (
+          el.tagName === "INPUT" ||
+          el.tagName === "SELECT" ||
+          el.tagName === "TEXTAREA" ||
+          el.tagName === "BUTTON"
+        ) {
+          (el as HTMLElement).focus();
+        }
+      }
+    }, 50);
+  };
+
+  const clearFieldError = (fieldId?: string) => {
+    setErrorMessage(null);
+    if (fieldId) {
+      setFieldErrors((prev) => ({ ...prev, [fieldId]: false }));
+    } else {
+      setFieldErrors({});
+    }
+  };
 
   // ==========================================
   // Section 1: ข้อมูลทั่วไป
@@ -98,6 +129,17 @@ export default function ApplicationForm() {
   // Check if Tech & PR or Fast Response is selected in Choice 1 or Choice 2
   const isTechPRSelected = firstChoiceDeptId === "tech-pr" || secondChoiceDeptId === "tech-pr";
   const isFastResponseSelected = firstChoiceDeptId === "fast-response" || secondChoiceDeptId === "fast-response";
+
+  useEffect(() => {
+    if (createdApplication || duplicateInfo) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [createdApplication, duplicateInfo]);
 
   useEffect(() => {
     setMounted(true);
@@ -171,9 +213,16 @@ export default function ApplicationForm() {
   };
 
   // Helper formatters
-  const formatStudentId = (value: string): string => {
+  const formatStudentId = (value: string, prevValue: string = ""): string => {
+    // If user is deleting from "123456789-", allow deleting back to 8 digits
+    if (prevValue.endsWith("-") && !value.endsWith("-") && value.length === 9) {
+      return value.slice(0, 8);
+    }
     const digits = value.replace(/\D/g, "").slice(0, 10);
-    if (digits.length > 9) {
+    if (digits.length === 9) {
+      return `${digits}-`;
+    }
+    if (digits.length === 10) {
       return `${digits.slice(0, 9)}-${digits.slice(9, 10)}`;
     }
     return digits;
@@ -210,82 +259,94 @@ export default function ApplicationForm() {
     // 1. Full name validation
     const cleanName = nameInput.trim().replace(/^(นาย|นางสาว|นาง|น\.ส\.)\s*/, "");
     if (!cleanName) {
-      setErrorMessage("กรุณากรอก ชื่อ - สกุล ของตนเอง");
+      triggerFieldError("input-fullName", "กรุณากรอก ชื่อ - สกุล ของตนเอง");
       return false;
     }
     if (cleanName.length < 3 || !cleanName.includes(" ") || cleanName.split(" ").filter(Boolean).length < 2) {
-      setErrorMessage("กรุณากรอกทั้งชื่อและนามสกุลให้ครบถ้วน (คั่นด้วยการเว้นวรรค เช่น สมชาย ใจดี)");
+      triggerFieldError("input-fullName", "กรุณากรอกทั้งชื่อและนามสกุลให้ครบถ้วน (คั่นด้วยการเว้นวรรค เช่น สมชาย ใจดี)");
       return false;
     }
 
     // 2. Nickname validation
     if (!nicknameInput.trim()) {
-      setErrorMessage("กรุณากรอก ชื่อเล่น ของตนเอง");
+      triggerFieldError("input-nickname", "กรุณากรอก ชื่อเล่น ของตนเอง");
       return false;
     }
 
     // 3. Student ID validation (10 digits)
     const studentDigits = studentIdInput.replace(/\D/g, "");
     if (studentDigits.length !== 10) {
-      setErrorMessage("รหัสนักศึกษาต้องเป็นตัวเลข 10 หลัก (รูปแบบ 663050123-4)");
+      triggerFieldError("input-studentId", "รหัสนักศึกษาต้องเป็นตัวเลข 10 หลัก (รูปแบบ 663050123-4)");
       return false;
     }
 
     // 4. Faculty validation
     if (facultyChoice === "อื่นๆ (โปรดระบุ)" && !customFacultyInput.trim()) {
-      setErrorMessage("กรุณาระบุชื่อคณะของคุณ");
+      triggerFieldError("input-custom-faculty", "กรุณาระบุชื่อคณะของคุณ");
       return false;
     }
 
     // 5. Major validation
     if (facultyChoice === "คณะศึกษาศาสตร์" && educationMajorChoice === "อื่นๆ (โปรดระบุ)" && !customMajorInput.trim()) {
-      setErrorMessage("กรุณาระบุชื่อสาขาวิชาของคุณ");
+      triggerFieldError("input-custom-major", "กรุณาระบุชื่อสาขาวิชาของคุณ");
       return false;
     }
     if (facultyChoice !== "คณะศึกษาศาสตร์" && !customMajorInput.trim()) {
-      setErrorMessage("กรุณากรอกชื่อสาขาวิชาของคุณ");
+      triggerFieldError("input-custom-major", "กรุณากรอกชื่อสาขาวิชาของคุณ");
       return false;
     }
 
     // 6. Phone validation (10 digits, starts with 0)
     const phoneDigits = phoneInput.replace(/\D/g, "");
     if (phoneDigits.length !== 10 || !phoneDigits.startsWith("0")) {
-      setErrorMessage("เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลักที่ถูกต้อง (ไม่มีขีด เช่น 0812345678)");
+      triggerFieldError("input-phone", "เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลักที่ถูกต้อง (ไม่มีขีด เช่น 0812345678)");
       return false;
     }
 
-    // 7. Section 2: Attitude & Questions validation
+    // 7. Facebook Name validation
+    if (!facebookNameInput.trim()) {
+      triggerFieldError("input-facebookName", "กรุณากรอก ชื่อ Facebook ของตนเอง");
+      return false;
+    }
+
+    // 8. Facebook URL validation
+    if (!facebookUrlInput.trim()) {
+      triggerFieldError("input-facebookUrl", "กรุณากรอก Link Facebook ของตนเอง");
+      return false;
+    }
+
+    // 9. Section 2: Attitude & Questions validation
     if (!reasonToApply.trim()) {
-      setErrorMessage("กรุณากรอก เหตุผลที่สนใจหรือต้องการสมัครเป็นพี่ค่ายคอมคลิก ครั้งที่ 20 ในส่วนที่ 2");
+      triggerFieldError("input-reasonToApply", "กรุณากรอก เหตุผลที่สนใจหรือต้องการสมัครเป็นพี่ค่ายคอมคลิก ครั้งที่ 20 ในส่วนที่ 2");
       return false;
     }
     if (!strengths.trim()) {
-      setErrorMessage("กรุณากรอก ข้อดีของตนเอง (พอสังเขป) ในส่วนที่ 2");
+      triggerFieldError("input-strengths", "กรุณากรอก ข้อดีของตนเอง (พอสังเขป) ในส่วนที่ 2");
       return false;
     }
     if (!weaknesses.trim()) {
-      setErrorMessage("กรุณากรอก ข้อเสียของตนเอง (พอสังเขป) ในส่วนที่ 2");
+      triggerFieldError("input-weaknesses", "กรุณากรอก ข้อเสียของตนเอง (พอสังเขป) ในส่วนที่ 2");
       return false;
     }
 
-    // 8. Section 3: Department choices validation
+    // 10. Section 3: Department choices validation
     if (firstChoiceDeptId === "directorate" || secondChoiceDeptId === "directorate") {
-      setErrorMessage("ฝ่ายอำนวยการสงวนสิทธิ์เฉพาะคณะกรรมการบริหารโครงการ ไม่เปิดรับสมัครบุคคลทั่วไป");
+      triggerFieldError("select-choice1", "ฝ่ายอำนวยการสงวนสิทธิ์เฉพาะคณะกรรมการบริหารโครงการ ไม่เปิดรับสมัครบุคคลทั่วไป");
       return false;
     }
 
     if (firstChoiceDeptId === secondChoiceDeptId) {
-      setErrorMessage("กรุณาเลือกฝ่ายอันดับที่ 1 และอันดับที่ 2 ไม่ซ้ำกัน");
+      triggerFieldError("select-choice2", "กรุณาเลือกฝ่ายอันดับที่ 1 และอันดับที่ 2 ไม่ซ้ำกัน");
       return false;
     }
 
     // Special validation for Fast response
     if (isFastResponseSelected && !hasCar) {
-      setErrorMessage("เนื่องจากคุณเลือกฝ่ายรถเร็ว กรุณาตอบคำถามพิเศษ 'คุณมีรถยนต์หรือไม่'");
+      triggerFieldError("section-hasCar", "เนื่องจากคุณเลือกฝ่ายรถเร็ว กรุณาตอบคำถามพิเศษ 'คุณมีรถยนต์หรือไม่'");
       return false;
     }
 
-    setErrorMessage(null);
+    clearFieldError();
     return true;
   };
 
@@ -325,34 +386,38 @@ export default function ApplicationForm() {
         diet: "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
       };
 
-      // 1. Sync with Server API & Neon PostgreSQL Database
-      const res = await fetch("/api/applications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      let serverAppId: string | undefined = undefined;
 
-      const result = await res.json();
-      if (!res.ok || !result.success) {
+      // 1. Sync with Server API & Neon PostgreSQL Database
+      try {
+        const res = await fetch("/api/applications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const result = await res.json();
         if (result.duplicate) {
           setDuplicateInfo({ studentId: studentIdInput.trim(), appId: result.existingId });
-          setErrorMessage(null);
+          clearFieldError();
           setIsSubmitting(false);
           return;
         }
-        setErrorMessage(result.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง");
-        setIsSubmitting(false);
-        return;
+
+        if (res.ok && result.success) {
+          serverAppId = result.id || (result.data && result.data.id) || undefined;
+        }
+      } catch (apiErr) {
+        console.warn("API sync fallback to local storage:", apiErr);
       }
 
-      const serverAppId = result.id || (result.data && result.data.id) || undefined;
-
-      // 2. Save locally for instantaneous receipt
+      // 2. Save locally for instantaneous receipt and Admin Dashboard sync
       const created = addApplication({
         ...payload,
         ...(serverAppId ? { id: serverAppId } : {}),
       } as any);
       setCreatedApplication(created);
+      clearFieldError();
 
       // Trigger Celebration Confetti
       try {
@@ -431,16 +496,24 @@ export default function ApplicationForm() {
 
           <div className="pt-4 border-t-2 border-cc-navy/10 space-y-4">
             <p className="text-xs text-gray-500 font-mono">
-              💡 ระหว่างรอเปิดระบบ สามารถอ่านรายละเอียดบทบาทหน้าที่ของทั้ง 13 ฝ่าย เพื่อเตรียมตัวเลือกฝ่ายที่สนใจได้เลย
+              💡 ระหว่างรอเปิดระบบ สามารถอ่านรายละเอียดบทบาทหน้าที่ของฝ่ายต่าง ๆ เพื่อเตรียมตัวเลือกฝ่ายที่สนใจได้เลย
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <a
+                href="/apply?preview=true"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-cc-coral hover:bg-cc-coral-dark text-white font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4 text-cc-yellow" />
+                <span>เปิดดูแบบฟอร์มกรอกใบสมัคร (Preview Mode)</span>
+              </a>
+
               <a
                 href="/departments"
                 className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-cc-navy hover:bg-cc-blue text-white font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Layers className="w-4 h-4 text-cc-yellow" />
-                <span>ดูรายละเอียด 13 ฝ่ายที่เปิดรับ</span>
+                <span>ดูรายละเอียด 12 ฝ่ายที่เปิดรับ</span>
               </a>
 
               <a
@@ -585,7 +658,7 @@ export default function ApplicationForm() {
                     value={titlePrefix}
                     onChange={(e) => {
                       setTitlePrefix(e.target.value);
-                      setErrorMessage(null);
+                      clearFieldError("input-fullName");
                     }}
                     className="w-28 sm:w-32 px-3 py-3 rounded-xl border-2 border-cc-navy bg-cc-cream/40 text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer focus:bg-white focus:border-cc-blue shadow-sm flex-shrink-0"
                   >
@@ -599,15 +672,20 @@ export default function ApplicationForm() {
                   <div className="relative flex-1">
                     <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
+                      id="input-fullName"
                       type="text"
                       required
                       placeholder="ชื่อและนามสกุล (เช่น สมชาย ใจดี)"
                       value={nameInput}
                       onChange={(e) => {
                         setNameInput(e.target.value);
-                        setErrorMessage(null);
+                        clearFieldError("input-fullName");
                       }}
-                      className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                      className={`w-full pl-10 pr-3.5 py-3 rounded-xl border-2 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 outline-none transition-all shadow-sm font-medium ${
+                        fieldErrors["input-fullName"]
+                          ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                          : "border-cc-navy focus:bg-cc-cream-50 focus:border-cc-blue"
+                      }`}
                     />
                   </div>
                 </div>
@@ -627,15 +705,20 @@ export default function ApplicationForm() {
                 <div className="relative">
                   <Heart className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
+                    id="input-nickname"
                     type="text"
                     required
                     placeholder="เช่น ปอนด์, ติน, ก้อง"
                     value={nicknameInput}
                     onChange={(e) => {
                       setNicknameInput(e.target.value);
-                      setErrorMessage(null);
+                      clearFieldError("input-nickname");
                     }}
-                    className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                    className={`w-full pl-10 pr-3.5 py-3 rounded-xl border-2 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 outline-none transition-all shadow-sm font-medium ${
+                      fieldErrors["input-nickname"]
+                        ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                        : "border-cc-navy focus:bg-cc-cream-50 focus:border-cc-blue"
+                    }`}
                   />
                 </div>
               </div>
@@ -649,16 +732,21 @@ export default function ApplicationForm() {
                 <div className="relative">
                   <GraduationCap className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
+                    id="input-studentId"
                     type="text"
                     required
                     maxLength={11}
                     placeholder="เช่น 663050123-4"
                     value={studentIdInput}
                     onChange={(e) => {
-                      setStudentIdInput(formatStudentId(e.target.value));
-                      setErrorMessage(null);
+                      setStudentIdInput(formatStudentId(e.target.value, studentIdInput));
+                      clearFieldError("input-studentId");
                     }}
-                    className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-mono text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                    className={`w-full pl-10 pr-3.5 py-3 rounded-xl border-2 bg-white text-xs sm:text-sm font-mono text-gray-800 placeholder-gray-400 outline-none transition-all shadow-sm font-medium ${
+                      fieldErrors["input-studentId"]
+                        ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                        : "border-cc-navy focus:bg-cc-cream-50 focus:border-cc-blue"
+                    }`}
                   />
                 </div>
               </div>
@@ -672,7 +760,7 @@ export default function ApplicationForm() {
                   value={facultyChoice}
                   onChange={(e) => {
                     setFacultyChoice(e.target.value);
-                    setErrorMessage(null);
+                    clearFieldError("input-custom-faculty");
                   }}
                   className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm focus:border-cc-blue focus:bg-cc-cream-50"
                 >
@@ -686,12 +774,20 @@ export default function ApplicationForm() {
                 {facultyChoice === "อื่นๆ (โปรดระบุ)" && (
                   <div className="pt-1 animate-fadeIn">
                     <input
+                      id="input-custom-faculty"
                       type="text"
                       required
                       placeholder="กรอกชื่อคณะของคุณ เช่น วิทยาลัยนานาชาติ, คณะเกษตรศาสตร์ ฯลฯ"
                       value={customFacultyInput}
-                      onChange={(e) => setCustomFacultyInput(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                      onChange={(e) => {
+                        setCustomFacultyInput(e.target.value);
+                        clearFieldError("input-custom-faculty");
+                      }}
+                      className={`w-full px-3.5 py-2.5 rounded-xl border-2 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 outline-none transition-all shadow-sm font-medium ${
+                        fieldErrors["input-custom-faculty"]
+                          ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                          : "border-cc-navy focus:bg-cc-cream-50 focus:border-cc-blue"
+                      }`}
                     />
                   </div>
                 )}
@@ -709,7 +805,7 @@ export default function ApplicationForm() {
                       value={educationMajorChoice}
                       onChange={(e) => {
                         setEducationMajorChoice(e.target.value);
-                        setErrorMessage(null);
+                        clearFieldError("input-custom-major");
                       }}
                       className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm focus:border-cc-blue focus:bg-cc-cream-50"
                     >
@@ -722,12 +818,20 @@ export default function ApplicationForm() {
 
                     {educationMajorChoice === "อื่นๆ (โปรดระบุ)" && (
                       <input
+                        id="input-custom-major"
                         type="text"
                         required
                         placeholder="กรอกชื่อสาขาวิชาของคุณ"
                         value={customMajorInput}
-                        onChange={(e) => setCustomMajorInput(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium animate-fadeIn"
+                        onChange={(e) => {
+                          setCustomMajorInput(e.target.value);
+                          clearFieldError("input-custom-major");
+                        }}
+                        className={`w-full px-3.5 py-2.5 rounded-xl border-2 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 outline-none transition-all shadow-sm font-medium animate-fadeIn ${
+                          fieldErrors["input-custom-major"]
+                            ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                            : "border-cc-navy focus:bg-cc-cream-50 focus:border-cc-blue"
+                        }`}
                       />
                     )}
                   </div>
@@ -735,43 +839,46 @@ export default function ApplicationForm() {
                   <div className="relative">
                     <BookOpen className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
+                      id="input-custom-major"
                       type="text"
                       required
                       placeholder="กรอกชื่อสาขาวิชา เช่น วิทยาการคอมพิวเตอร์, การตลาด ฯลฯ"
                       value={customMajorInput}
                       onChange={(e) => {
                         setCustomMajorInput(e.target.value);
-                        setErrorMessage(null);
+                        clearFieldError("input-custom-major");
                       }}
-                      className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                      className={`w-full pl-10 pr-3.5 py-3 rounded-xl border-2 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 outline-none transition-all shadow-sm font-medium ${
+                        fieldErrors["input-custom-major"]
+                          ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                          : "border-cc-navy focus:bg-cc-cream-50 focus:border-cc-blue"
+                      }`}
                     />
                   </div>
                 )}
               </div>
 
-              {/* 1.6 ชั้นปี (1 - 3 เท่านั้น *ไม่รับปี 4) */}
+              {/* 1.6 ชั้นปี (เปิดรับเฉพาะปี 1 - 3) */}
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="block text-xs sm:text-sm font-bold text-cc-navy flex items-center justify-between">
+                <label className="block text-xs sm:text-sm font-bold text-cc-navy flex items-center gap-1.5">
+                  <GraduationCap className="w-4 h-4 text-cc-blue" />
                   <span>ชั้นปี (เปิดรับเฉพาะปี 1 - 3) <span className="text-red-500">*</span></span>
-                  <span className="text-[10px] text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
-                    *ไม่รับนักศึกษาชั้นปีที่ 4
-                  </span>
                 </label>
-                <div className="grid grid-cols-3 gap-2.5">
-                  {STAFF_YEAR_OPTIONS.map((y) => (
-                    <button
-                      key={y.value}
-                      type="button"
-                      onClick={() => setYearLevel(y.value)}
-                      className={`py-3 rounded-xl border-2 font-bold text-xs sm:text-sm transition-all cursor-pointer ${
-                        yearLevel === y.value
-                          ? "bg-cc-navy text-white border-cc-navy shadow-solid-sm scale-[1.01]"
-                          : "bg-white text-gray-700 border-gray-300 hover:border-cc-navy hover:bg-cc-cream/40"
-                      }`}
-                    >
-                      {y.label}
-                    </button>
-                  ))}
+                <div className="relative">
+                  <select
+                    value={yearLevel}
+                    onChange={(e) => {
+                      setYearLevel(e.target.value);
+                      clearFieldError();
+                    }}
+                    className="w-full px-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm focus:bg-cc-cream-50 focus:border-cc-blue transition-all"
+                  >
+                    {STAFF_YEAR_OPTIONS.map((y) => (
+                      <option key={y.value} value={y.value}>
+                        {y.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -784,6 +891,7 @@ export default function ApplicationForm() {
                 <div className="relative">
                   <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
+                    id="input-phone"
                     type="tel"
                     required
                     maxLength={10}
@@ -791,9 +899,13 @@ export default function ApplicationForm() {
                     value={phoneInput}
                     onChange={(e) => {
                       setPhoneInput(formatPhone(e.target.value));
-                      setErrorMessage(null);
+                      clearFieldError("input-phone");
                     }}
-                    className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-mono text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                    className={`w-full pl-10 pr-3.5 py-3 rounded-xl border-2 bg-white text-xs sm:text-sm font-mono text-gray-800 placeholder-gray-400 outline-none transition-all shadow-sm font-medium ${
+                      fieldErrors["input-phone"]
+                        ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                        : "border-cc-navy focus:bg-cc-cream-50 focus:border-cc-blue"
+                    }`}
                   />
                 </div>
               </div>
@@ -806,12 +918,20 @@ export default function ApplicationForm() {
                 <div className="relative">
                   <Facebook className="w-4 h-4 text-blue-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
+                    id="input-facebookName"
                     type="text"
                     required
                     placeholder="เช่น Somchai Jaidee"
                     value={facebookNameInput}
-                    onChange={(e) => setFacebookNameInput(e.target.value)}
-                    className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                    onChange={(e) => {
+                      setFacebookNameInput(e.target.value);
+                      clearFieldError("input-facebookName");
+                    }}
+                    className={`w-full pl-10 pr-3.5 py-3 rounded-xl border-2 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 outline-none transition-all shadow-sm font-medium ${
+                      fieldErrors["input-facebookName"]
+                        ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                        : "border-cc-navy focus:bg-cc-cream-50 focus:border-cc-blue"
+                    }`}
                   />
                 </div>
               </div>
@@ -824,12 +944,20 @@ export default function ApplicationForm() {
                 <div className="relative">
                   <ExternalLink className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
+                    id="input-facebookUrl"
                     type="url"
                     required
                     placeholder="เช่น https://www.facebook.com/username หรือ https://facebook.com/profile.php?id=..."
                     value={facebookUrlInput}
-                    onChange={(e) => setFacebookUrlInput(e.target.value)}
-                    className="w-full pl-10 pr-3.5 py-3 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-mono text-gray-800 placeholder-gray-400 focus:bg-cc-cream-50 focus:border-cc-blue outline-none transition-all shadow-sm font-medium"
+                    onChange={(e) => {
+                      setFacebookUrlInput(e.target.value);
+                      clearFieldError("input-facebookUrl");
+                    }}
+                    className={`w-full pl-10 pr-3.5 py-3 rounded-xl border-2 bg-white text-xs sm:text-sm font-mono text-gray-800 placeholder-gray-400 outline-none transition-all shadow-sm font-medium ${
+                      fieldErrors["input-facebookUrl"]
+                        ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                        : "border-cc-navy focus:bg-cc-cream-50 focus:border-cc-blue"
+                    }`}
                   />
                 </div>
               </div>
@@ -861,15 +989,20 @@ export default function ApplicationForm() {
                   2.1 เพราะเหตุใดผู้สมัครจึงสนใจหรือต้องการสมัครเป็นพี่ค่ายคอมคลิก ครั้งที่ 20 สาขาคอมพิวเตอร์ศึกษา คณะศึกษาศาสตร์ มหาวิทยาลัยขอนแก่น ? (พอสังเขป) <span className="text-red-500">*</span>
                 </label>
                 <textarea
+                  id="input-reasonToApply"
                   required
                   rows={3}
                   placeholder="เขียนอธิบายเหตุผล ความตั้งใจ หรือแรงบันดาลใจในการสมัครเป็นพี่ค่าย Comclick 20 พอสังเขป..."
                   value={reasonToApply}
                   onChange={(e) => {
                     setReasonToApply(e.target.value);
-                    setErrorMessage(null);
+                    clearFieldError("input-reasonToApply");
                   }}
-                  className="w-full p-3.5 rounded-xl border-2 border-purple-300 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:border-cc-navy focus:bg-white outline-none transition-all shadow-sm font-medium resize-y"
+                  className={`w-full p-3.5 rounded-xl border-2 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 outline-none transition-all shadow-sm font-medium resize-y ${
+                    fieldErrors["input-reasonToApply"]
+                      ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                      : "border-purple-300 focus:border-cc-navy focus:bg-white"
+                  }`}
                 />
               </div>
 
@@ -879,15 +1012,20 @@ export default function ApplicationForm() {
                   2.2 ข้อดีของตนเอง (พอสังเขป) <span className="text-red-500">*</span>
                 </label>
                 <textarea
+                  id="input-strengths"
                   required
                   rows={2}
                   placeholder="เช่น เป็นคนตรงต่อเวลา มีความรับผิดชอบ เข้ากับคนง่าย มีทักษะการทำงานเป็นทีม เป็นต้น"
                   value={strengths}
                   onChange={(e) => {
                     setStrengths(e.target.value);
-                    setErrorMessage(null);
+                    clearFieldError("input-strengths");
                   }}
-                  className="w-full p-3.5 rounded-xl border-2 border-emerald-300 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:border-cc-navy focus:bg-white outline-none transition-all shadow-sm font-medium resize-y"
+                  className={`w-full p-3.5 rounded-xl border-2 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 outline-none transition-all shadow-sm font-medium resize-y ${
+                    fieldErrors["input-strengths"]
+                      ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                      : "border-emerald-300 focus:border-cc-navy focus:bg-white"
+                  }`}
                 />
               </div>
 
@@ -897,15 +1035,20 @@ export default function ApplicationForm() {
                   2.3 ข้อเสียของตนเอง (พอสังเขป) <span className="text-red-500">*</span>
                 </label>
                 <textarea
+                  id="input-weaknesses"
                   required
                   rows={2}
                   placeholder="เช่น บางครั้งเป็นคนคิดมาก แต่พยายามปรับตัวและรับฟังความเห็นผู้อื่นอยู่เสมอ เป็นต้น"
                   value={weaknesses}
                   onChange={(e) => {
                     setWeaknesses(e.target.value);
-                    setErrorMessage(null);
+                    clearFieldError("input-weaknesses");
                   }}
-                  className="w-full p-3.5 rounded-xl border-2 border-amber-300 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:border-cc-navy focus:bg-white outline-none transition-all shadow-sm font-medium resize-y"
+                  className={`w-full p-3.5 rounded-xl border-2 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 outline-none transition-all shadow-sm font-medium resize-y ${
+                    fieldErrors["input-weaknesses"]
+                      ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                      : "border-amber-300 focus:border-cc-navy focus:bg-white"
+                  }`}
                 />
               </div>
             </div>
@@ -936,9 +1079,17 @@ export default function ApplicationForm() {
                   ฝ่ายที่ต้องการลง ฝ่ายที่ 1 (อันดับ 1) <span className="text-red-500">*</span>
                 </label>
                 <select
+                  id="select-choice1"
                   value={firstChoiceDeptId}
-                  onChange={(e) => handleFirstChoiceChange(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm"
+                  onChange={(e) => {
+                    handleFirstChoiceChange(e.target.value);
+                    clearFieldError("select-choice1");
+                  }}
+                  className={`w-full px-3 py-2.5 rounded-xl border-2 bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm ${
+                    fieldErrors["select-choice1"]
+                      ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                      : "border-cc-navy"
+                  }`}
                 >
                   {OPEN_DEPARTMENTS.map((dept) => (
                     <option key={dept.id} value={dept.id}>
@@ -957,12 +1108,17 @@ export default function ApplicationForm() {
                   ฝ่ายที่ต้องการลง ฝ่ายที่ 2 (อันดับ 2) <span className="text-red-500">*</span>
                 </label>
                 <select
+                  id="select-choice2"
                   value={secondChoiceDeptId}
                   onChange={(e) => {
                     setSecondChoiceDeptId(e.target.value);
-                    setErrorMessage(null);
+                    clearFieldError("select-choice2");
                   }}
-                  className="w-full px-3 py-2.5 rounded-xl border-2 border-cc-navy bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm"
+                  className={`w-full px-3 py-2.5 rounded-xl border-2 bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none cursor-pointer shadow-sm ${
+                    fieldErrors["select-choice2"]
+                      ? "border-red-500 ring-4 ring-red-200 bg-red-50/50 animate-shake"
+                      : "border-cc-navy"
+                  }`}
                 >
                   {OPEN_DEPARTMENTS.map((dept) => {
                     const isSelectedInFirst = dept.id === firstChoiceDeptId;
@@ -1027,7 +1183,7 @@ export default function ApplicationForm() {
                       อัปโหลดผลงาน (Portfolio / ตัวอย่างผลงานมีเดีย)
                     </h4>
                     <p className="text-xs text-gray-600 leading-relaxed">
-                      สำหรับผู้ที่สมัครฝ่ายเทคโนโลยีและประชาสัมพันธ์ (ไม่ว่าจะเลือกอันดับ 1 หรืออันดับ 2) ให้กดปุ่มด้านล่างเพื่ออัปโหลดผลงานลงในโฟลเดอร์ Google Drive หรือแนบลิงก์ผลงานของคุณ
+                      สำหรับผู้ที่สมัครฝ่ายเทคโนโลยีและประชาสัมพันธ์ (ไม่ว่าจะเลือกอันดับ 1 หรืออันดับ 2) ให้กดปุ่มด้านล่างเพื่ออัปโหลดผลงานลงในโฟลเดอร์ Google Drive ของค่าย
                     </p>
                   </div>
                 </div>
@@ -1046,18 +1202,20 @@ export default function ApplicationForm() {
                   </a>
                 </div>
 
-                {/* Optional Portfolio Link input */}
-                <div className="space-y-1.5 pt-2 border-t border-indigo-200">
-                  <label className="block text-xs font-bold text-indigo-950">
-                    หรือแนบลิงก์ผลงาน / Portfolio เพิ่มเติม (Google Drive / Canva / Behance / อื่นๆ):
-                  </label>
-                  <input
-                    type="url"
-                    placeholder="เช่น https://drive.google.com/... หรือ https://canva.com/..."
-                    value={techPortfolioUrl}
-                    onChange={(e) => setTechPortfolioUrl(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-indigo-300 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:border-cc-navy outline-none shadow-sm font-medium"
-                  />
+                {/* Drive naming recommendation note */}
+                <div className="p-3.5 rounded-2xl bg-white border-2 border-indigo-200 text-xs text-indigo-950 space-y-1.5 shadow-sm">
+                  <div className="font-bold flex items-center gap-1.5 text-indigo-900 text-xs">
+                    <span>💡 คำแนะนำการตั้งชื่อไฟล์ / โฟลเดอร์ผลงานใน Google Drive:</span>
+                  </div>
+                  <p className="text-xs text-gray-700 leading-relaxed">
+                    กรุณาตั้งชื่อไฟล์หรือโฟลเดอร์ผลงานของคุณตามรูปแบบ:
+                  </p>
+                  <div className="p-2 rounded-xl bg-indigo-50 border border-indigo-200 font-mono font-bold text-indigo-900 text-xs">
+                    ชื่อเล่น-สาขา-ชั้นปี
+                  </div>
+                  <p className="text-[11px] text-gray-500">
+                    (ตัวอย่างเช่น: <code className="text-indigo-700 font-mono font-bold">ปอนด์-คอมพิวเตอร์ศึกษา-ปี1</code>)
+                  </p>
                 </div>
               </div>
             )}
@@ -1066,7 +1224,9 @@ export default function ApplicationForm() {
             {/* Special Question 2: ฝ่ายรถเร็ว                             */}
             {/* ========================================================= */}
             {isFastResponseSelected && (
-              <div className="p-5 rounded-3xl bg-amber-50/80 border-3 border-amber-500 shadow-solid space-y-4 animate-fadeIn">
+              <div id="section-hasCar" className={`p-5 rounded-3xl bg-amber-50/80 border-3 shadow-solid space-y-4 animate-fadeIn transition-all ${
+                fieldErrors["section-hasCar"] ? "border-red-500 ring-4 ring-red-200 animate-shake" : "border-amber-500"
+              }`}>
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center flex-shrink-0 border-2 border-cc-navy shadow-sm">
                     <Car className="w-5 h-5 text-white" />
@@ -1092,7 +1252,10 @@ export default function ApplicationForm() {
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
-                      onClick={() => setHasCar("ใช่")}
+                      onClick={() => {
+                        setHasCar("ใช่");
+                        clearFieldError("section-hasCar");
+                      }}
                       className={`py-3 rounded-xl border-2 font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                         hasCar === "ใช่"
                           ? "bg-amber-500 text-white border-cc-navy shadow-solid-sm"
@@ -1103,7 +1266,10 @@ export default function ApplicationForm() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setHasCar("ไม่")}
+                      onClick={() => {
+                        setHasCar("ไม่");
+                        clearFieldError("section-hasCar");
+                      }}
                       className={`py-3 rounded-xl border-2 font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                         hasCar === "ไม่"
                           ? "bg-amber-500 text-white border-cc-navy shadow-solid-sm"
@@ -1142,7 +1308,7 @@ export default function ApplicationForm() {
                       <div className="pt-1 animate-fadeIn">
                         <input
                           type="text"
-                          placeholder="ระบุประเภทรถยนต์ เช่น รถ SUV, รถตู้, มอเตอร์ไซค์ ฯลฯ"
+                          placeholder="ระบุประเภทรถยนต์ เช่น รถ SUV, รถตู้, รถกระบะ 4 ประตู ฯลฯ"
                           value={carTypeOther}
                           onChange={(e) => setCarTypeOther(e.target.value)}
                           className="w-full px-3.5 py-2.5 rounded-xl border-2 border-amber-300 bg-white text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:border-cc-navy outline-none shadow-sm font-medium"
@@ -1178,181 +1344,189 @@ export default function ApplicationForm() {
         </form>
       </div>
 
-      {/* Success Modal / Digital Slip */}
-      {createdApplication && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 border-3 border-cc-navy shadow-solid-lg text-center space-y-6 animate-scaleUp">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center mx-auto border-2 border-cc-navy shadow-solid-sm">
-              <CheckCircle2 className="w-8 h-8" />
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-xs font-mono font-bold text-emerald-600 uppercase tracking-wider">
-                APPLICATION SUBMITTED SUCCESSFULLY!
-              </span>
-              <h2 className="font-display font-black text-2xl text-cc-navy">
-                ส่งใบสมัครพี่ค่ายเรียบร้อยแล้ว
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-600">
-                ข้อมูลของคุณถูกบันทึกเข้าสู่ระบบเรียบร้อยแล้ว กรุณาเก็บรหัสใบสมัครนี้ไว้
-              </p>
-            </div>
-
-            {/* Receipt Box */}
-            <div className="p-4 rounded-2xl bg-cc-cream border-2 border-cc-navy text-left space-y-2 font-mono text-xs">
-              <div className="flex justify-between items-center border-b border-cc-navy/10 pb-2 font-bold">
-                <span className="text-gray-500">รหัสใบสมัคร:</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-cc-navy text-sm font-black">{createdApplication.id}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleCopyId(createdApplication.id)}
-                    className="p-1 rounded-md bg-white border border-cc-navy/30 hover:bg-cc-yellow text-cc-navy transition-all cursor-pointer"
-                    title="คัดลอกรหัสใบสมัคร"
-                  >
-                    {isCopied ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-bold">
-                        <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>คัดลอกแล้ว!</span>
-                      </span>
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
-                  </button>
-                </div>
+      {/* Success Modal / Digital Slip (Portaled to document.body for true window viewport centering) */}
+      {mounted &&
+        typeof document !== "undefined" &&
+        createdApplication &&
+        createPortal(
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md overflow-y-auto animate-fadeIn">
+            <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 border-3 border-cc-navy shadow-solid-lg text-center space-y-5 animate-scaleUp my-auto max-h-[92vh] overflow-y-auto">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center mx-auto border-2 border-cc-navy shadow-solid-sm flex-shrink-0">
+                <CheckCircle2 className="w-8 h-8" />
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">ชื่อ - สกุล (ชื่อเล่น):</span>
-                <span className="font-bold text-gray-800">
-                  {createdApplication.fullNameTh} {createdApplication.nicknameTh && `(${createdApplication.nicknameTh})`}
+
+              <div className="space-y-2">
+                <span className="text-xs font-mono font-bold text-emerald-600 uppercase tracking-wider">
+                  APPLICATION SUBMITTED SUCCESSFULLY!
                 </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">รหัสนักศึกษา / ชั้นปี:</span>
-                <span className="font-bold text-gray-800">
-                  {createdApplication.studentId} • {createdApplication.year || "ปี 1"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">คณะ / สาขาวิชา:</span>
-                <span className="font-bold text-gray-800 text-right truncate max-w-[210px]" title={`${createdApplication.faculty} • ${createdApplication.major}`}>
-                  {createdApplication.faculty} • {createdApplication.major}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">เบอร์โทรศัพท์:</span>
-                <span className="font-bold text-gray-800">{createdApplication.phone}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">ฝ่ายอันดับ 1:</span>
-                <span className="font-bold text-cc-blue">
-                  {DEPARTMENTS.find((d) => d.id === createdApplication.firstChoiceDeptId)?.nameTh}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">ฝ่ายอันดับ 2:</span>
-                <span className="font-bold text-cc-coral">
-                  {DEPARTMENTS.find((d) => d.id === createdApplication.secondChoiceDeptId)?.nameTh}
-                </span>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <a
-                href="/status"
-                className="flex-1 py-3 rounded-xl bg-cc-navy hover:bg-cc-blue text-white font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2"
-              >
-                <Search className="w-4 h-4 text-cc-yellow" />
-                <span>ไปที่หน้าตรวจสอบสถานะ</span>
-              </a>
-              <button
-                onClick={() => {
-                  setCreatedApplication(null);
-                  setNameInput("");
-                  setNicknameInput("");
-                  setStudentIdInput("");
-                  setFacultyChoice("คณะศึกษาศาสตร์");
-                  setCustomFacultyInput("");
-                  setEducationMajorChoice("สาขาวิชาคอมพิวเตอร์ศึกษา");
-                  setCustomMajorInput("");
-                  setYearLevel("ชั้นปีที่ 1");
-                  setPhoneInput("");
-                  setFacebookNameInput("");
-                  setFacebookUrlInput("");
-                  setReasonToApply("");
-                  setStrengths("");
-                  setWeaknesses("");
-                  setTechPortfolioUrl("");
-                  setHasCar("");
-                  setCarType("");
-                  setCarTypeOther("");
-                  setFirstChoiceDeptId(DEPARTMENTS[0]?.id || "protocol");
-                  setSecondChoiceDeptId(DEPARTMENTS[1]?.id || "fundraising");
-                  setFallbackDeptChoice("ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร");
-                }}
-                className="py-3 px-5 rounded-xl bg-gray-100 hover:bg-gray-200 text-cc-navy font-bold text-xs sm:text-sm border-2 border-cc-navy/20 transition-all cursor-pointer"
-              >
-                สมัครเพิ่มอีกคน
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Duplicate Application Popup Modal */}
-      {duplicateInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border-3 border-cc-navy shadow-solid-lg text-center space-y-5 animate-scaleUp">
-            <div className="w-16 h-16 rounded-2xl bg-amber-100 border-2 border-cc-navy text-amber-600 flex items-center justify-center mx-auto shadow-solid-sm">
-              <AlertCircle className="w-8 h-8 text-amber-600" />
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-[11px] font-mono font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 uppercase tracking-wider">
-                DUPLICATE APPLICATION DETECTED
-              </span>
-              <h2 className="font-display font-black text-xl sm:text-2xl text-cc-navy">
-                พบข้อมูลการสมัครในระบบแล้ว
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-600">
-                รหัสนักศึกษา <strong className="text-cc-navy font-mono text-sm">{duplicateInfo.studentId}</strong> ได้ทำการส่งใบสมัครเข้าร่วมโครงการ Comclick 20 เรียบร้อยแล้ว
-              </p>
-            </div>
-
-            {duplicateInfo.appId && (
-              <div className="p-3.5 rounded-2xl bg-cc-cream border-2 border-cc-navy/30 text-left font-mono text-xs space-y-1">
-                <div className="flex justify-between items-center font-bold">
-                  <span className="text-gray-500">รหัสใบสมัครเดิม:</span>
-                  <span className="text-cc-navy font-mono text-sm font-black">{duplicateInfo.appId}</span>
-                </div>
-                <p className="text-[11px] text-gray-500 font-sans">
-                  💡 หากต้องการตรวจสอบผลการคัดเลือกหรือเปลี่ยนฝ่าย สามารถกดปุ่มด้านล่างได้เลย
+                <h2 className="font-display font-black text-2xl text-cc-navy">
+                  ส่งใบสมัครพี่ค่ายเรียบร้อยแล้ว
+                </h2>
+                <p className="text-xs sm:text-sm text-gray-600">
+                  ข้อมูลของคุณถูกบันทึกเข้าสู่ระบบเรียบร้อยแล้ว กรุณาเก็บรหัสใบสมัครนี้ไว้
                 </p>
               </div>
-            )}
 
-            <div className="space-y-2 pt-2">
-              <a
-                href={`/status?q=${encodeURIComponent(duplicateInfo.studentId)}`}
-                className="w-full py-3.5 rounded-xl bg-cc-navy hover:bg-cc-blue text-white font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Search className="w-4 h-4 text-cc-yellow" />
-                <span>ไปที่หน้าตรวจสอบสถานะทันที</span>
-                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
-              </a>
+              {/* Receipt Box */}
+              <div className="p-4 rounded-2xl bg-cc-cream border-2 border-cc-navy text-left space-y-2 font-mono text-xs">
+                <div className="flex justify-between items-center border-b border-cc-navy/10 pb-2 font-bold">
+                  <span className="text-gray-500">รหัสใบสมัคร:</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-cc-navy text-sm font-black">{createdApplication.id}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyId(createdApplication.id)}
+                      className="p-1 rounded-md bg-white border border-cc-navy/30 hover:bg-cc-yellow text-cc-navy transition-all cursor-pointer"
+                      title="คัดลอกรหัสใบสมัคร"
+                    >
+                      {isCopied ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-bold">
+                          <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>คัดลอกแล้ว!</span>
+                        </span>
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">ชื่อ - สกุล (ชื่อเล่น):</span>
+                  <span className="font-bold text-gray-800">
+                    {createdApplication.fullNameTh} {createdApplication.nicknameTh && `(${createdApplication.nicknameTh})`}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">รหัสนักศึกษา / ชั้นปี:</span>
+                  <span className="font-bold text-gray-800">
+                    {createdApplication.studentId} • {createdApplication.year || "ปี 1"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">คณะ / สาขาวิชา:</span>
+                  <span className="font-bold text-gray-800 text-right truncate max-w-[210px]" title={`${createdApplication.faculty} • ${createdApplication.major}`}>
+                    {createdApplication.faculty} • {createdApplication.major}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">เบอร์โทรศัพท์:</span>
+                  <span className="font-bold text-gray-800">{createdApplication.phone}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">ฝ่ายอันดับ 1:</span>
+                  <span className="font-bold text-cc-blue">
+                    {DEPARTMENTS.find((d) => d.id === createdApplication.firstChoiceDeptId)?.nameTh}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">ฝ่ายอันดับ 2:</span>
+                  <span className="font-bold text-cc-coral">
+                    {DEPARTMENTS.find((d) => d.id === createdApplication.secondChoiceDeptId)?.nameTh}
+                  </span>
+                </div>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => setDuplicateInfo(null)}
-                className="w-full py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs border border-gray-300 transition-all cursor-pointer"
-              >
-                ปิดหน้าต่างนี้เพื่อแก้ไขข้อมูล
-              </button>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <a
+                  href="/status"
+                  className="flex-1 py-3 rounded-xl bg-cc-navy hover:bg-cc-blue text-white font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2"
+                >
+                  <Search className="w-4 h-4 text-cc-yellow" />
+                  <span>ไปที่หน้าตรวจสอบสถานะ</span>
+                </a>
+                <button
+                  onClick={() => {
+                    setCreatedApplication(null);
+                    setNameInput("");
+                    setNicknameInput("");
+                    setStudentIdInput("");
+                    setFacultyChoice("คณะศึกษาศาสตร์");
+                    setCustomFacultyInput("");
+                    setEducationMajorChoice("สาขาวิชาคอมพิวเตอร์ศึกษา");
+                    setCustomMajorInput("");
+                    setYearLevel("ชั้นปีที่ 1");
+                    setPhoneInput("");
+                    setFacebookNameInput("");
+                    setFacebookUrlInput("");
+                    setReasonToApply("");
+                    setStrengths("");
+                    setWeaknesses("");
+                    setTechPortfolioUrl("");
+                    setHasCar("");
+                    setCarType("");
+                    setCarTypeOther("");
+                    setFirstChoiceDeptId(DEPARTMENTS[0]?.id || "protocol");
+                    setSecondChoiceDeptId(DEPARTMENTS[1]?.id || "fundraising");
+                    setFallbackDeptChoice("ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร");
+                  }}
+                  className="py-3 px-5 rounded-xl bg-gray-100 hover:bg-gray-200 text-cc-navy font-bold text-xs sm:text-sm border-2 border-cc-navy/20 transition-all cursor-pointer"
+                >
+                  สมัครเพิ่มอีกคน
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
+
+      {/* Duplicate Application Popup Modal */}
+      {mounted &&
+        typeof document !== "undefined" &&
+        duplicateInfo &&
+        createPortal(
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md overflow-y-auto animate-fadeIn">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border-3 border-cc-navy shadow-solid-lg text-center space-y-5 animate-scaleUp my-auto max-h-[92vh] overflow-y-auto">
+              <div className="w-16 h-16 rounded-2xl bg-amber-100 border-2 border-cc-navy text-amber-600 flex items-center justify-center mx-auto shadow-solid-sm flex-shrink-0">
+                <AlertCircle className="w-8 h-8 text-amber-600" />
+              </div>
+
+              <div className="space-y-2">
+                <span className="text-[11px] font-mono font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 uppercase tracking-wider">
+                  DUPLICATE APPLICATION DETECTED
+                </span>
+                <h2 className="font-display font-black text-xl sm:text-2xl text-cc-navy">
+                  พบข้อมูลการสมัครในระบบแล้ว
+                </h2>
+                <p className="text-xs sm:text-sm text-gray-600">
+                  รหัสนักศึกษา <strong className="text-cc-navy font-mono text-sm">{duplicateInfo.studentId}</strong> ได้ทำการส่งใบสมัครเข้าร่วมโครงการ Comclick 20 เรียบร้อยแล้ว
+                </p>
+              </div>
+
+              {duplicateInfo.appId && (
+                <div className="p-3.5 rounded-2xl bg-cc-cream border-2 border-cc-navy/30 text-left font-mono text-xs space-y-1">
+                  <div className="flex justify-between items-center font-bold">
+                    <span className="text-gray-500">รหัสใบสมัครเดิม:</span>
+                    <span className="text-cc-navy font-mono text-sm font-black">{duplicateInfo.appId}</span>
+                  </div>
+                  <p className="text-[11px] text-gray-500 font-sans">
+                    💡 หากต้องการตรวจสอบผลการคัดเลือกหรือเปลี่ยนฝ่าย สามารถกดปุ่มด้านล่างได้เลย
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-2 pt-2">
+                <a
+                  href={`/status?q=${encodeURIComponent(duplicateInfo.studentId)}`}
+                  className="w-full py-3.5 rounded-xl bg-cc-navy hover:bg-cc-blue text-white font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Search className="w-4 h-4 text-cc-yellow" />
+                  <span>ไปที่หน้าตรวจสอบสถานะทันที</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => setDuplicateInfo(null)}
+                  className="w-full py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs border border-gray-300 transition-all cursor-pointer"
+                >
+                  ปิดหน้าต่างนี้เพื่อแก้ไขข้อมูล
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
