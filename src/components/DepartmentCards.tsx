@@ -140,8 +140,8 @@ export default function DepartmentCards({
           </div>
         </div>
 
-        {/* Department Grid: Equal height cards across each row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
+        {/* Department Grid: Independent height cards with items-start */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6 items-start">
           {filteredDepts.map((dept) => {
             const IconComponent = iconMap[dept.icon] || Code2;
             const isExpanded = Boolean(expandedDeptIds[dept.id]);
@@ -149,7 +149,7 @@ export default function DepartmentCards({
             return (
               <div
                 key={dept.id}
-                className="h-full bg-white rounded-3xl border-3 border-cc-navy shadow-solid flex flex-col justify-between p-5 sm:p-6 space-y-4 transition-all"
+                className="bg-white rounded-3xl border-3 border-cc-navy shadow-solid flex flex-col justify-between p-5 sm:p-6 space-y-4 transition-all"
               >
                 <div className="flex-1 flex flex-col space-y-3">
                   {/* Top Bar inside Card */}
@@ -177,7 +177,7 @@ export default function DepartmentCards({
                     </h3>
                   </div>
 
-                  <p className="text-xs text-gray-700 leading-relaxed font-normal flex-1">
+                  <p className="text-xs text-gray-700 leading-relaxed font-normal">
                     {dept.shortDesc}
                   </p>
 
@@ -191,7 +191,7 @@ export default function DepartmentCards({
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                         className="overflow-hidden"
                       >
                         <div className="pt-3 space-y-3 border-t-2 border-dashed border-cc-navy/20">
@@ -199,29 +199,13 @@ export default function DepartmentCards({
                           <div className="space-y-1.5 bg-blue-50/70 p-3 rounded-2xl border border-blue-200">
                             <div className="text-[11px] font-bold text-cc-navy flex items-center gap-1.5">
                               <span className="w-2 h-2 rounded-full bg-cc-blue" />
-                              <span>หน้าที่และความรับผิดชอบ:</span>
+                              <span>ขอบเขตงานฝ่าย:</span>
                             </div>
-                            <ul className="space-y-1 text-[11px] text-gray-700">
+                            <ul className="space-y-1.5 text-[11px] text-gray-700">
                               {dept.responsibilities.map((r, rIdx) => (
                                 <li key={rIdx} className="flex items-start gap-1.5">
                                   <CheckCircle className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                  <span>{r}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-
-                          {/* Qualifications */}
-                          <div className="space-y-1.5 bg-orange-50/70 p-3 rounded-2xl border border-orange-200">
-                            <div className="text-[11px] font-bold text-cc-navy flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-cc-coral" />
-                              <span>คุณสมบัติที่มองหา:</span>
-                            </div>
-                            <ul className="space-y-1 text-[11px] text-gray-700">
-                              {dept.qualifications.map((q, qIdx) => (
-                                <li key={qIdx} className="flex items-start gap-1.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-cc-coral mt-1.5 flex-shrink-0" />
-                                  <span>{q}</span>
+                                  <span className="leading-snug">{r}</span>
                                 </li>
                               ))}
                             </ul>
@@ -244,7 +228,7 @@ export default function DepartmentCards({
                         : "bg-cc-cream/80 hover:bg-cc-cream text-cc-navy border-cc-navy/30"
                     }`}
                   >
-                    <span>{isExpanded ? "ซ่อนหน้าที่และคุณสมบัติ" : "ดูหน้าที่และคุณสมบัติ"}</span>
+                    <span>{isExpanded ? "ซ่อนขอบเขตหน้าที่" : "ดูขอบเขตหน้าที่"}</span>
                     {isExpanded ? (
                       <ChevronUp className="w-4 h-4" />
                     ) : (
@@ -270,19 +254,6 @@ export default function DepartmentCards({
             );
           })}
         </div>
-
-        {/* View All Departments Link */}
-        {!showAll && (
-          <div className="mt-12 text-center">
-            <a
-              href="/departments"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-white border-3 border-cc-navy text-cc-navy font-bold text-xs sm:text-sm shadow-solid hover:translate-x-0.5 hover:-translate-y-0.5 transition-all"
-            >
-              <Layers className="w-4 h-4 text-cc-coral" />
-              <span>ดูข้อมูลเจาะลึก 13 ฝ่ายอย่างละเอียดในหน้าแยก →</span>
-            </a>
-          </div>
-        )}
       </div>
 
       {/* Portal Modal (Optional Fullscreen Detail View Mounted to Document Body) */}
@@ -338,28 +309,13 @@ export default function DepartmentCards({
               <div className="space-y-2">
                 <h4 className="font-display font-black text-xs sm:text-sm text-cc-navy flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-cc-blue" />
-                  ภาระหน้าที่และความรับผิดชอบ
+                  ขอบเขตงานฝ่าย
                 </h4>
                 <ul className="space-y-1.5 bg-gray-50 p-3 rounded-2xl border border-gray-200">
                   {activeModalDept.responsibilities.map((r, idx) => (
                     <li key={idx} className="text-xs text-gray-800 flex items-start gap-2">
                       <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
                       <span>{r}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="font-display font-black text-xs sm:text-sm text-cc-navy flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-cc-coral" />
-                  คุณสมบัติที่มองหา
-                </h4>
-                <ul className="space-y-1.5 bg-gray-50 p-3 rounded-2xl border border-gray-200">
-                  {activeModalDept.qualifications.map((q, idx) => (
-                    <li key={idx} className="text-xs text-gray-800 flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-cc-coral mt-1.5 flex-shrink-0" />
-                      <span>{q}</span>
                     </li>
                   ))}
                 </ul>

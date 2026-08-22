@@ -55,10 +55,10 @@ export default function Footer() {
               เกี่ยวกับค่าย
             </a>
             <a
-              href="/departments"
+              href="/#departments"
               className="px-3 py-1.5 rounded-lg hover:bg-cc-cream text-gray-600 hover:text-cc-navy transition-colors"
             >
-              13 ฝ่ายที่เปิดรับ
+              13 ฝ่ายหลัก
             </a>
             <a
               href="/#schedule"
