@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { Application, ApplicationStatus } from "@/lib/types";
 import { DEPARTMENTS } from "@/lib/constants";
-import { getApplications, updateApplicationFull, clearAllApplications } from "@/lib/storage";
 import {
   ShieldCheck,
   Users,
@@ -123,44 +122,27 @@ export default function AdminDashboard() {
           (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
         );
         setApplications(sorted);
-        saveApplications(sorted);
-        return;
       }
-      setApplications(getApplications());
     } catch (err) {
-      console.warn("Failed to fetch applications:", err);
-      setApplications(getApplications());
+      console.warn("Failed to fetch applications from server:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    // Initial load from storage / API
-    const initialLocal = getApplications();
-    setApplications(initialLocal);
-
     const auth = sessionStorage.getItem("cc20_admin_auth");
     if (auth === "true") {
       setIsAuthenticated(true);
     }
     fetchLiveApplications();
 
-    const handleStorageUpdate = () => {
-      fetchLiveApplications();
-    };
-
-    window.addEventListener("comclick_storage_updated", handleStorageUpdate);
-    window.addEventListener("storage", handleStorageUpdate);
-
-    // Auto-sync polling every 3 seconds for live realtime dashboard updates
+    // Auto-sync polling every 3 seconds directly from server DB
     const timer = setInterval(() => {
       fetchLiveApplications();
     }, 3000);
 
     return () => {
-      window.removeEventListener("comclick_storage_updated", handleStorageUpdate);
-      window.removeEventListener("storage", handleStorageUpdate);
       clearInterval(timer);
     };
   }, []);
@@ -288,20 +270,17 @@ export default function AdminDashboard() {
       };
 
       // 1. Sync with Server API / Database
-      try {
-        await fetch("/api/applications", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payloadToSave),
-        });
-      } catch (apiErr) {
-        console.warn("API PUT error, saving locally:", apiErr);
+      const res = await fetch("/api/applications", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payloadToSave),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update application on server");
       }
 
-      // 2. Sync with local storage
-      updateApplicationFull(payloadToSave.id, payloadToSave as any);
-
-      // 3. Update local state
+      // 2. Update local component state
       setApplications((prev) =>
         prev.map((a) => (a.id === payloadToSave.id ? { ...a, ...payloadToSave } : a))
       );
@@ -327,21 +306,6 @@ export default function AdminDashboard() {
       if (isEditModalOpen) setIsEditModalOpen(false);
     } catch (err) {
       alert("เกิดข้อผิดพลาดในการลบข้อมูล");
-    }
-  };
-
-  // Clear all applicants (Test data cleanup)
-  const handleClearAllApplicants = async () => {
-    if (!confirm("⚠️ คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลผู้สมัครทั้งหมดในระบบ? (การกระทำนี้ไม่สามารถย้อนกลับได้)")) return;
-    if (!confirm("ยืนยันอีกครั้ง: ลบข้อมูลผู้สมัครทั้งหมดออกจากฐานข้อมูล?")) return;
-
-    try {
-      await fetch("/api/applications?all=true", { method: "DELETE" });
-      clearAllApplications();
-      setApplications([]);
-      alert("ล้างข้อมูลผู้สมัครทั้งหมดเรียบร้อยแล้ว");
-    } catch (err) {
-      alert("เกิดข้อผิดพลาดในการล้างข้อมูล");
     }
   };
 
@@ -548,17 +512,6 @@ export default function AdminDashboard() {
             <FileSpreadsheet className="w-4 h-4" />
             <span>ส่งออก Excel/CSV</span>
           </button>
-
-          {applications.length > 0 && (
-            <button
-              onClick={handleClearAllApplicants}
-              className="px-4 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500 text-rose-200 hover:text-white font-bold text-xs border border-rose-400/40 transition-colors flex items-center gap-1.5 cursor-pointer"
-              title="ล้างข้อมูลผู้สมัครทดสอบทั้งหมดออกจากฐานข้อมูล"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>ล้างข้อมูลทั้งหมด</span>
-            </button>
-          )}
 
           <button
             onClick={handleLogout}

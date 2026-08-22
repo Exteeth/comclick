@@ -12,7 +12,6 @@ import {
   STAFF_YEAR_OPTIONS,
   TECH_PR_DRIVE_URL,
 } from "@/lib/constants";
-import { addApplication } from "@/lib/storage";
 import { Application } from "@/lib/types";
 import confetti from "canvas-confetti";
 import {
@@ -388,34 +387,34 @@ export default function ApplicationForm() {
 
       let serverAppId: string | undefined = undefined;
 
-      // 1. Sync with Server API & Neon PostgreSQL Database
-      try {
-        const res = await fetch("/api/applications", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+      // 1. Submit directly to Server API & Neon PostgreSQL Database
+      const res = await fetch("/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-        const result = await res.json();
-        if (result.duplicate) {
-          setDuplicateInfo({ studentId: studentIdInput.trim(), appId: result.existingId });
-          clearFieldError();
-          setIsSubmitting(false);
-          return;
-        }
-
-        if (res.ok && result.success) {
-          serverAppId = result.id || (result.data && result.data.id) || undefined;
-        }
-      } catch (apiErr) {
-        console.warn("API sync fallback to local storage:", apiErr);
+      const result = await res.json();
+      if (result.duplicate) {
+        setDuplicateInfo({ studentId: studentIdInput.trim(), appId: result.existingId });
+        clearFieldError();
+        setIsSubmitting(false);
+        return;
       }
 
-      // 2. Save locally for instantaneous receipt and Admin Dashboard sync
-      const created = addApplication({
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || "เกิดข้อผิดพลาดในการบันทึกใบสมัคร");
+      }
+
+      serverAppId = result.id || (result.data && result.data.id);
+      const created: Application = {
         ...payload,
-        ...(serverAppId ? { id: serverAppId } : {}),
-      } as any);
+        id: serverAppId || `CC20-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+        status: "SUBMITTED",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as Application;
+
       setCreatedApplication(created);
       clearFieldError();
 

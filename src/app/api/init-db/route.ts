@@ -94,7 +94,25 @@ export async function GET() {
       );
     `;
 
-    // 4. Create Indexes
+    // 4. Run ALTER TABLE Migrations for newly added columns
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS facebook_name VARCHAR(255);`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS facebook_url TEXT;`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS fallback_dept_choice TEXT;`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS strengths TEXT;`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS weaknesses TEXT;`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS tech_portfolio_url TEXT;`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS has_car VARCHAR(50);`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS car_type VARCHAR(100);`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS car_type_other VARCHAR(255);`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS status_notes TEXT;`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS interview_date VARCHAR(255);`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS interview_location VARCHAR(255);`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS assigned_dept_id VARCHAR(50);`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS first_choice_dept_id VARCHAR(50);`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS second_choice_dept_id VARCHAR(50);`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'submitted';`;
+
+    // 5. Create Indexes
     await sql`CREATE INDEX IF NOT EXISTS idx_apps_student_id ON applications(student_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_apps_phone ON applications(phone);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_apps_status ON applications(status);`;

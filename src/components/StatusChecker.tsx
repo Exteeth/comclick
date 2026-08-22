@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { findApplicationByQuery } from "@/lib/storage";
 import { Application, ApplicationStatus } from "@/lib/types";
 import { DEPARTMENTS } from "@/lib/constants";
 import {
@@ -46,24 +45,11 @@ export default function StatusChecker() {
         setSearchResult(json.data);
         setLastSyncedTime(new Date().toLocaleTimeString("th-TH"));
       } else {
-        // Fallback to local storage
-        const local = findApplicationByQuery(searchQuery);
-        if (local) {
-          setSearchResult(local);
-          setLastSyncedTime(new Date().toLocaleTimeString("th-TH"));
-        } else {
-          setSearchResult("NOT_FOUND");
-        }
-      }
-    } catch (err) {
-      console.warn("Status fetch error, using local fallback", err);
-      const local = findApplicationByQuery(searchQuery);
-      if (local) {
-        setSearchResult(local);
-        setLastSyncedTime(new Date().toLocaleTimeString("th-TH"));
-      } else {
         setSearchResult("NOT_FOUND");
       }
+    } catch (err) {
+      console.warn("Status fetch error:", err);
+      setSearchResult("NOT_FOUND");
     } finally {
       setIsSearching(false);
       setIsRefreshing(false);

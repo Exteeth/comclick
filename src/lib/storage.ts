@@ -1,9 +1,7 @@
 import { Application, ApplicationStatus } from "./types";
 import { INITIAL_APPLICANTS } from "./constants";
 
-const STORAGE_KEY = "comclick_20_applications_v2";
-
-// In-memory global fallback for SSR / Server routes (persists across Next.js dev requests)
+// In-memory global fallback for server routes when Neon DB is not connected
 declare global {
   var __comclick_memory_apps: Application[] | undefined;
 }
@@ -20,35 +18,15 @@ const setMemoryStore = (apps: Application[]): void => {
 };
 
 export const getApplications = (): Application[] => {
-  if (typeof window !== "undefined") {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored !== null) {
-        return JSON.parse(stored);
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_APPLICANTS));
-      return [...INITIAL_APPLICANTS];
-    } catch (e) {
-      console.warn("Could not read from localStorage, using memory state", e);
-    }
-  }
   return getMemoryStore();
 };
 
 export const clearAllApplications = (): void => {
-  saveApplications([]);
+  setMemoryStore([]);
 };
 
 export const saveApplications = (apps: Application[]): void => {
   setMemoryStore(apps);
-  if (typeof window !== "undefined") {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
-      window.dispatchEvent(new Event("comclick_storage_updated"));
-    } catch (e) {
-      console.warn("Could not save to localStorage", e);
-    }
-  }
 };
 
 export const addApplication = (app: Omit<Application, "id" | "createdAt" | "updatedAt" | "status"> & { id?: string; status?: ApplicationStatus }): Application => {
