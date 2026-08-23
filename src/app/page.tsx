@@ -20,8 +20,8 @@ export default function HomePage() {
       {/* 2. About Camp Section */}
       <AboutSection />
 
-      {/* 3. Camp Committee & Department Leads */}
-      <CommitteeSection />
+      {/* 3. Camp Committee & Department Leads (Temporarily hidden until photos are ready) */}
+      {/* <CommitteeSection /> */}
 
       {/* 4. 8 Staff Departments */}
       <DepartmentCards />
