@@ -21,7 +21,6 @@ export default function Hero() {
     { id: 4, img: "/img/activities/activity-4.webp", alt: "Comclick 20 กิจกรรมที่ 4" },
     { id: 5, img: "/img/activities/activity-5.webp", alt: "Comclick 20 กิจกรรมที่ 5" },
     { id: 6, img: "/img/activities/activity-6.webp", alt: "Comclick 20 กิจกรรมที่ 6" },
-    { id: 7, img: "/img/activities/activity-7.webp", alt: "Comclick 20 กิจกรรมที่ 7" },
   ];
 
   return (
@@ -141,17 +140,17 @@ export default function Hero() {
           </div>
 
           {/* Right Column: React Bits CardSwap */}
-          <div className="lg:col-span-6 flex items-center justify-center relative min-h-[340px] sm:min-h-[440px] w-full overflow-hidden max-w-full">
-            <div className="w-full h-full min-h-[340px] sm:min-h-[420px] relative flex items-center justify-center scale-[0.82] sm:scale-95 lg:scale-100 origin-center">
+          <div className="lg:col-span-6 flex items-center justify-center relative min-h-[380px] sm:min-h-[460px] lg:min-h-[520px] w-full py-4 sm:py-6">
+            <div className="w-full h-full min-h-[380px] sm:min-h-[460px] lg:min-h-[520px] relative flex items-center justify-center origin-center">
               <CardSwap
                 width={440}
                 height={248}
-                cardDistance={36}
-                verticalDistance={26}
-                delay={2600}
+                cardDistance={20}
+                verticalDistance={15}
+                delay={2800}
                 duration={0.65}
                 pauseOnHover={true}
-                skewAmount={3}
+                skewAmount={2.5}
                 easing="elastic"
               >
                 {swapCards.map((item) => (

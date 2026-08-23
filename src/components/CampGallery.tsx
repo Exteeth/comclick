@@ -65,14 +65,14 @@ export default function CampGallery() {
           {/* Render DomeGallery */}
           <DomeGallery
             images={CAMP_GALLERY_IMAGES}
-            fit={0.7}
-            minRadius={480}
+            fit={0.72}
+            minRadius={380}
             maxVerticalRotationDeg={19}
             dragDampening={3.6}
             dragSensitivity={22}
             grayscale={false}
             overlayBlurColor="#132338"
-            imageBorderRadius="20px"
+            imageBorderRadius="16px"
             openedImageBorderRadius="24px"
             openedImageWidth="min(88vw, 560px)"
             openedImageHeight="min(78vh, 420px)"

@@ -22,18 +22,24 @@
 
 @media (max-width: 1024px) {
   .card-swap-container {
-    transform: scale(0.9) translate(50%, 50%);
+    transform: scale(0.95) translate(50%, 50%);
   }
 }
 
 @media (max-width: 768px) {
   .card-swap-container {
-    transform: scale(0.78) translate(50%, 50%);
+    transform: scale(0.88) translate(50%, 50%);
   }
 }
 
 @media (max-width: 480px) {
   .card-swap-container {
-    transform: scale(0.65) translate(50%, 50%);
+    transform: scale(0.82) translate(50%, 50%);
+  }
+}
+
+@media (max-width: 380px) {
+  .card-swap-container {
+    transform: scale(0.74) translate(50%, 50%);
   }
 }
