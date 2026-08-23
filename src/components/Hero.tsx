@@ -15,42 +15,13 @@ import HeroCountdown from "./ui/HeroCountdown";
 
 export default function Hero() {
   const swapCards = [
-    {
-      id: 1,
-      tag: "CAREER & ACADEMIC",
-      tagColor: "bg-cc-blue text-white",
-      title: "แนะแนวสายอาชีพ & คณะใน มข.",
-      desc: "กิจกรรมวิชาการแนะแนวการศึกษาต่อระดับอุดมศึกษา และสายอาชีพดิจิทัล",
-      img: "https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=800&auto=format&fit=crop",
-      badge: "DAY 1",
-    },
-    {
-      id: 2,
-      tag: "WILD GAME & RECREATION",
-      tagColor: "bg-cc-yellow text-cc-navy",
-      title: "นันทนาการฐาน Wild Game",
-      desc: "ระเบิดความมันส์ ละลายพฤติกรรม และกระชับมิตรภาพแบบจัดเต็ม",
-      img: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=800&auto=format&fit=crop",
-      badge: "HIGH ENERGY",
-    },
-    {
-      id: 3,
-      tag: "INNOVATION PITCHING",
-      tagColor: "bg-cc-coral text-white",
-      title: "Comclick Innovation Pitching",
-      desc: "เวิร์กช็อปพัฒนาและ Pitching ผลงานนวัตกรรมดิจิทัลแห่งอนาคต",
-      img: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=800&auto=format&fit=crop",
-      badge: "DAY 2",
-    },
-    {
-      id: 4,
-      tag: "CAMPFIRE & VOLUNTEER",
-      tagColor: "bg-cc-bronze text-white",
-      title: "กิจกรรมรอบกองไฟ & Big Cleaning",
-      desc: "ค่ำคืนรอบกองไฟสุดอบอุ่น และร่วมจิตอาสาทำความสะอาดโรงเรียนส่งท้าย",
-      img: "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=800&auto=format&fit=crop",
-      badge: "NIGHT & FINAL",
-    },
+    { id: 1, img: "/img/activities/activity-1.webp", alt: "Comclick 20 กิจกรรมที่ 1" },
+    { id: 2, img: "/img/activities/activity-2.webp", alt: "Comclick 20 กิจกรรมที่ 2" },
+    { id: 3, img: "/img/activities/activity-3.webp", alt: "Comclick 20 กิจกรรมที่ 3" },
+    { id: 4, img: "/img/activities/activity-4.webp", alt: "Comclick 20 กิจกรรมที่ 4" },
+    { id: 5, img: "/img/activities/activity-5.webp", alt: "Comclick 20 กิจกรรมที่ 5" },
+    { id: 6, img: "/img/activities/activity-6.webp", alt: "Comclick 20 กิจกรรมที่ 6" },
+    { id: 7, img: "/img/activities/activity-7.webp", alt: "Comclick 20 กิจกรรมที่ 7" },
   ];
 
   return (
@@ -173,11 +144,11 @@ export default function Hero() {
           <div className="lg:col-span-6 flex items-center justify-center relative min-h-[340px] sm:min-h-[440px] w-full overflow-hidden max-w-full">
             <div className="w-full h-full min-h-[340px] sm:min-h-[420px] relative flex items-center justify-center scale-[0.82] sm:scale-95 lg:scale-100 origin-center">
               <CardSwap
-                width={420}
-                height={300}
-                cardDistance={40}
-                verticalDistance={30}
-                delay={2400}
+                width={440}
+                height={248}
+                cardDistance={36}
+                verticalDistance={26}
+                delay={2600}
                 duration={0.65}
                 pauseOnHover={true}
                 skewAmount={3}
@@ -186,45 +157,14 @@ export default function Hero() {
                 {swapCards.map((item) => (
                   <Card
                     key={item.id}
-                    className="bg-cc-navy text-white rounded-3xl border-3 border-cc-navy overflow-hidden cursor-pointer flex flex-col justify-between"
+                    className="bg-cc-navy rounded-2xl sm:rounded-3xl border-3 border-cc-navy shadow-solid-md overflow-hidden cursor-pointer w-full h-full relative group"
                   >
-                    {/* Card Image Area */}
-                    <div className="relative h-44 w-full bg-cc-navy overflow-hidden">
-                      <img
-                        src={item.img}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute top-3 left-3">
-                        <span
-                          className={`px-3 py-1 rounded-full text-[10px] font-mono font-black uppercase border border-cc-navy shadow-sm ${item.tagColor}`}
-                        >
-                          {item.tag}
-                        </span>
-                      </div>
-                      <div className="absolute top-3 right-3">
-                        <span className="px-2.5 py-0.5 rounded-md bg-cc-navy/80 text-white text-[9px] font-mono font-bold border border-white/30">
-                          {item.badge}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Card Content Area */}
-                    <div className="p-4 bg-white text-cc-navy flex-1 flex flex-col justify-between border-t-2 border-cc-navy">
-                      <div>
-                        <h3 className="font-display font-black text-sm sm:text-base leading-snug">
-                          {item.title}
-                        </h3>
-                        <p className="text-[11px] sm:text-xs text-gray-600 mt-1 line-clamp-2 font-normal">
-                          {item.desc}
-                        </p>
-                      </div>
-
-                      <div className="pt-2 flex items-center justify-between text-[10px] font-bold text-cc-blue">
-                        <span>คลิกเพื่อดูรายละเอียดเพิ่มเติม</span>
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                      </div>
-                    </div>
+                    <img
+                      src={item.img}
+                      alt={item.alt}
+                      className="w-full h-full object-cover object-center select-none"
+                      draggable={false}
+                    />
                   </Card>
                 ))}
               </CardSwap>

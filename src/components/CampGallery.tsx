@@ -9,38 +9,26 @@ import {
 import DomeGallery, { DomeGalleryItem } from "./ui/DomeGallery";
 
 const CAMP_GALLERY_IMAGES: DomeGalleryItem[] = [
-  {
-    src: "https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=1200&auto=format&fit=crop",
-    alt: "AI & Coding Hands-on Lab",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=800&auto=format&fit=crop",
-    alt: "กิจกรรมสันทนาการสุดมันส์",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=800&auto=format&fit=crop",
-    alt: "Comclick Night & บายศรีสู่ขวัญ",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=800&auto=format&fit=crop",
-    alt: "Micro:bit & Robotics Workshop",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1200&auto=format&fit=crop",
-    alt: "Mini Hackathon & Project Pitching",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=800&auto=format&fit=crop",
-    alt: "ความผูกพันของทีมงานพี่ค่าย",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800&auto=format&fit=crop",
-    alt: "Team Collaboration & Brainstorming",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=800&auto=format&fit=crop",
-    alt: "บรรยากาศการมอบรางวัลและปิดค่าย",
-  },
+  { src: "/img/gallery/camp-1.webp", alt: "บรรยากาศกิจกรรมค่าย ComClick" },
+  { src: "/img/gallery/camp-2.webp", alt: "กิจกรรมนันทนาการและรอยยิ้มพี่น้องค่าย" },
+  { src: "/img/gallery/camp-3.webp", alt: "ความร่วมมือในการทำงานเป็นทีม" },
+  { src: "/img/gallery/camp-4.webp", alt: "ช่วงเวลาแห่งความสุขในค่าย" },
+  { src: "/img/gallery/camp-5.webp", alt: "กิจกรรมเวิร์กช็อปและการเรียนรู้" },
+  { src: "/img/gallery/camp-6.webp", alt: "พลังและเสียงหัวเราะของชาวค่าย" },
+  { src: "/img/gallery/camp-7.webp", alt: "การรวมพลังทีมสตาฟพี่ค่าย" },
+  { src: "/img/gallery/camp-8.webp", alt: "มิตรภาพและการดูแลน้องๆ ค่าย" },
+  { src: "/img/gallery/camp-9.webp", alt: "บรรยากาศเวทีและกิจกรรมไฮไลท์" },
+  { src: "/img/gallery/camp-10.webp", alt: "ความอบอุ่นและความประทับใจ" },
+  { src: "/img/gallery/camp-11.webp", alt: "บรรยากาศฐานกิจกรรม Wild Game" },
+  { src: "/img/gallery/camp-12.webp", alt: "ภาพความทรงจำร่วมกัน" },
+  { src: "/img/gallery/camp-13.webp", alt: "ทีมงานพี่ค่ายกับการเตรียมความพร้อม" },
+  { src: "/img/gallery/camp-14.webp", alt: "ความสนุกสนานในกิจกรรมสันทนาการ" },
+  { src: "/img/gallery/camp-15.webp", alt: "การร่วมแรงร่วมใจของพี่น้อง Comclick" },
+  { src: "/img/gallery/camp-16.webp", alt: "กิจกรรมกระชับมิตรภาพ" },
+  { src: "/img/gallery/camp-17.webp", alt: "รอยยิ้มและความผูกพันของชาวค่าย" },
+  { src: "/img/gallery/camp-18.webp", alt: "ช่วงเวลาประทับใจส่งท้ายค่าย" },
+  { src: "/img/gallery/camp-19.webp", alt: "ความสำเร็จและพลังบวกจากทุกคน" },
+  { src: "/img/gallery/camp-20.webp", alt: "Comclick ความทรงจำที่ไม่สิ้นสุด" },
 ];
 
 export default function CampGallery() {

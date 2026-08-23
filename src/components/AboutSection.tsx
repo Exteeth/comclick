@@ -200,16 +200,16 @@ export default function AboutSection() {
                   <span>ทีมผู้จัดทำ & เปิดรับสตาฟทุกคณะ</span>
                 </div>
                 <p className="text-xs sm:text-sm text-gray-700 leading-relaxed pl-7">
-                  จัดทำโดยนักศึกษาสาขาวิชาคอมพิวเตอร์ศึกษา ชั้นปีที่ 1 - 4{" "}
+                  จัดทำโดยสาขาวิชาคอมพิวเตอร์ศึกษา{" "}
                   <a
                     href={CAMP_INFO.organizerUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="text-cc-blue font-bold underline hover:text-cc-coral"
                   >
-                    คณะศึกษาศาสตร์ มข.
+                    คณะศึกษาศาสตร์ มหาวิทยาลัยขอนแก่น
                   </a>{" "}
-                  และ<strong>เปิดรับสมัครนักศึกษาชั้นปีที่ 1 - 3 ทุกสาขาวิชาใน มข.</strong> มาร่วมเป็นทีมงานพี่ค่าย Comclick ครั้งที่ 20
+                  และ<strong>เปิดรับสมัครนักศึกษาชั้นปีที่ 1 - 3 ทุกคณะ ทุกสาขาวิชาใน มหาวิทยาลัยขอนแก่น</strong> มาร่วมเป็นทีมงานพี่ค่าย Comclick ครั้งที่ 20
                 </p>
               </div>
             </div>

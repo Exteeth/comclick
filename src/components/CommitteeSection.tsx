@@ -463,12 +463,12 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
   },
   {
     id: "comkitty",
-    nameTh: "ฝ่ายคิดตี้",
+    nameTh: "ฝ่ายคิตตี้",
     badge: "ComKitty & Recreation",
     color: "#eccb7d",
     icon: Sparkles,
     head: {
-      role: "หัวหน้าฝ่ายคิดตี้",
+      role: "หัวหน้าฝ่ายคิตตี้",
       nameTh: "นางสาวธีรริญญ์ ปุริสาร",
       nameEn: "MISS THEERARIN PURISAN",
       nickname: "พี่หนูดี",
@@ -480,7 +480,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       image: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=500&auto=format&fit=crop",
     },
     subHead: {
-      role: "รองหัวหน้าฝ่ายคิดตี้",
+      role: "รองหัวหน้าฝ่ายคิตตี้",
       nameTh: "นางสาววิลาสินี ทองขวาง",
       nameEn: "MISS WILASINEE THONGKHUANG",
       nickname: "พี่ซีน",
