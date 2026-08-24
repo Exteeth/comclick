@@ -117,6 +117,7 @@ export async function GET() {
 
     // 5. Create Indexes
     await sql`CREATE INDEX IF NOT EXISTS idx_apps_student_id ON applications(student_id);`;
+    await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_apps_student_id_unique ON applications(student_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_apps_phone ON applications(phone);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_apps_status ON applications(status);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_apps_created_at ON applications(created_at DESC);`;

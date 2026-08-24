@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     }
 
     const year = new Date().getFullYear();
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    const randomNum = Math.floor(100000 + Math.random() * 900000);
     const id = `CC20-${year}-${randomNum}`;
 
     const cleanFirstChoice = body.firstChoiceDeptId?.trim() || null;
@@ -201,6 +201,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, source: "neon_db", id });
   } catch (error: any) {
     console.error("Neon POST application error:", error);
+    if (error?.code === "23505") {
+      return NextResponse.json(
+        {
+          success: false,
+          duplicate: true,
+          error: "รหัสนักศึกษานี้ได้ทำการส่งใบสมัครเข้าระบบเรียบร้อยแล้ว สามารถตรวจสอบสถานะได้ที่เมนูตรวจสอบสถานะ",
+        },
+        { status: 409 }
+      );
+    }
     return NextResponse.json(
       { success: false, error: `ไม่สามารถบันทึกข้อมูลลงฐานข้อมูลได้ (${error.message || "Database Error"}) กรุณาลองใหม่อีกครั้ง` },
       { status: 500 }
