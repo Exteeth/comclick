@@ -1387,8 +1387,16 @@ export default function ApplicationForm() {
             )}
           </div>
 
+          {/* Error Alert above submit button if any validation fails */}
+          {errorMessage && !duplicateInfo && (
+            <div className="p-4 rounded-2xl bg-red-50 border-2 border-red-500 text-red-700 flex items-center gap-3 text-xs sm:text-sm font-bold animate-shake shadow-sm">
+              <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-600" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
           {/* Submit Button */}
-          <div className="pt-4">
+          <div className="pt-2">
             <button
               type="submit"
               disabled={isSubmitting}
