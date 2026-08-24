@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { findApplication } from "@/lib/storage";
 import { getNeonSql, isNeonConfigured } from "@/lib/neon";
 
 export const dynamic = "force-dynamic";
@@ -68,45 +67,54 @@ export async function GET(request: Request) {
           `;
 
           if (rows && rows.length > 0) {
-            return NextResponse.json({
-              success: true,
-              source: "neon_realtime",
-              data: rows[0],
-            }, {
-              headers: {
-                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            return NextResponse.json(
+              {
+                success: true,
+                source: "neon_realtime",
+                data: rows[0],
               },
-            });
+              {
+                headers: {
+                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                },
+              }
+            );
+          } else {
+            return NextResponse.json(
+              {
+                success: false,
+                error: "ไม่พบข้อมูลใบสมัคร กรุณาตรวจสอบรหัสใบสมัคร รหัสนักศึกษา หรือเบอร์โทรศัพท์อีกครั้ง",
+              },
+              {
+                status: 404,
+                headers: {
+                  "Cache-Control": "no-store, no-cache, must-revalidate",
+                },
+              }
+            );
           }
-        } catch (dbErr) {
-          console.warn("Neon status query failed, checking memory store:", dbErr);
+        } catch (dbErr: any) {
+          console.error("Neon status query error:", dbErr);
+          return NextResponse.json(
+            { success: false, error: "เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล กรุณาลองใหม่อีกครั้ง" },
+            { status: 500 }
+          );
         }
       }
     }
 
-    // 2. Fallback to local memory storage
-    const found = findApplication(clean);
-    if (found) {
-      return NextResponse.json({
-        success: true,
-        source: "memory_store",
-        data: found,
-      }, {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "ไม่พบข้อมูลใบสมัครในระบบ",
+      },
+      {
+        status: 404,
         headers: {
           "Cache-Control": "no-store, no-cache, must-revalidate",
         },
-      });
-    }
-
-    return NextResponse.json({
-      success: false,
-      error: "Application not found",
-    }, {
-      status: 404,
-      headers: {
-        "Cache-Control": "no-store, no-cache, must-revalidate",
-      },
-    });
+      }
+    );
   } catch (error) {
     return NextResponse.json(
       { success: false, error: "Internal server error" },

@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
-import { getApplications } from "@/lib/storage";
 import { DEPARTMENTS, CAMP_INFO } from "@/lib/constants";
 import { getNeonSql, isNeonConfigured } from "@/lib/neon";
 import { Application } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
   try {
     let apps: Application[] = [];
 
-    // 1. Query live from Neon Database if configured
+    // Query live from Neon Database
     if (isNeonConfigured()) {
       const sql = getNeonSql();
       if (sql) {
@@ -25,15 +25,14 @@ export async function GET() {
             FROM applications
           `;
           apps = (rows || []) as Application[];
-        } catch (dbErr) {
-          console.warn("Neon stats query failed, falling back to memory store:", dbErr);
-          apps = getApplications();
+        } catch (dbErr: any) {
+          console.error("Neon stats query error:", dbErr);
+          return NextResponse.json(
+            { success: false, error: "Failed to query database statistics" },
+            { status: 500 }
+          );
         }
-      } else {
-        apps = getApplications();
       }
-    } else {
-      apps = getApplications();
     }
 
     const totalApplicants = apps.length;
