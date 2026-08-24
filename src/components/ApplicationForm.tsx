@@ -118,7 +118,7 @@ export default function ApplicationForm() {
   // Section 3: ฝ่ายที่ต้องการลงสมัคร & คำถามพิเศษ
   // ==========================================
   const [firstChoiceDeptId, setFirstChoiceDeptId] = useState<string>(preselectedDept || OPEN_DEPARTMENTS[0]?.id || "protocol");
-  const [secondChoiceDeptId, setSecondChoiceDeptId] = useState<string>(OPEN_DEPARTMENTS[1]?.id || "fundraising");
+  const [secondChoiceDeptId, setSecondChoiceDeptId] = useState<string>("-");
   const [fallbackDeptChoice, setFallbackDeptChoice] = useState<string>("ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร");
 
   // Special Question: Tech & PR
@@ -130,8 +130,12 @@ export default function ApplicationForm() {
   const [carTypeOther, setCarTypeOther] = useState<string>("");
 
   // Check if Tech & PR or Fast Response is selected in Choice 1 or Choice 2
-  const isTechPRSelected = firstChoiceDeptId === "tech-pr" || secondChoiceDeptId === "tech-pr";
-  const isFastResponseSelected = firstChoiceDeptId === "fast-response" || secondChoiceDeptId === "fast-response";
+  const isTechPRSelected =
+    firstChoiceDeptId === "tech-pr" ||
+    (secondChoiceDeptId !== "-" && secondChoiceDeptId !== "none" && secondChoiceDeptId === "tech-pr");
+  const isFastResponseSelected =
+    firstChoiceDeptId === "fast-response" ||
+    (secondChoiceDeptId !== "-" && secondChoiceDeptId !== "none" && secondChoiceDeptId === "fast-response");
 
   useEffect(() => {
     if (createdApplication || duplicateInfo) {
@@ -339,13 +343,13 @@ export default function ApplicationForm() {
     }
 
     // 11. Section 3: Department choices validation
-    if (firstChoiceDeptId === "directorate" || secondChoiceDeptId === "directorate") {
+    if (firstChoiceDeptId === "directorate" || (secondChoiceDeptId !== "-" && secondChoiceDeptId !== "none" && secondChoiceDeptId === "directorate")) {
       triggerFieldError("select-choice1", "ฝ่ายอำนวยการสงวนสิทธิ์เฉพาะคณะกรรมการบริหารโครงการ ไม่เปิดรับสมัครบุคคลทั่วไป");
       return false;
     }
 
-    if (firstChoiceDeptId === secondChoiceDeptId) {
-      triggerFieldError("select-choice2", "กรุณาเลือกฝ่ายอันดับที่ 1 และอันดับที่ 2 ไม่ซ้ำกัน");
+    if (secondChoiceDeptId && secondChoiceDeptId !== "-" && secondChoiceDeptId !== "none" && firstChoiceDeptId === secondChoiceDeptId) {
+      triggerFieldError("select-choice2", "กรุณาเลือกฝ่ายอันดับที่ 1 และอันดับที่ 2 ไม่ซ้ำกัน (หรือเลือก '-' หากไม่ประสงค์เลือกอันดับ 2)");
       return false;
     }
 
@@ -1159,7 +1163,7 @@ export default function ApplicationForm() {
               {/* Choice 2 */}
               <div className="space-y-1.5 p-4 rounded-2xl bg-orange-50/60 border-2 border-cc-coral">
                 <label className="block text-xs sm:text-sm font-bold text-cc-navy">
-                  ฝ่ายที่ต้องการลง ฝ่ายที่ 2 (อันดับ 2) <span className="text-red-500">*</span>
+                  ฝ่ายที่ต้องการลง ฝ่ายที่ 2 (อันดับ 2)
                 </label>
                 <select
                   id="select-choice2"
@@ -1174,22 +1178,27 @@ export default function ApplicationForm() {
                       : "border-cc-navy"
                   }`}
                 >
-                  {OPEN_DEPARTMENTS.map((dept) => {
-                    const isSelectedInFirst = dept.id === firstChoiceDeptId;
-                    return (
-                      <option
-                        key={dept.id}
-                        value={dept.id}
-                        disabled={isSelectedInFirst}
-                        className={isSelectedInFirst ? "text-gray-400 bg-gray-100" : ""}
-                      >
-                        {dept.nameTh} {isSelectedInFirst ? "(เลือกในอันดับที่ 1 แล้ว)" : ""}
-                      </option>
-                    );
-                  })}
+                  <option value="-">- (ไม่ต้องการลงฝ่ายอื่น / ไม่เลือกอันดับ 2)</option>
+                  <optgroup label="เลือกฝ่ายสำรองอันดับที่ 2">
+                    {OPEN_DEPARTMENTS.map((dept) => {
+                      const isSelectedInFirst = dept.id === firstChoiceDeptId;
+                      return (
+                        <option
+                          key={dept.id}
+                          value={dept.id}
+                          disabled={isSelectedInFirst}
+                          className={isSelectedInFirst ? "text-gray-400 bg-gray-100" : ""}
+                        >
+                          {dept.nameTh} {isSelectedInFirst ? "(เลือกในอันดับที่ 1 แล้ว)" : ""}
+                        </option>
+                      );
+                    })}
+                  </optgroup>
                 </select>
                 <p className="text-[11px] text-gray-500 font-medium">
-                  {OPEN_DEPARTMENTS.find((d) => d.id === secondChoiceDeptId)?.shortDesc}
+                  {secondChoiceDeptId === "-" || secondChoiceDeptId === "none"
+                    ? "💡 ไม่ประสงค์เลือกฝ่ายสำรอง (ต้องการลงเฉพาะฝ่ายอันดับที่ 1 เท่านั้น)"
+                    : OPEN_DEPARTMENTS.find((d) => d.id === secondChoiceDeptId)?.shortDesc}
                 </p>
               </div>
             </div>
@@ -1207,6 +1216,9 @@ export default function ApplicationForm() {
                 <option value="ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร">
                   ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร (แนะนำ)
                 </option>
+                <option value="-">
+                  - (ไม่ประสงค์ลงฝ่ายอื่นหากไม่ติดอันดับที่เลือก)
+                </option>
                 <optgroup label="หรือระบุเลือกฝ่ายสำรองเฉพาะเจาะจง">
                   {OPEN_DEPARTMENTS.map((dept) => (
                     <option key={dept.id} value={dept.nameTh}>
@@ -1216,7 +1228,7 @@ export default function ApplicationForm() {
                 </optgroup>
               </select>
               <p className="text-[11px] text-gray-600">
-                💡 หากฝ่ายที่คุณเลือกทั้ง 2 อันดับมีผู้สมัครเต็ม คณะกรรมการจะพิจารณาจัดสรรตามตัวเลือกนี้
+                💡 หากฝ่ายที่คุณเลือกมีผู้สมัครเต็ม คณะกรรมการจะพิจารณาจัดสรรตามตัวเลือกนี้
               </p>
             </div>
 
@@ -1475,7 +1487,9 @@ export default function ApplicationForm() {
                 <div className="flex justify-between">
                   <span className="text-gray-500">ฝ่ายอันดับ 2:</span>
                   <span className="font-bold text-cc-coral">
-                    {DEPARTMENTS.find((d) => d.id === createdApplication.secondChoiceDeptId)?.nameTh}
+                    {createdApplication.secondChoiceDeptId === "-" || createdApplication.secondChoiceDeptId === "none" || !createdApplication.secondChoiceDeptId
+                      ? "-"
+                      : DEPARTMENTS.find((d) => d.id === createdApplication.secondChoiceDeptId)?.nameTh || createdApplication.secondChoiceDeptId}
                   </span>
                 </div>
                 {createdApplication.diet && (

@@ -353,7 +353,11 @@ export default function StatusChecker() {
                       </div>
                       <div>
                         <span className="text-gray-500">อันดับ 2:</span>{" "}
-                        <span className="text-gray-800 font-medium">{secondDept?.nameTh || searchResult.secondChoiceDeptId}</span>
+                        <span className="text-gray-800 font-medium">
+                          {searchResult.secondChoiceDeptId === "-" || searchResult.secondChoiceDeptId === "none" || !searchResult.secondChoiceDeptId
+                            ? "-"
+                            : secondDept?.nameTh || searchResult.secondChoiceDeptId}
+                        </span>
                       </div>
                       {searchResult.fallbackDeptChoice && (
                         <div className="pt-1 border-t border-gray-200 text-[11px]">

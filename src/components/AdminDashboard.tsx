@@ -1373,6 +1373,7 @@ export default function AdminDashboard() {
                       onChange={(e) => setEditFormData({ ...editFormData, secondChoiceDeptId: e.target.value })}
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-bold text-cc-navy outline-none"
                     >
+                      <option value="-">- (ไม่เลือก / ไม่ประสงค์ลงฝ่ายอื่น)</option>
                       {DEPARTMENTS.map((d) => (
                         <option key={d.id} value={d.id}>{d.nameTh}</option>
                       ))}

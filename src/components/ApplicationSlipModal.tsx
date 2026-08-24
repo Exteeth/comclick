@@ -140,7 +140,11 @@ export default function ApplicationSlipModal({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-gray-600 font-bold">5. ฝ่ายที่ต้องการลง (อันดับ 2):</span>
-              <span className="text-gray-800 font-medium">{secondDept?.nameTh || application.secondChoiceDeptId}</span>
+              <span className="text-gray-800 font-medium">
+                {application.secondChoiceDeptId === "-" || application.secondChoiceDeptId === "none" || !application.secondChoiceDeptId
+                  ? "-"
+                  : secondDept?.nameTh || application.secondChoiceDeptId}
+              </span>
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-gray-200">
               <span className="text-gray-600 font-bold">6. ถ้าไม่ติดอยากลงฝ่ายไหน:</span>

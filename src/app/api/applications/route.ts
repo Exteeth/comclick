@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     const id = `CC20-${year}-${randomNum}`;
 
     const cleanFirstChoice = body.firstChoiceDeptId?.trim() || null;
-    const cleanSecondChoice = body.secondChoiceDeptId?.trim() || cleanFirstChoice;
+    const cleanSecondChoice = body.secondChoiceDeptId !== undefined && body.secondChoiceDeptId !== null ? body.secondChoiceDeptId.trim() : "-";
     const cleanFullName = body.fullNameTh.trim();
     const cleanNickname = body.nicknameTh?.trim() || "";
     const cleanFaculty = body.faculty?.trim() || "คณะศึกษาศาสตร์";
