@@ -8,6 +8,9 @@ import {
 import { getNeonSql, isNeonConfigured } from "@/lib/neon";
 import { CAMP_INFO } from "@/lib/constants";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(request: Request) {
   try {
     // If Neon Postgres is configured, query Neon directly
@@ -50,7 +53,14 @@ export async function GET(request: Request) {
             ORDER BY created_at DESC 
             LIMIT 500
           `;
-          return NextResponse.json({ success: true, source: "neon", data: rows });
+          return NextResponse.json(
+            { success: true, source: "neon", data: rows },
+            {
+              headers: {
+                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+              },
+            }
+          );
         } catch (dbErr) {
           console.warn("Neon query failed, falling back to local store:", dbErr);
         }
@@ -58,12 +68,19 @@ export async function GET(request: Request) {
     }
 
     const apps = getApplications();
-    return NextResponse.json({
-      success: true,
-      source: "memory_store",
-      count: apps.length,
-      data: apps,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        source: "memory_store",
+        count: apps.length,
+        data: apps,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
+    );
   } catch (error) {
     return NextResponse.json(
       { success: false, error: "Failed to fetch applications" },

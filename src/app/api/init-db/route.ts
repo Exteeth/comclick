@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getNeonSql, isNeonConfigured } from "@/lib/neon";
 import { DEPARTMENTS } from "@/lib/constants";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   try {
     if (!isNeonConfigured()) {
