@@ -58,7 +58,7 @@ export const DIRECTORATE_MEMBERS: (CommitteeLeader & { title: string; quote: str
     studentId: "673050382-3",
     citizenId: "1-4099-00382-23-1",
     quote: "มุ่งมั่นส่งต่อองค์ความรู้และสร้างแรงบันดาลใจด้านเทคโนโลยีสู่น้องๆ ในค่าย Comclick 20",
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop",
+    image: "/img/committee/1.webp",
   },
   {
     title: "รองประธานค่าย",
@@ -72,7 +72,7 @@ export const DIRECTORATE_MEMBERS: (CommitteeLeader & { title: string; quote: str
     studentId: "673050547-7",
     citizenId: "1-4099-00547-78-2",
     quote: "บริหารจัดการทีมงานทุกฝ่ายให้ขับเคลื่อนไปด้วยความราบรื่นและเป็นหนึ่งเดียว",
-    image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&auto=format&fit=crop",
+    image: "/img/committee/2.webp",
   },
   {
     title: "รองประธานค่าย",
@@ -86,7 +86,7 @@ export const DIRECTORATE_MEMBERS: (CommitteeLeader & { title: string; quote: str
     studentId: "673050553-2",
     citizenId: "1-4099-00553-34-3",
     quote: "พัฒนาและยกระดับกิจกรรมค่ายให้เข้มข้น สนุกสนาน และสร้างประสบการณ์ที่น่าจดจำ",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop",
+    image: "/img/committee/3.webp",
   },
   {
     title: "เลขานุการค่าย",
@@ -100,7 +100,7 @@ export const DIRECTORATE_MEMBERS: (CommitteeLeader & { title: string; quote: str
     studentId: "673050130-0",
     citizenId: "1-4099-00130-01-4",
     quote: "บันทึกและประสานงานข้อมูลทุกมิติ เพื่อให้การดำเนินงานเป็นไปตามแผนงาน",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=600&auto=format&fit=crop",
+    image: "/img/committee/4.webp",
   },
   {
     title: "เหรัญญิกค่าย",
@@ -114,7 +114,7 @@ export const DIRECTORATE_MEMBERS: (CommitteeLeader & { title: string; quote: str
     studentId: "673050385-7",
     citizenId: "1-4099-00385-56-5",
     quote: "ดูแลระบบงบประมาณและสวัสดิการอย่างโปร่งใส ถูกต้อง และคุ้มค่าที่สุด",
-    image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=600&auto=format&fit=crop",
+    image: "/img/committee/5.webp",
   },
 ];
 
@@ -136,7 +136,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050383-1",
       citizenId: "1-4099-00383-12-3",
-      image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/10.webp",
     },
     subHead: {
       role: "รองหัวหน้าฝ่ายทะเบียนและธุรการ",
@@ -148,7 +148,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "683050152-1",
       citizenId: "1-4099-00152-12-4",
-      image: "https://images.unsplash.com/photo-1534751516642-a171edd25218?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/11.webp",
     },
   },
   {
@@ -167,7 +167,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050515-0",
       citizenId: "1-4099-00515-01-5",
-      image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/12.webp",
     },
     subHead: {
       role: "รองหัวหน้าฝ่ายพยาบาล",
@@ -179,7 +179,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "683050389-0",
       citizenId: "1-4099-00389-01-6",
-      image: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/13.webp",
     },
   },
   {
@@ -198,7 +198,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050147-3",
       citizenId: "1-4099-00147-31-7",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/14.webp",
     },
     subHead: {
       role: "รองหัวหน้าฝ่ายเทคโนโลยีและประชาสัมพันธ์",
@@ -210,7 +210,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "683050141-6",
       citizenId: "1-4099-00141-61-8",
-      image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/15.webp",
     },
   },
   {
@@ -229,7 +229,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "683050149-0",
       citizenId: "1-4099-00149-01-9",
-      image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/16.webp",
     },
     subHead: {
       role: "รองหัวหน้าฝ่ายจัดหาทุน",
@@ -241,7 +241,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "683050148-2",
       citizenId: "1-4099-00148-21-0",
-      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/17.webp",
     },
   },
   {
@@ -260,7 +260,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050518-4",
       citizenId: "1-4099-00518-41-1",
-      image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/6.webp",
     },
     subHead: {
       role: "รองหัวหน้าฝ่ายประสานงาน",
@@ -272,7 +272,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "683050396-3",
       citizenId: "1-4099-00396-31-2",
-      image: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/7.webp",
     },
   },
   {
@@ -291,7 +291,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "683050135-1",
       citizenId: "1-4099-00135-11-3",
-      image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/8.webp",
     },
     subHead: {
       role: "รองหัวหน้าฝ่ายพิธีการและปฏิคม",
@@ -303,7 +303,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "683050391-3",
       citizenId: "1-4099-00391-31-4",
-      image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/9.webp",
     },
   },
   {
@@ -322,7 +322,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050141-5",
       citizenId: "1-4099-00141-51-5",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/18.webp",
     },
     subHead: {
       role: "รองหัวหน้าฝ่ายปกครอง",
@@ -334,7 +334,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050143-1",
       citizenId: "1-4099-00143-11-6",
-      image: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/19.webp",
     },
   },
   {
@@ -353,7 +353,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050552-4",
       citizenId: "1-4099-00552-41-7",
-      image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/20.webp",
     },
     subHead: {
       role: "รองหัวหน้าฝ่ายรถเร็ว",
@@ -365,7 +365,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050394-6",
       citizenId: "1-4099-00394-61-8",
-      image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/21.webp",
     },
   },
   {
@@ -378,13 +378,13 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       role: "หัวหน้าฝ่ายวิชาการ",
       nameTh: "นางสาวสุพิชญา พันพิลา",
       nameEn: "MISS SUPITCHAYA PHANPHILA",
-      nickname: "พี่หยก",
+      nickname: "พี่หยกหยก",
       year: "ชั้นปีที่ 3",
       faculty: "สาขาวิชาคอมพิวเตอร์ศึกษา",
       facultyEn: "Computer Education",
       studentId: "673050395-4",
       citizenId: "1-4099-00395-41-9",
-      image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/22.webp",
     },
     subHead: {
       role: "รองหัวหน้าฝ่ายวิชาการ",
@@ -396,7 +396,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050551-6",
       citizenId: "1-4099-00551-61-0",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/23.webp",
     },
   },
   {
@@ -415,7 +415,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050519-2",
       citizenId: "1-4099-00519-21-1",
-      image: "https://images.unsplash.com/photo-1548142813-c348350df52b?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/24.webp",
     },
     subHead: {
       role: "รองหัวหน้าฝ่ายสวัสดิการ",
@@ -427,7 +427,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050520-7",
       citizenId: "1-4099-00520-71-2",
-      image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/25.webp",
     },
   },
   {
@@ -446,7 +446,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050133-4",
       citizenId: "1-4099-00133-41-3",
-      image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/26.webp",
     },
     subHead: {
       role: "รองหัวหน้าฝ่ายสถานที่",
@@ -458,7 +458,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050554-0",
       citizenId: "1-4099-00554-01-4",
-      image: "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/27.webp",
     },
   },
   {
@@ -477,7 +477,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050549-3",
       citizenId: "1-4099-00549-31-5",
-      image: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/28.webp",
     },
     subHead: {
       role: "รองหัวหน้าฝ่ายคิตตี้",
@@ -489,7 +489,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       facultyEn: "Computer Education",
       studentId: "673050146-5",
       citizenId: "1-4099-00146-51-6",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=500&auto=format&fit=crop",
+      image: "/img/committee/29.webp",
     },
   },
 ];

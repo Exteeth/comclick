@@ -99,6 +99,16 @@ export default function Footer() {
               <ExternalLink className="w-3 h-3" />
             </a>
 
+            <a
+              href={CAMP_INFO.instagramUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[11px] text-cc-blue hover:text-cc-coral font-bold inline-flex items-center gap-1 transition-colors"
+            >
+              <span>Instagram</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+
             <button
               onClick={scrollToTop}
               className="flex items-center gap-1 text-cc-navy hover:text-cc-coral font-bold transition-colors"

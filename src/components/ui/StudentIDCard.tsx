@@ -44,38 +44,37 @@ export default function StudentIDCard({
       {/* Clean Card Content Grid */}
       <div className="relative z-10 flex gap-3.5 sm:gap-4 h-full">
         
-        {/* Left Column: Student Photo + Bottom Date Box */}
-        <div className="w-[33%] sm:w-[31%] flex flex-col justify-between flex-shrink-0 h-full">
-          {/* Photo Frame with Royal Blue Studio Backdrop */}
-          <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border-2 border-gray-400/90 shadow-sm bg-[#1c54b2]">
+        {/* Left Column: Student Photo + Bottom Camp Logo */}
+        <div className="w-[42%] sm:w-[40%] flex flex-col justify-between items-center flex-shrink-0 h-full">
+          {/* Photo Frame with 1:1 Aspect matching 1080x1080 Artwork */}
+          <div className="relative w-full aspect-square rounded-xl overflow-hidden border-2 border-gray-400/90 shadow-sm bg-[#1c54b2]">
             <img
               src={photoUrl}
               alt={nameTh}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
               onError={(e) => {
                 const target = e.target as HTMLElement;
                 target.style.display = "none";
               }}
             />
-
-            {/* Nickname Tag */}
-            {nickname && (
-              <div className="absolute top-1.5 left-1.5 bg-cc-yellow/95 text-cc-navy px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-black border border-cc-navy/40 shadow-sm">
-                {nickname}
-              </div>
-            )}
           </div>
 
-          {/* Bottom Left Date Stamp Box (Clean Light Salmon/Sand) */}
-          <div className="w-full mt-1 bg-[#e8a38f] text-gray-950 rounded-md py-1 px-1.5 leading-tight border border-[#d68a74] shadow-2xs">
-            <div className="flex justify-between items-baseline text-[7.5px] sm:text-[8.5px]">
-              <span className="font-semibold">วันออกบัตร</span>
-              <span className="font-bold">{issueDate}</span>
+          {/* Camp Logo placed cleanly below Photo */}
+          <div className="flex items-center justify-center gap-1.5 w-full pt-1">
+            <div className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 flex items-center justify-center p-0.5 bg-cc-cream rounded-md border border-cc-navy/20 shadow-2xs">
+              <img
+                src={campLogoUrl}
+                alt="ComClick 20 Logo"
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLElement;
+                  target.style.display = "none";
+                }}
+              />
             </div>
-            <div className="flex justify-between items-baseline text-[6.5px] sm:text-[7.5px] text-gray-800 font-medium mt-0.5">
-              <span>Issue Date</span>
-              <span className="text-[7.5px] sm:text-[8px] text-gray-950 font-bold">วันหมดอายุ {expDate}</span>
-            </div>
+            <span className="text-[9px] sm:text-[10.5px] font-display font-black text-cc-navy tracking-tight">
+              COMCLICK <span className="text-cc-coral">20</span>
+            </span>
           </div>
         </div>
 
@@ -167,32 +166,6 @@ export default function StudentIDCard({
               </div>
               <div className="text-[7px] sm:text-[7.5px] text-gray-500 font-mono leading-none pl-0.5">
                 Major / {facultyEn || "Computer Education"}
-              </div>
-            </div>
-
-          </div>
-
-          {/* 3. Bottom Right: Camp Logo + Staff Pass Label */}
-          <div className="flex items-end justify-between pt-1 border-t border-gray-200">
-            <div className="text-[7.5px] sm:text-[8px] font-mono font-bold text-gray-400">
-              STAFF ID PASS
-            </div>
-
-            {/* Camp Logo placed at bottom right */}
-            <div className="flex items-center gap-1.5 ml-auto">
-              <span className="text-[8px] sm:text-[9px] font-display font-black text-cc-navy">
-                COMCLICK 20
-              </span>
-              <div className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 flex items-center justify-center p-0.5 bg-cc-cream rounded-md border border-cc-navy/20">
-                <img
-                  src={campLogoUrl}
-                  alt="ComClick 20 Logo"
-                  className="w-full h-full object-contain"
-                  onError={(e) => {
-                    const target = e.target as HTMLElement;
-                    target.style.display = "none";
-                  }}
-                />
               </div>
             </div>
 

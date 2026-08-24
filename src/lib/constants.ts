@@ -21,7 +21,8 @@ export const CAMP_INFO = {
   registrationEndDate: "2026-08-29T23:59:59+07:00",
   facebookPage: "ค่ายเทคโนโลยีวิชาการ จับมือน้องคลิก คณะศึกษาศาสตร์ มข.",
   facebookUrl: "https://www.facebook.com/camp.com.click",
-  instagram: "@comclick.kku",
+  instagram: "@comclick20",
+  instagramUrl: "https://www.instagram.com/comclick20/",
   lineOfficial: "@comclick20",
 };
 
@@ -442,7 +443,7 @@ export const TIMELINE: CampTimelineItem[] = [
   },
   {
     phase: "03",
-    date: "5 - 6 กันยายน 2569",
+    date: "5 - 7 กันยายน 2569",
     title: "วันสัมภาษณ์คัดเลือกพี่ค่าย (Interview Days)",
     description: "สัมภาษณ์คัดเลือกพี่ค่ายและประเมินทักษะการทำงานตามรอบเวลาที่ลงทะเบียนไว้",
     status: "upcoming",
