@@ -89,7 +89,13 @@ export async function POST(request: Request) {
     const id = `CC20-${year}-${randomNum}`;
 
     const cleanFirstChoice = body.firstChoiceDeptId?.trim() || null;
-    const cleanSecondChoice = body.secondChoiceDeptId !== undefined && body.secondChoiceDeptId !== null ? body.secondChoiceDeptId.trim() : "-";
+    const cleanSecondChoice =
+      body.secondChoiceDeptId &&
+      body.secondChoiceDeptId !== "-" &&
+      body.secondChoiceDeptId !== "none" &&
+      body.secondChoiceDeptId.trim() !== ""
+        ? body.secondChoiceDeptId.trim()
+        : null;
     const cleanFullName = body.fullNameTh.trim();
     const cleanNickname = body.nicknameTh?.trim() || "";
     const cleanFaculty = body.faculty?.trim() || "คณะศึกษาศาสตร์";
@@ -215,7 +221,7 @@ export async function POST(request: Request) {
       carTypeOther: body.carTypeOther || "",
       diet: cleanDiet,
       firstChoiceDeptId: cleanFirstChoice || "protocol",
-      secondChoiceDeptId: cleanSecondChoice || "protocol",
+      secondChoiceDeptId: cleanSecondChoice || "-",
       fallbackDeptChoice: body.fallbackDeptChoice || "ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร",
     });
     return NextResponse.json({ success: true, source: "memory_store", id, data: created });
@@ -236,9 +242,18 @@ export async function PUT(request: Request) {
       return NextResponse.json({ success: false, error: "Missing application id" }, { status: 400 });
     }
 
-    const assignedDeptIdClean = body.assignedDeptId && body.assignedDeptId.trim() !== "" ? body.assignedDeptId.trim() : null;
-    const firstChoiceClean = body.firstChoiceDeptId && body.firstChoiceDeptId.trim() !== "" ? body.firstChoiceDeptId.trim() : null;
-    const secondChoiceClean = body.secondChoiceDeptId && body.secondChoiceDeptId.trim() !== "" ? body.secondChoiceDeptId.trim() : null;
+    const assignedDeptIdClean =
+      body.assignedDeptId && body.assignedDeptId !== "-" && body.assignedDeptId !== "none" && body.assignedDeptId.trim() !== ""
+        ? body.assignedDeptId.trim()
+        : null;
+    const firstChoiceClean =
+      body.firstChoiceDeptId && body.firstChoiceDeptId.trim() !== ""
+        ? body.firstChoiceDeptId.trim()
+        : null;
+    const secondChoiceClean =
+      body.secondChoiceDeptId && body.secondChoiceDeptId !== "-" && body.secondChoiceDeptId !== "none" && body.secondChoiceDeptId.trim() !== ""
+        ? body.secondChoiceDeptId.trim()
+        : null;
 
     // 1. Update Neon DB if configured
     if (isNeonConfigured()) {
