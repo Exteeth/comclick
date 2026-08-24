@@ -149,9 +149,9 @@ export const DEPARTMENTS: Department[] = [
   },
   {
     id: "comkitty",
-    nameTh: "ฝ่ายคิตตี้",
+    nameTh: "ฝ่ายคอมคิตตี้",
     nameEn: "ComKitty & Recreation Activities",
-    badge: "คิตตี้ & สันทนาการ",
+    badge: "คอมคิตตี้ & สันทนาการ",
     icon: "Sparkles",
     color: "#eccb7d",
     shortDesc: "งานนันทนาการน้องค่ายและพี่กลุ่ม สร้างเสียงหัวเราะและความสนุกให้ทุกคนในค่าย",

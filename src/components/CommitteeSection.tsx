@@ -19,7 +19,7 @@ import {
   Zap,
 } from "lucide-react";
 import AnimatedContent from "./ui/AnimatedContent";
-import StudentIDCard from "./ui/StudentIDCard";
+import MemberPhotoCard from "./ui/MemberPhotoCard";
 
 export interface CommitteeLeader {
   role: string;
@@ -463,12 +463,12 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
   },
   {
     id: "comkitty",
-    nameTh: "ฝ่ายคิตตี้",
+    nameTh: "ฝ่ายคอมคิตตี้",
     badge: "ComKitty & Recreation",
     color: "#eccb7d",
     icon: Sparkles,
     head: {
-      role: "หัวหน้าฝ่ายคิตตี้",
+      role: "หัวหน้าฝ่ายคอมคิตตี้",
       nameTh: "นางสาวธีรริญญ์ ปุริสาร",
       nameEn: "MISS THEERARIN PURISAN",
       nickname: "พี่หนูดี",
@@ -480,7 +480,7 @@ export const DEPARTMENT_LEADS: DepartmentLeadGroup[] = [
       image: "/img/committee/28.webp",
     },
     subHead: {
-      role: "รองหัวหน้าฝ่ายคิตตี้",
+      role: "รองหัวหน้าฝ่ายคอมคิตตี้",
       nameTh: "นางสาววิลาสินี ทองขวาง",
       nameEn: "MISS WILASINEE THONGKHUANG",
       nickname: "พี่ซีน",
@@ -539,8 +539,8 @@ export default function CommitteeSection() {
             </a>
           </div>
 
-          {/* 5 Directorate Student ID Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
+          {/* 5 Directorate Photo Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {DIRECTORATE_MEMBERS.map((dir, idx) => (
               <AnimatedContent
                 key={idx}
@@ -548,21 +548,11 @@ export default function CommitteeSection() {
                 direction="vertical"
                 duration={0.6}
                 delay={idx * 0.08}
-                className="w-full flex justify-center"
+                className="w-full"
               >
-                <StudentIDCard
+                <MemberPhotoCard
                   photoUrl={dir.image}
                   nameTh={dir.nameTh}
-                  nameEn={dir.nameEn}
-                  departmentNameTh="ฝ่ายอำนวยการ"
-                  departmentNameEn="EXECUTIVE DIRECTORATE"
-                  positionTh={dir.title}
-                  positionEn={dir.role}
-                  facultyTh="สาขาวิชาคอมพิวเตอร์ศึกษา"
-                  facultyEn="Computer Education"
-                  nickname={dir.nickname}
-                  issueDate="9 มิ.ย. 68"
-                  expDate="31 พ.ค. 72"
                 />
               </AnimatedContent>
             ))}
