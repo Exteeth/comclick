@@ -211,7 +211,13 @@ export async function POST(request: Request) {
           return NextResponse.json({ success: true, source: "neon", id });
         } catch (dbErr: any) {
           console.error("Neon insert error:", dbErr);
-          // Fallback gracefully to memory store if schema mismatch
+          return NextResponse.json(
+            {
+              success: false,
+              error: `ไม่สามารถบันทึกข้อมูลลงฐานข้อมูล Cloud ได้ (${dbErr.message || "Database Error"}) กรุณาลองใหม่อีกครั้ง`,
+            },
+            { status: 500 }
+          );
         }
       }
     }
