@@ -149,7 +149,7 @@ export default function AdminDashboard() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === "comclick20") {
+    if (passwordInput === "cc20admin") {
       setIsAuthenticated(true);
       sessionStorage.setItem("cc20_admin_auth", "true");
       setAuthError(null);
