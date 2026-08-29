@@ -13,7 +13,7 @@ interface TimeLeft {
 
 export default function HeroCountdown({
   startDate = "2026-08-24T09:00:00+07:00",
-  targetDate = "2026-08-29T23:59:59+07:00",
+  targetDate = "2026-08-30T23:59:59+07:00",
   showTitle = true,
 }: {
   startDate?: string;
@@ -49,7 +49,7 @@ export default function HeroCountdown({
         };
       }
 
-      // Phase 2: Active Registration (Countdown to Deadline: 29 ส.ค. 23:59 น.)
+      // Phase 2: Active Registration (Countdown to Deadline: 30 ส.ค. 23:59 น.)
       if (now >= start && now < end) {
         const diff = end - now;
         return {
