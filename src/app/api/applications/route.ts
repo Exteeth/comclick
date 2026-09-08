@@ -46,6 +46,9 @@ export async function GET(request: Request) {
         car_type as "carType",
         car_type_other as "carTypeOther",
         diet,
+        kku_mail as "kkuMail",
+        medical_conditions as "medicalConditions",
+        drug_allergies as "drugAllergies",
         assigned_dept_id as "assignedDeptId",
         status,
         status_notes as "statusNotes",
@@ -161,6 +164,16 @@ export async function POST(request: Request) {
       );
     }
 
+    const cleanAssignedDept =
+      body.assignedDeptId && body.assignedDeptId !== "-" && body.assignedDeptId !== "none" && body.assignedDeptId.trim() !== ""
+        ? body.assignedDeptId.trim()
+        : cleanFirstChoice;
+
+    const initialStatus = body.status ? String(body.status).toLowerCase() : "submitted";
+    const cleanKkuMail = body.kkuMail ? String(body.kkuMail).trim() : null;
+    const cleanMedical = body.medicalConditions ? String(body.medicalConditions).trim() : null;
+    const cleanAllergies = body.drugAllergies ? String(body.drugAllergies).trim() : null;
+
     // 2. Strict Insert into Neon DB
     await sql`
       INSERT INTO applications (
@@ -168,6 +181,7 @@ export async function POST(request: Request) {
         phone, facebook_name, facebook_url, reason_to_apply, strengths, weaknesses,
         first_choice_dept_id, second_choice_dept_id, fallback_dept_choice,
         tech_portfolio_url, has_car, car_type, car_type_other, diet,
+        kku_mail, medical_conditions, drug_allergies, assigned_dept_id,
         status, created_at, updated_at
       ) VALUES (
         ${id},
@@ -192,7 +206,11 @@ export async function POST(request: Request) {
         ${body.carType || ""},
         ${body.carTypeOther || ""},
         ${cleanDiet},
-        'submitted',
+        ${cleanKkuMail},
+        ${cleanMedical},
+        ${cleanAllergies},
+        ${cleanAssignedDept},
+        ${initialStatus},
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP
       )
@@ -273,6 +291,9 @@ export async function PUT(request: Request) {
         has_car = COALESCE(${body.hasCar !== undefined ? String(body.hasCar).trim() : null}, has_car),
         car_type = COALESCE(${body.carType !== undefined ? body.carType.trim() : null}, car_type),
         car_type_other = COALESCE(${body.carTypeOther !== undefined ? body.carTypeOther.trim() : null}, car_type_other),
+        kku_mail = COALESCE(${body.kkuMail !== undefined ? (body.kkuMail ? String(body.kkuMail).trim() : "") : null}, kku_mail),
+        medical_conditions = COALESCE(${body.medicalConditions !== undefined ? (body.medicalConditions ? String(body.medicalConditions).trim() : "") : null}, medical_conditions),
+        drug_allergies = COALESCE(${body.drugAllergies !== undefined ? (body.drugAllergies ? String(body.drugAllergies).trim() : "") : null}, drug_allergies),
         assigned_dept_id = ${assignedDeptIdClean},
         status = COALESCE(${body.status ? String(body.status).toLowerCase() : null}, status),
         interview_date = COALESCE(${body.interviewDate !== undefined ? body.interviewDate : null}, interview_date),

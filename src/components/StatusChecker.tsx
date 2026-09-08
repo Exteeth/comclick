@@ -18,7 +18,14 @@ import {
   Mic,
   Calendar,
   MapPin,
+  Mail,
+  HeartPulse,
+  Pill,
+  Copy,
+  CheckCheck,
+  ExternalLink,
 } from "lucide-react";
+import confetti from "canvas-confetti";
 
 export default function StatusChecker() {
   const [query, setQuery] = useState("");
@@ -26,6 +33,16 @@ export default function StatusChecker() {
   const [isSearching, setIsSearching] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastSyncedTime, setLastSyncedTime] = useState<string | null>(null);
+
+  // Confirmation Flow States
+  const [kkuMailPrefix, setKkuMailPrefix] = useState("");
+  const [hasMedicalCondition, setHasMedicalCondition] = useState(false);
+  const [medicalConditionInput, setMedicalConditionInput] = useState("");
+  const [drugAllergyInput, setDrugAllergyInput] = useState("");
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
+  const [confirmSuccess, setConfirmSuccess] = useState(false);
+  const [isCopiedFb, setIsCopiedFb] = useState(false);
 
   const fetchStatusRealtime = useCallback(async (searchQuery: string, isManualRefresh = false) => {
     if (!searchQuery.trim()) return;
@@ -44,6 +61,25 @@ export default function StatusChecker() {
       if (json.success && json.data) {
         setSearchResult(json.data);
         setLastSyncedTime(new Date().toLocaleTimeString("th-TH"));
+
+        // Prefill existing confirmation data if present
+        if (json.data.kkuMail) {
+          setKkuMailPrefix(json.data.kkuMail.replace(/@.*$/, ""));
+        }
+        if (json.data.medicalConditions && json.data.medicalConditions !== "ไม่มี") {
+          setHasMedicalCondition(true);
+          setMedicalConditionInput(json.data.medicalConditions);
+        }
+        if (json.data.drugAllergies && json.data.drugAllergies !== "ไม่มี") {
+          setHasMedicalCondition(true);
+          setDrugAllergyInput(json.data.drugAllergies);
+        }
+        if (String(json.data.status).toUpperCase() === "CONFIRMED") {
+          setConfirmSuccess(true);
+        } else {
+          setConfirmSuccess(false);
+        }
+        setConfirmError(null);
       } else {
         setSearchResult("NOT_FOUND");
       }
@@ -60,6 +96,84 @@ export default function StatusChecker() {
     e.preventDefault();
     if (!query.trim()) return;
     fetchStatusRealtime(query);
+  };
+
+  const handleCopyFbLink = () => {
+    try {
+      navigator.clipboard.writeText("https://www.facebook.com/groups/staffcomclick20/");
+      setIsCopiedFb(true);
+      setTimeout(() => setIsCopiedFb(false), 2500);
+    } catch (e) {
+      // fallback
+    }
+  };
+
+  const handleConfirmRights = async (appId: string) => {
+    const cleanMailPrefix = kkuMailPrefix.trim().replace(/@.*$/, "");
+    if (!cleanMailPrefix) {
+      setConfirmError("กรุณากรอกชื่ออีเมล KKU Mail ก่อนยืนยันสิทธิ์");
+      return;
+    }
+
+    if (hasMedicalCondition) {
+      if (!medicalConditionInput.trim() && !drugAllergyInput.trim()) {
+        setConfirmError("เนื่องจากท่านเลือกมีข้อมูลแพ้ยา/โรคประจำตัว กรุณาระบุรายละเอียดโรคประจำตัวหรือยาที่แพ้ (หากไม่มีให้ระบุว่า ไม่มี)");
+        return;
+      }
+    }
+
+    const fullKkuMail = `${cleanMailPrefix}@kkumail.com`;
+    const finalMedical = hasMedicalCondition ? (medicalConditionInput.trim() || "ไม่มี") : "ไม่มี";
+    const finalAllergies = hasMedicalCondition ? (drugAllergyInput.trim() || "ไม่มี") : "ไม่มี";
+
+    setConfirmError(null);
+    setIsConfirming(true);
+
+    try {
+      const res = await fetch("/api/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: appId,
+          action: "confirm_rights",
+          kkuMail: fullKkuMail,
+          medicalConditions: finalMedical,
+          drugAllergies: finalAllergies,
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        setConfirmSuccess(true);
+        try {
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+          });
+        } catch (cErr) {
+          // ignore
+        }
+
+        // Instantly update local state to reflect CONFIRMED
+        setSearchResult((prev) => {
+          if (!prev || prev === "NOT_FOUND") return prev;
+          return {
+            ...prev,
+            status: "CONFIRMED",
+            kkuMail: fullKkuMail,
+            medicalConditions: finalMedical,
+            drugAllergies: finalAllergies,
+          };
+        });
+      } else {
+        setConfirmError(json.error || "เกิดข้อผิดพลาดในการยืนยันสิทธิ์ กรุณาลองใหม่อีกครั้ง");
+      }
+    } catch (err) {
+      setConfirmError("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง");
+    } finally {
+      setIsConfirming(false);
+    }
   };
 
   // Auto-sync status every 10 seconds if applicant is viewing
@@ -251,36 +365,283 @@ export default function StatusChecker() {
 
                 {/* 🌟 HERO 1: FINAL ASSIGNED DEPARTMENT (WHEN PASSED) */}
                 {isAccepted && assignedDept ? (
-                  <div className="p-6 rounded-3xl bg-emerald-50 border-3 border-emerald-600 shadow-solid-sm space-y-3 animate-fadeIn">
-                    <div className="flex items-center gap-2 text-xs font-mono font-bold text-emerald-800 uppercase">
-                      <Award className="w-4 h-4 text-emerald-600" />
-                      <span>ผลการจัดสรรฝ่ายอย่างเป็นทางการ</span>
-                    </div>
+                  <div className="space-y-4 animate-fadeIn">
+                    <div className="p-6 rounded-3xl bg-emerald-50 border-3 border-emerald-600 shadow-solid-sm space-y-3">
+                      <div className="flex items-center gap-2 text-xs font-mono font-bold text-emerald-800 uppercase">
+                        <Award className="w-4 h-4 text-emerald-600" />
+                        <span>ผลการจัดสรรฝ่ายอย่างเป็นทางการ</span>
+                      </div>
 
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border-2 border-emerald-500">
-                      <div>
-                        <span className="text-[11px] text-gray-500 font-bold block">
-                          ฝ่ายที่คุณได้รับคัดเลือกเป็นพี่ค่าย Comclick 20 คือ:
-                        </span>
-                        <div className="font-display font-black text-2xl sm:text-3xl text-emerald-900 mt-1">
-                          {assignedDept.nameTh}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border-2 border-emerald-500">
+                        <div>
+                          <span className="text-[11px] text-gray-500 font-bold block">
+                            ฝ่ายที่คุณได้รับคัดเลือกเป็นพี่ค่าย Comclick 20 คือ:
+                          </span>
+                          <div className="font-display font-black text-2xl sm:text-3xl text-emerald-900 mt-1">
+                            {assignedDept.nameTh}
+                          </div>
+                          <p className="text-xs text-gray-600 mt-1">
+                            💡 <strong>หน้าที่หลัก:</strong> {assignedDept.shortDesc}
+                          </p>
                         </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          💡 <strong>หน้าที่หลัก:</strong> {assignedDept.shortDesc}
-                        </p>
+
+                        <div className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm whitespace-nowrap self-start sm:self-center">
+                          <Check className="w-4 h-4" />
+                          <span>ผ่านการคัดเลือก</span>
+                        </div>
                       </div>
 
-                      <div className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm whitespace-nowrap self-start sm:self-center">
-                        <Check className="w-4 h-4" />
-                        <span>ยืนยันฝ่ายตัวจริง</span>
+                      {/* Historical applied choice reference for clarity */}
+                      <div className="text-[11px] text-emerald-800/80 pt-1 flex flex-wrap gap-x-4 gap-y-1">
+                        <span><strong>อันดับที่เลือกไว้ตอนสมัคร:</strong> อันดับ 1: {firstDept?.nameTh || searchResult.firstChoiceDeptId}</span>
+                        <span>อันดับ 2: {secondDept?.nameTh || searchResult.secondChoiceDeptId}</span>
                       </div>
                     </div>
 
-                    {/* Historical applied choice reference for clarity */}
-                    <div className="text-[11px] text-emerald-800/80 pt-1 flex flex-wrap gap-x-4 gap-y-1">
-                      <span><strong>อันดับที่เลือกไว้ตอนสมัคร:</strong> อันดับ 1: {firstDept?.nameTh || searchResult.firstChoiceDeptId}</span>
-                      <span>อันดับ 2: {secondDept?.nameTh || searchResult.secondChoiceDeptId}</span>
-                    </div>
+                    {/* CONFIRMATION SECTION: CONFIRMED OR PENDING CONFIRMATION */}
+                    {rawStatus === "CONFIRMED" || confirmSuccess ? (
+                      /* ✅ STATE 1: ALREADY CONFIRMED */
+                      <div className="p-6 sm:p-7 rounded-3xl bg-emerald-50/80 border-3 border-emerald-600 shadow-solid-sm space-y-5 animate-fadeIn">
+                        <div className="flex items-center justify-between gap-2 border-b border-emerald-200 pb-3">
+                          <div className="flex items-center gap-2 text-xs font-mono font-bold text-emerald-800 uppercase">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                            <span>สถานะการยืนยันสิทธิ์: สำเร็จเรียบร้อยแล้ว</span>
+                          </div>
+                          <span className="px-3 py-1 rounded-full bg-emerald-600 text-white text-[11px] font-bold">
+                            ยืนยันสิทธิ์แล้ว ✅
+                          </span>
+                        </div>
+
+                        <div className="bg-white p-5 rounded-2xl border-2 border-emerald-400 space-y-3">
+                          <div className="flex items-start gap-3.5">
+                            <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xl border border-emerald-300 flex-shrink-0">
+                              🎉
+                            </div>
+                            <div>
+                              <h4 className="font-display font-black text-lg text-emerald-950">
+                                ยืนยันสิทธิ์เป็นพี่ค่าย Comclick 20 เรียบร้อยแล้ว!
+                              </h4>
+                              <p className="text-xs text-gray-600 mt-0.5">
+                                ข้อมูลของคุณได้รับการบันทึกในระบบเรียบร้อยแล้ว เตรียมพร้อมพบกับกิจกรรมสุดพิเศษได้เลย
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-emerald-100 text-xs">
+                            <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-0.5">
+                              <span className="text-gray-500 font-bold block text-[10px] uppercase">
+                                อีเมลมหาวิทยาลัย (KKU Mail)
+                              </span>
+                              <span className="font-mono font-bold text-emerald-950 text-sm">
+                                {searchResult.kkuMail || `${kkuMailPrefix}@kkumail.com`}
+                              </span>
+                            </div>
+                            <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-0.5">
+                              <span className="text-gray-500 font-bold block text-[10px] uppercase">
+                                ข้อมูลสุขภาพ / ประวัติแพ้ยา
+                              </span>
+                              <div className="text-emerald-950 font-medium text-xs leading-snug">
+                                <div><strong>โรคประจำตัว:</strong> {searchResult.medicalConditions || medicalConditionInput || "ไม่มี"}</div>
+                                <div><strong>ประวัติแพ้ยา:</strong> {searchResult.drugAllergies || drugAllergyInput || "ไม่มี"}</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* FACEBOOK GROUP LINK CARD */}
+                        <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-2 border-cc-navy shadow-solid-sm space-y-3.5">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold font-mono tracking-wider">
+                                <span>COMMUNITY INVITATION</span>
+                              </div>
+                              <h4 className="font-display font-black text-xl text-white mt-1">
+                                กลุ่ม Facebook พี่ค่าย Comclick 20
+                              </h4>
+                              <p className="text-xs text-blue-100 mt-0.5 max-w-lg leading-relaxed">
+                                ขอให้น้องๆ พี่ค่ายทุกคนเข้าร่วมกลุ่ม Facebook เพื่อรับการนัดหมาย ประชุมฝ่าย และประสานงานค่ายอย่างเป็นทางการ
+                              </p>
+                            </div>
+
+                            <a
+                              href="https://www.facebook.com/groups/staffcomclick20/"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-6 py-3 rounded-xl bg-white hover:bg-cc-cream text-blue-900 font-bold text-xs sm:text-sm border-2 border-white shadow-sm flex items-center justify-center gap-2 whitespace-nowrap transition-all self-start sm:self-center"
+                            >
+                              <span>เข้ากลุ่ม Facebook</span>
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          </div>
+
+                          <div className="flex items-center gap-2 bg-black/25 p-3 rounded-xl text-xs font-mono">
+                            <span className="text-blue-100 select-all truncate flex-1 font-medium">
+                              www.facebook.com/groups/staffcomclick20/
+                            </span>
+                            <button
+                              type="button"
+                              onClick={handleCopyFbLink}
+                              className="px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white font-bold text-[11px] flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap"
+                            >
+                              {isCopiedFb ? (
+                                <>
+                                  <CheckCheck className="w-3.5 h-3.5 text-emerald-300" />
+                                  <span>คัดลอกแล้ว</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-3.5 h-3.5" />
+                                  <span>คัดลอกลิงก์</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      /* ✍️ STATE 2: PENDING CONFIRMATION FORM */
+                      <div className="p-6 sm:p-7 rounded-3xl bg-white border-3 border-cc-navy shadow-solid-sm space-y-5 animate-fadeIn">
+                        <div className="border-b-2 border-cc-navy/10 pb-3">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cc-coral/10 text-cc-coral text-xs font-bold font-mono">
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>CONFIRMATION REQUIRED</span>
+                          </div>
+                          <h3 className="font-display font-black text-xl sm:text-2xl text-cc-navy mt-1.5">
+                            กรอกข้อมูลเพื่อยืนยันสิทธิ์เป็นพี่ค่าย Comclick 20
+                          </h3>
+                          <p className="text-xs text-gray-600 mt-1">
+                            กรุณากรอกข้อมูลเพิ่มเติมก่อนกดยืนยันสิทธิ์ เพื่อใช้ในการติดต่อประสานงานและการดูแลความปลอดภัยตลอดค่าย
+                          </p>
+                        </div>
+
+                        {confirmError && (
+                          <div className="p-3.5 rounded-xl bg-rose-50 border-2 border-rose-300 text-rose-800 text-xs flex items-center gap-2 font-medium">
+                            <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-600" />
+                            <span>{confirmError}</span>
+                          </div>
+                        )}
+
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            handleConfirmRights(searchResult.id);
+                          }}
+                          className="space-y-4"
+                        >
+                          {/* 1. KKU Mail */}
+                          <div className="space-y-1.5">
+                            <label className="block text-xs font-bold text-cc-navy flex items-center gap-1.5">
+                              <Mail className="w-4 h-4 text-cc-blue" />
+                              <span>อีเมลมหาวิทยาลัยขอนแก่น (KKU Mail) <span className="text-cc-coral">*</span></span>
+                            </label>
+                            <div className="flex rounded-xl border-2 border-cc-navy/30 focus-within:border-cc-navy overflow-hidden shadow-sm bg-white transition-all">
+                              <input
+                                type="text"
+                                placeholder="เช่น somchai.k"
+                                value={kkuMailPrefix}
+                                onChange={(e) => {
+                                  const val = e.target.value.replace(/@.*$/, "").trim();
+                                  setKkuMailPrefix(val);
+                                  if (confirmError) setConfirmError(null);
+                                }}
+                                className="flex-1 px-4 py-3 bg-transparent text-sm font-bold text-cc-navy outline-none placeholder:text-gray-400 placeholder:font-normal"
+                                required
+                              />
+                              <div className="bg-cc-cream border-l-2 border-cc-navy/20 px-4 py-3 flex items-center text-xs font-mono font-bold text-cc-navy select-none">
+                                @kkumail.com
+                              </div>
+                            </div>
+                            <p className="text-[11px] text-gray-500">
+                              💡 พิมพ์เฉพาะชื่อผู้ใช้ข้างหน้า ระบบจะต่อท้าย <code className="bg-gray-100 px-1 py-0.5 rounded font-mono text-cc-navy font-bold">@kkumail.com</code> ให้อัตโนมัติ
+                            </p>
+                          </div>
+
+                          {/* 2. Medical Conditions Checkbox */}
+                          <div className="pt-2">
+                            <label className="flex items-start gap-3 p-4 rounded-2xl bg-gray-50 border-2 border-cc-navy/20 hover:border-cc-navy/40 cursor-pointer transition-all">
+                              <input
+                                type="checkbox"
+                                checked={hasMedicalCondition}
+                                onChange={(e) => {
+                                  setHasMedicalCondition(e.target.checked);
+                                  if (!e.target.checked) {
+                                    setMedicalConditionInput("");
+                                    setDrugAllergyInput("");
+                                  }
+                                }}
+                                className="mt-0.5 w-4 h-4 rounded border-2 border-cc-navy text-cc-navy focus:ring-0 cursor-pointer"
+                              />
+                              <div className="flex-1">
+                                <span className="text-xs sm:text-sm font-bold text-cc-navy flex items-center gap-1.5">
+                                  <HeartPulse className="w-4 h-4 text-rose-500" />
+                                  <span>ข้อมูลแพ้ยา หรือมีโรคประจำตัว</span>
+                                </span>
+                                <span className="text-[11px] text-gray-500 block mt-0.5">
+                                  หากมีโรคประจำตัวหรือประวัติแพ้ยา กรุณาทำเครื่องหมายเพื่อระบุรายละเอียดให้ทีมพยาบาลและสวัสดิการดูแล
+                                </span>
+                              </div>
+                            </label>
+
+                            {/* Expandable sub-fields */}
+                            {hasMedicalCondition && (
+                              <div className="mt-3 p-4 sm:p-5 rounded-2xl bg-rose-50/60 border-2 border-rose-300 space-y-3.5 animate-fadeIn">
+                                <div className="space-y-1">
+                                  <label className="block text-xs font-bold text-rose-950 flex items-center gap-1.5">
+                                    <HeartPulse className="w-3.5 h-3.5 text-rose-600" />
+                                    <span>โรคประจำตัว (Medical Conditions)</span>
+                                  </label>
+                                  <input
+                                    type="text"
+                                    placeholder="เช่น หอบหืด, ภูมิแพ้, ไมเกรน (ถ้าไม่มี ให้ระบุว่า ไม่มี)"
+                                    value={medicalConditionInput}
+                                    onChange={(e) => setMedicalConditionInput(e.target.value)}
+                                    className="w-full px-4 py-2.5 rounded-xl border-2 border-rose-200 focus:border-rose-500 bg-white text-xs sm:text-sm font-medium text-gray-800 outline-none shadow-sm"
+                                  />
+                                </div>
+
+                                <div className="space-y-1">
+                                  <label className="block text-xs font-bold text-rose-950 flex items-center gap-1.5">
+                                    <Pill className="w-3.5 h-3.5 text-rose-600" />
+                                    <span>ประวัติการแพ้ยา (Drug Allergies)</span>
+                                  </label>
+                                  <input
+                                    type="text"
+                                    placeholder="เช่น แพ้ยาเพนิซิลลิน, ยาซัลฟา (ถ้าไม่มี ให้ระบุว่า ไม่มี)"
+                                    value={drugAllergyInput}
+                                    onChange={(e) => setDrugAllergyInput(e.target.value)}
+                                    className="w-full px-4 py-2.5 rounded-xl border-2 border-rose-200 focus:border-rose-500 bg-white text-xs sm:text-sm font-medium text-gray-800 outline-none shadow-sm"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* 3. Confirm Rights Button */}
+                          <div className="pt-3">
+                            <button
+                              type="submit"
+                              disabled={isConfirming}
+                              className="w-full py-3.5 px-6 rounded-xl bg-cc-coral hover:bg-cc-coral-dark text-white font-display font-bold text-sm sm:text-base border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                            >
+                              {isConfirming ? (
+                                <>
+                                  <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                  <span>กำลังบันทึกข้อมูลการยืนยันสิทธิ์...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles className="w-5 h-5 text-cc-yellow" />
+                                  <span>ยืนยันสิทธิ์เป็นพี่ค่าย Comclick 20</span>
+                                </>
+                              )}
+                            </button>
+                            <p className="text-center text-[11px] text-gray-500 mt-2">
+                              เมื่อกดยืนยันสิทธิ์แล้ว สถานะของคุณจะเปลี่ยนเป็นผู้ยืนยันสิทธิ์ตัวจริงทันที
+                            </p>
+                          </div>
+                        </form>
+                      </div>
+                    )}
                   </div>
                 ) : isInterview ? (
                   /* 🎙️ HERO 2: INTERVIEW DETAILS (WHEN INTERVIEW ELIGIBLE) */
@@ -404,10 +765,32 @@ export default function StatusChecker() {
                           )}
                         </div>
                       )}
+                      {searchResult.kkuMail && (
+                        <div className="pt-1 border-t border-gray-200 text-[11px]">
+                          <span className="text-gray-500">KKU Mail:</span>{" "}
+                          <span className="font-mono font-bold text-cc-navy">{searchResult.kkuMail}</span>
+                        </div>
+                      )}
                       {searchResult.diet && (
                         <div className="pt-1 border-t border-gray-200 text-[11px]">
                           <span className="text-gray-500">อาหาร / ข้อจำกัด:</span>{" "}
                           <span className="text-cc-navy font-bold">{searchResult.diet}</span>
+                        </div>
+                      )}
+                      {(searchResult.medicalConditions || searchResult.drugAllergies) && (
+                        <div className="pt-1 border-t border-gray-200 text-[11px] space-y-0.5">
+                          {searchResult.medicalConditions && searchResult.medicalConditions !== "ไม่มี" && (
+                            <div>
+                              <span className="text-gray-500">โรคประจำตัว:</span>{" "}
+                              <span className="text-rose-700 font-bold">{searchResult.medicalConditions}</span>
+                            </div>
+                          )}
+                          {searchResult.drugAllergies && searchResult.drugAllergies !== "ไม่มี" && (
+                            <div>
+                              <span className="text-gray-500">แพ้ยา:</span>{" "}
+                              <span className="text-rose-700 font-bold">{searchResult.drugAllergies}</span>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

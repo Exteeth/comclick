@@ -74,6 +74,9 @@ export interface Application {
   // Additional / Compatibility Fields
   diet?: DietRequirement | string;
   dietNote?: string;
+  kkuMail?: string;
+  medicalConditions?: string;
+  drugAllergies?: string;
   shirtSize?: ShirtSize | string;
   emergencyContact?: {
     name: string;

@@ -45,6 +45,9 @@ export async function GET(request: Request) {
               has_car as "hasCar",
               car_type as "carType",
               car_type_other as "carTypeOther",
+              kku_mail as "kkuMail",
+              medical_conditions as "medicalConditions",
+              drug_allergies as "drugAllergies",
               assigned_dept_id as "assignedDeptId",
               status,
               status_notes as "statusNotes",
@@ -127,11 +130,15 @@ export async function POST(request: Request) {
   // Confirm rights endpoint
   try {
     const body = await request.json();
-    const { id, action } = body;
+    const { id, action, kkuMail, medicalConditions, drugAllergies } = body;
 
     if (!id || action !== "confirm_rights") {
       return NextResponse.json({ success: false, error: "Invalid action" }, { status: 400 });
     }
+
+    const cleanKkuMail = kkuMail ? String(kkuMail).trim() : null;
+    const cleanMedical = medicalConditions ? String(medicalConditions).trim() : "ไม่มี";
+    const cleanAllergies = drugAllergies ? String(drugAllergies).trim() : "ไม่มี";
 
     // Update in Neon DB
     if (isNeonConfigured()) {
@@ -140,16 +147,40 @@ export async function POST(request: Request) {
         try {
           await sql`
             UPDATE applications
-            SET status = 'CONFIRMED', updated_at = CURRENT_TIMESTAMP
+            SET 
+              status = 'CONFIRMED',
+              kku_mail = ${cleanKkuMail},
+              medical_conditions = ${cleanMedical},
+              drug_allergies = ${cleanAllergies},
+              updated_at = CURRENT_TIMESTAMP
             WHERE id = ${id}
           `;
+
+          // Add audit log entry if table exists
+          try {
+            await sql`
+              INSERT INTO application_logs (application_id, previous_status, new_status, changed_by, notes)
+              VALUES (${id}, 'ACCEPTED', 'CONFIRMED', 'Applicant (Self-Confirmation)', ${`KKU Mail: ${cleanKkuMail || '-'}, โรคประจำตัว: ${cleanMedical}, แพ้ยา: ${cleanAllergies}`})
+            `;
+          } catch (logErr) {
+            // Ignore if log table not present
+          }
         } catch (dbErr) {
           console.warn("Neon confirm rights update failed:", dbErr);
+          return NextResponse.json({ success: false, error: "ไม่สามารถบันทึกข้อมูลการยืนยันสิทธิ์ลงฐานข้อมูลได้" }, { status: 500 });
         }
       }
     }
 
-    return NextResponse.json({ success: true, message: "Confirmed rights successfully" });
+    return NextResponse.json({ 
+      success: true, 
+      message: "Confirmed rights successfully",
+      data: {
+        kkuMail: cleanKkuMail,
+        medicalConditions: cleanMedical,
+        drugAllergies: cleanAllergies,
+      }
+    });
   } catch (error) {
     return NextResponse.json({ success: false, error: "Failed to confirm rights" }, { status: 500 });
   }

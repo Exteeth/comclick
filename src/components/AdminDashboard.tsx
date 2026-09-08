@@ -33,6 +33,10 @@ import {
   ArrowRight,
   Sparkles,
   Check,
+  UserPlus,
+  Mail,
+  HeartPulse,
+  Pill,
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -52,6 +56,38 @@ export default function AdminDashboard() {
 
   // Expanded Department Card ID
   const [expandedDeptId, setExpandedDeptId] = useState<string | null>(null);
+
+  // Manual Add Modal State
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddingApplicant, setIsAddingApplicant] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [addFormData, setAddFormData] = useState<{
+    fullNameTh: string;
+    nicknameTh: string;
+    studentId: string;
+    faculty: string;
+    major: string;
+    year: string;
+    phone: string;
+    assignedDeptId: string;
+    status: ApplicationStatus;
+    kkuMail: string;
+    medicalConditions: string;
+    drugAllergies: string;
+  }>({
+    fullNameTh: "",
+    nicknameTh: "",
+    studentId: "",
+    faculty: "คณะศึกษาศาสตร์",
+    major: "สาขาวิชาคอมพิวเตอร์ศึกษา",
+    year: "ชั้นปีที่ 1",
+    phone: "",
+    assignedDeptId: DEPARTMENTS[0]?.id ?? "protocol",
+    status: "ACCEPTED",
+    kkuMail: "",
+    medicalConditions: "",
+    drugAllergies: "",
+  });
 
   // Edit Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -75,6 +111,9 @@ export default function AdminDashboard() {
     carType: string;
     carTypeOther: string;
     diet: string;
+    kkuMail: string;
+    medicalConditions: string;
+    drugAllergies: string;
     firstChoiceDeptId: string;
     secondChoiceDeptId: string;
     fallbackDeptChoice: string;
@@ -102,6 +141,9 @@ export default function AdminDashboard() {
     carType: "",
     carTypeOther: "",
     diet: "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
+    kkuMail: "",
+    medicalConditions: "",
+    drugAllergies: "",
     firstChoiceDeptId: DEPARTMENTS[0]?.id ?? "protocol",
     secondChoiceDeptId: DEPARTMENTS[1]?.id ?? "fundraising",
     fallbackDeptChoice: "ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร",
@@ -165,10 +207,22 @@ export default function AdminDashboard() {
     setPasswordInput("");
   };
 
-  // Helper to check if application is approved
+  // Helper to check if application is confirmed
+  const isAppConfirmed = (app: Application) => {
+    const s = (app.status || "").toUpperCase();
+    return s === "CONFIRMED";
+  };
+
+  // Helper to check if application is approved (either accepted or confirmed)
   const isAppAccepted = (app: Application) => {
     const s = (app.status || "").toUpperCase();
     return s === "ACCEPTED" || s === "CONFIRMED" || s === "INTERVIEW_PASSED";
+  };
+
+  // Helper to check if accepted but NOT yet confirmed
+  const isAppAcceptedOnly = (app: Application) => {
+    const s = (app.status || "").toUpperCase();
+    return s === "ACCEPTED" || s === "INTERVIEW_PASSED";
   };
 
   const isAppRejected = (app: Application) => {
@@ -198,7 +252,9 @@ export default function AdminDashboard() {
 
     const matchStatus =
       statusFilter === "all" ||
-      (statusFilter === "ACCEPTED" && isAppAccepted(app)) ||
+      (statusFilter === "CONFIRMED" && isAppConfirmed(app)) ||
+      (statusFilter === "ACCEPTED" && isAppAcceptedOnly(app)) ||
+      (statusFilter === "ACCEPTED_ALL" && isAppAccepted(app)) ||
       (statusFilter === "REJECTED" && isAppRejected(app)) ||
       (statusFilter === "INTERVIEW" && isAppInterview(app)) ||
       (statusFilter === "SUBMITTED" && !isAppAccepted(app) && !isAppRejected(app) && !isAppInterview(app));
@@ -214,12 +270,14 @@ export default function AdminDashboard() {
 
   // Open Edit Modal
   const handleOpenEdit = (app: Application) => {
+    const isConfirmed = isAppConfirmed(app);
     const isAccepted = isAppAccepted(app);
     const isInterview = isAppInterview(app);
     const isRejected = isAppRejected(app);
 
     let normalizedStatus: ApplicationStatus = "SUBMITTED";
-    if (isAccepted) normalizedStatus = "ACCEPTED";
+    if (isConfirmed) normalizedStatus = "CONFIRMED";
+    else if (isAccepted) normalizedStatus = "ACCEPTED";
     else if (isRejected) normalizedStatus = "REJECTED";
     else if (isInterview) normalizedStatus = "INTERVIEW_ELIGIBLE";
 
@@ -242,6 +300,9 @@ export default function AdminDashboard() {
       carType: app.carType || "",
       carTypeOther: app.carTypeOther || "",
       diet: app.diet || "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)",
+      kkuMail: app.kkuMail || "",
+      medicalConditions: app.medicalConditions || "",
+      drugAllergies: app.drugAllergies || "",
       firstChoiceDeptId: app.firstChoiceDeptId || DEPARTMENTS[0]?.id || "protocol",
       secondChoiceDeptId: app.secondChoiceDeptId || DEPARTMENTS[1]?.id || "fundraising",
       fallbackDeptChoice: app.fallbackDeptChoice || "ยินดีรับทุกฝ่ายตามที่คณะกรรมการจัดสรร",
@@ -260,11 +321,12 @@ export default function AdminDashboard() {
     setIsSaving(true);
 
     try {
-      // If status is not ACCEPTED, assignedDeptId should not be set
+      const isStatusAcceptedOrConfirmed =
+        editFormData.status === "ACCEPTED" || editFormData.status === "CONFIRMED";
       const payloadToSave: typeof editFormData = {
         ...editFormData,
         assignedDeptId:
-          editFormData.status === "ACCEPTED"
+          isStatusAcceptedOrConfirmed
             ? (editFormData.assignedDeptId || editFormData.firstChoiceDeptId || "")
             : "",
       };
@@ -290,6 +352,80 @@ export default function AdminDashboard() {
       alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Add new applicant manually from Admin
+  const handleAddApplicant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addFormData.fullNameTh.trim()) {
+      setAddError("กรุณาระบุชื่อ-นามสกุล");
+      return;
+    }
+    const cleanDigits = addFormData.studentId.replace(/\D/g, "");
+    if (cleanDigits.length !== 10) {
+      setAddError("รหัสนักศึกษาต้องเป็นตัวเลข 10 หลัก (เช่น 663050123-4)");
+      return;
+    }
+    const phoneDigits = addFormData.phone.replace(/\D/g, "");
+    if (phoneDigits.length !== 10 || !phoneDigits.startsWith("0")) {
+      setAddError("เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลักขึ้นต้นด้วย 0 (เช่น 0812345678)");
+      return;
+    }
+
+    setIsAddingApplicant(true);
+    setAddError(null);
+
+    try {
+      const cleanKku = addFormData.kkuMail.trim()
+        ? (addFormData.kkuMail.includes("@") ? addFormData.kkuMail.trim() : `${addFormData.kkuMail.trim()}@kkumail.com`)
+        : null;
+
+      const res = await fetch("/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullNameTh: addFormData.fullNameTh.trim(),
+          nicknameTh: addFormData.nicknameTh.trim(),
+          studentId: `${cleanDigits.slice(0, 9)}-${cleanDigits.slice(9, 10)}`,
+          faculty: addFormData.faculty.trim() || "คณะศึกษาศาสตร์",
+          major: addFormData.major.trim(),
+          year: addFormData.year.trim() || "ชั้นปีที่ 1",
+          phone: phoneDigits,
+          firstChoiceDeptId: addFormData.assignedDeptId,
+          assignedDeptId: addFormData.assignedDeptId,
+          status: addFormData.status,
+          kkuMail: cleanKku,
+          medicalConditions: addFormData.medicalConditions.trim() || "ไม่มี",
+          drugAllergies: addFormData.drugAllergies.trim() || "ไม่มี",
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        await fetchLiveApplications();
+        setIsAddModalOpen(false);
+        setAddFormData({
+          fullNameTh: "",
+          nicknameTh: "",
+          studentId: "",
+          faculty: "คณะศึกษาศาสตร์",
+          major: "สาขาวิชาคอมพิวเตอร์ศึกษา",
+          year: "ชั้นปีที่ 1",
+          phone: "",
+          assignedDeptId: DEPARTMENTS[0]?.id ?? "protocol",
+          status: "ACCEPTED",
+          kkuMail: "",
+          medicalConditions: "",
+          drugAllergies: "",
+        });
+      } else {
+        setAddError(json.error || "เกิดข้อผิดพลาดในการบันทึกผู้สมัครใหม่");
+      }
+    } catch (err) {
+      setAddError("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง");
+    } finally {
+      setIsAddingApplicant(false);
     }
   };
 
@@ -327,6 +463,10 @@ export default function AdminDashboard() {
       "คณะ",
       "สาขาวิชา",
       "เบอร์โทรศัพท์",
+      "อีเมล KKU Mail",
+      "โรคประจำตัว",
+      "ประวัติแพ้ยา",
+      "อาหารที่แพ้/ข้อจำกัด",
       "ชื่อ Facebook",
       "ลิงก์ Facebook",
       "เหตุผลที่สนใจสมัคร",
@@ -353,7 +493,10 @@ export default function AdminDashboard() {
         ? (a.assignedDeptId ? getDeptNameTh(a.assignedDeptId) : firstTh)
         : "-";
 
-      const statusTh = isAppAccepted(a)
+      const isConfirmed = (a.status || "").toUpperCase() === "CONFIRMED";
+      const statusTh = isConfirmed
+        ? "ยืนยันสิทธิ์แล้ว (Confirmed)"
+        : isAppAccepted(a)
         ? "ผ่านการคัดเลือก"
         : isAppInterview(a)
         ? "มีสิทธิ์เข้าสัมภาษณ์"
@@ -370,6 +513,10 @@ export default function AdminDashboard() {
         a.faculty || "คณะศึกษาศาสตร์",
         a.major,
         `\t${a.phone}`,
+        a.kkuMail || "-",
+        a.medicalConditions || "-",
+        a.drugAllergies || "-",
+        a.diet || "-",
         a.facebookName || "-",
         a.facebookUrl || "-",
         a.reasonToApply || "-",
@@ -468,6 +615,7 @@ export default function AdminDashboard() {
 
   // Stats calculation
   const totalCount = applications.length;
+  const confirmedCount = applications.filter(isAppConfirmed).length;
   const acceptedCount = applications.filter(isAppAccepted).length;
   const interviewCount = applications.filter(isAppInterview).length;
   const rejectedCount = applications.filter(isAppRejected).length;
@@ -502,6 +650,17 @@ export default function AdminDashboard() {
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
             <span>ซิงค์ข้อมูล</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setAddError(null);
+              setIsAddModalOpen(true);
+            }}
+            className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm border-2 border-white/20 shadow-solid-sm transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <UserPlus className="w-4 h-4 text-cc-yellow" />
+            <span>เพิ่มพี่ค่าย / ผู้สมัคร</span>
           </button>
 
           <button
@@ -559,7 +718,10 @@ export default function AdminDashboard() {
             <CheckCircle2 className="w-4 h-4 text-white" />
           </div>
           <div className="font-display font-black text-3xl sm:text-4xl mt-2">{acceptedCount}</div>
-          <div className="text-[10px] opacity-80 mt-1 font-medium">สตาฟตัวจริง</div>
+          <div className="text-[10px] opacity-90 mt-1 font-semibold flex flex-wrap items-center gap-1">
+            <span className="bg-emerald-900/60 px-1.5 py-0.5 rounded text-white">✅ ยืนยันแล้ว {confirmedCount}</span>
+            <span className="opacity-80">/ รอ {acceptedCount - confirmedCount}</span>
+          </div>
         </div>
 
         <div className="p-4 sm:p-5 rounded-3xl bg-gray-500 text-white border-3 border-cc-navy shadow-solid col-span-2 sm:col-span-1">
@@ -633,6 +795,7 @@ export default function AdminDashboard() {
                   (a.assignedDeptId === dept.id || (!a.assignedDeptId && a.firstChoiceDeptId === dept.id)) &&
                   isAppAccepted(a)
               );
+              const confirmedStaffList = officialStaffList.filter(isAppConfirmed);
 
               // 4. Applicants who applied for Choice 1 or Choice 2
               const applicantsForThisDept = applications.filter(
@@ -697,6 +860,9 @@ export default function AdminDashboard() {
                         <span className="font-display font-black text-lg text-emerald-700 block mt-0.5">
                           {officialStaffList.length} คน
                         </span>
+                        <span className="text-[10px] text-emerald-700 font-bold block mt-0.5">
+                          (ยืนยัน {confirmedStaffList.length})
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -705,6 +871,9 @@ export default function AdminDashboard() {
                   <div className="p-4 bg-gray-50 border-t-2 border-cc-navy/10 flex items-center justify-between">
                     <span className="text-xs font-bold text-gray-600">
                       สตาฟตัวจริง: <strong className="text-emerald-700 font-display">{officialStaffList.length}</strong> คน
+                      {confirmedStaffList.length > 0 && (
+                        <span className="text-emerald-600 font-bold ml-1.5">(ยืนยันแล้ว {confirmedStaffList.length})</span>
+                      )}
                     </span>
 
                     <button
@@ -733,7 +902,7 @@ export default function AdminDashboard() {
                               <Check className="w-4 h-4" />
                             </div>
                             <h5 className="font-display font-black text-base text-emerald-950">
-                              สตาฟตัวจริงที่ผ่านคัดเลือกใน {dept.nameTh} ({officialStaffList.length} คน)
+                              สตาฟตัวจริงที่ผ่านคัดเลือกใน {dept.nameTh} ({officialStaffList.length} คน • ยืนยันสิทธิ์แล้ว {confirmedStaffList.length} คน)
                             </h5>
                           </div>
                           <span className="text-xs text-emerald-800 font-bold bg-white px-2.5 py-1 rounded-lg border border-emerald-300">
@@ -785,9 +954,19 @@ export default function AdminDashboard() {
                                       </td>
                                       <td className="py-2.5 px-3 font-bold text-cc-navy whitespace-nowrap">
                                         <div>{app.fullNameTh}</div>
+                                        {app.kkuMail && (
+                                          <div className="text-[10px] font-mono text-emerald-700 font-medium flex items-center gap-1 mt-0.5">
+                                            <span>📧 {app.kkuMail}</span>
+                                          </div>
+                                        )}
                                         {app.diet && (
                                           <div className="text-[10px] font-normal text-emerald-800 flex items-center gap-1 mt-0.5">
                                             <span>🍽️ {app.diet}</span>
+                                          </div>
+                                        )}
+                                        {(app.medicalConditions || app.drugAllergies) && (
+                                          <div className="text-[10px] font-normal text-rose-700 flex items-center gap-1 mt-0.5">
+                                            <span>⚠️ {app.medicalConditions ? `โรค: ${app.medicalConditions} ` : ""}{app.drugAllergies ? `แพ้ยา: ${app.drugAllergies}` : ""}</span>
                                           </div>
                                         )}
                                       </td>
@@ -799,9 +978,16 @@ export default function AdminDashboard() {
                                         {app.phone}
                                       </td>
                                       <td className="py-2.5 px-3 whitespace-nowrap">
-                                        <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white font-bold text-[10px] shadow-2xs">
-                                          ผ่านการคัดเลือก
-                                        </span>
+                                        {isAppConfirmed(app) ? (
+                                          <span className="px-2.5 py-1 rounded-full bg-emerald-600 text-white font-black text-[10px] shadow-xs inline-flex items-center gap-1">
+                                            <CheckCircle2 className="w-3 h-3 text-cc-yellow" />
+                                            <span>ยืนยันสิทธิ์แล้ว ✅</span>
+                                          </span>
+                                        ) : (
+                                          <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-white font-bold text-[10px] shadow-2xs">
+                                            ผ่านคัดเลือก (รอยืนยัน)
+                                          </span>
+                                        )}
                                       </td>
                                       <td className="py-2.5 px-3 text-center whitespace-nowrap">
                                         <button
@@ -894,10 +1080,17 @@ export default function AdminDashboard() {
                                       </td>
                                       <td className="py-2 px-3 whitespace-nowrap">
                                         {assignedToThis ? (
-                                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-[10px]">
-                                            <Check className="w-3 h-3" />
-                                            <span>ได้ฝ่ายนี้แล้ว (สตาฟตัวจริง)</span>
-                                          </span>
+                                          isAppConfirmed(app) ? (
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-600 text-white font-bold text-[10px] shadow-2xs">
+                                              <CheckCircle2 className="w-3 h-3 text-cc-yellow" />
+                                              <span>ได้ฝ่ายนี้ (ยืนยันแล้ว ✅)</span>
+                                            </span>
+                                          ) : (
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-[10px]">
+                                              <Check className="w-3 h-3" />
+                                              <span>ได้ฝ่ายนี้ (รอยืนยัน)</span>
+                                            </span>
+                                          )
                                         ) : assignedOtherDept ? (
                                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-950 border border-amber-300 font-bold text-[10px]">
                                             <span>ย้ายไป:</span>
@@ -968,10 +1161,12 @@ export default function AdminDashboard() {
                     className="px-3 py-2 rounded-xl border-2 border-cc-navy bg-white text-xs font-bold text-cc-navy outline-none cursor-pointer"
                   >
                     <option value="all">สถานะทั้งหมด</option>
-                    <option value="SUBMITTED">รอดำเนินการ</option>
-                    <option value="INTERVIEW">🎙️ มีสิทธิ์สัมภาษณ์</option>
-                    <option value="ACCEPTED">🎉 ผ่านการคัดเลือก</option>
-                    <option value="REJECTED">❌ ไม่ผ่านการคัดเลือก</option>
+                    <option value="CONFIRMED">✅ ยืนยันสิทธิ์แล้ว ({confirmedCount})</option>
+                    <option value="ACCEPTED">🎉 ผ่านคัดเลือก (รอยืนยัน {acceptedCount - confirmedCount})</option>
+                    <option value="ACCEPTED_ALL">👥 ผ่านคัดเลือกทั้งหมด ({acceptedCount})</option>
+                    <option value="INTERVIEW">🎙️ มีสิทธิ์สัมภาษณ์ ({interviewCount})</option>
+                    <option value="SUBMITTED">⏳ รอดำเนินการ ({pendingCount})</option>
+                    <option value="REJECTED">❌ ไม่ผ่านการคัดเลือก ({rejectedCount})</option>
                   </select>
                 </div>
 
@@ -1036,6 +1231,7 @@ export default function AdminDashboard() {
                       const secondDept = DEPARTMENTS.find((d) => d.id === app.secondChoiceDeptId);
                       const assignedDept = DEPARTMENTS.find((d) => d.id === app.assignedDeptId);
 
+                      const isConfirmed = isAppConfirmed(app);
                       const isAccepted = isAppAccepted(app);
                       const isRejected = isAppRejected(app);
                       const isInterview = isAppInterview(app);
@@ -1059,8 +1255,18 @@ export default function AdminDashboard() {
                             <div className="text-[11px] text-gray-500 font-mono font-normal">
                               โทร: {app.phone}
                             </div>
+                            {app.kkuMail && (
+                              <div className="text-[10px] text-emerald-700 font-mono font-medium flex items-center gap-1">
+                                <span>📧 {app.kkuMail}</span>
+                              </div>
+                            )}
+                            {(app.medicalConditions || app.drugAllergies) && (
+                              <div className="text-[10px] text-rose-700 font-normal mt-0.5">
+                                <span>⚠️ {app.medicalConditions ? `โรค: ${app.medicalConditions} ` : ""}{app.drugAllergies ? `แพ้ยา: ${app.drugAllergies}` : ""}</span>
+                              </div>
+                            )}
                             {app.facebookName && (
-                              <div className="text-[11px] text-blue-600 font-normal truncate max-w-[150px]">
+                              <div className="text-[11px] text-blue-600 font-normal truncate max-w-[150px] mt-0.5">
                                 {app.facebookUrl ? (
                                   <a href={app.facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
                                     FB: {app.facebookName}
@@ -1119,9 +1325,11 @@ export default function AdminDashboard() {
                           </td>
                           <td className="py-3.5 px-4 whitespace-nowrap">
                             <span
-                              className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${
-                                isAccepted
-                                  ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border shadow-2xs ${
+                                isConfirmed
+                                  ? "bg-emerald-600 text-white border-emerald-700 font-black shadow-xs"
+                                  : isAccepted
+                                  ? "bg-amber-100 text-amber-900 border-amber-300 font-bold"
                                   : isInterview
                                   ? "bg-purple-100 text-purple-800 border-purple-300 font-black"
                                   : isRejected
@@ -1129,13 +1337,20 @@ export default function AdminDashboard() {
                                   : "bg-blue-100 text-blue-800 border-blue-300"
                               }`}
                             >
-                              {isAccepted
-                                ? "ผ่านการคัดเลือก"
-                                : isInterview
-                                ? "🎙️ มีสิทธิ์สัมภาษณ์"
-                                : isRejected
-                                ? "ไม่ผ่านการคัดเลือก"
-                                : "รอดำเนินการ"}
+                              {isConfirmed ? (
+                                <>
+                                  <CheckCircle2 className="w-3 h-3 text-cc-yellow" />
+                                  <span>ยืนยันสิทธิ์แล้ว ✅</span>
+                                </>
+                              ) : isAccepted ? (
+                                <span>🎉 ผ่านคัดเลือก (รอยืนยัน)</span>
+                              ) : isInterview ? (
+                                <span>🎙️ มีสิทธิ์สัมภาษณ์</span>
+                              ) : isRejected ? (
+                                <span>❌ ไม่ผ่านการคัดเลือก</span>
+                              ) : (
+                                <span>รอดำเนินการ</span>
+                              )}
                             </span>
                           </td>
                           <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -1305,6 +1520,45 @@ export default function AdminDashboard() {
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue"
                     />
                   </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 flex items-center gap-1">
+                      <Mail className="w-3.5 h-3.5 text-cc-blue" />
+                      <span>อีเมล KKU Mail:</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="เช่น somchai.k@kkumail.com"
+                      value={editFormData.kkuMail}
+                      onChange={(e) => setEditFormData({ ...editFormData, kkuMail: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-mono outline-none focus:border-cc-blue"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 flex items-center gap-1">
+                      <HeartPulse className="w-3.5 h-3.5 text-rose-500" />
+                      <span>โรคประจำตัว:</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="เช่น หอบหืด (หรือ ไม่มี)"
+                      value={editFormData.medicalConditions}
+                      onChange={(e) => setEditFormData({ ...editFormData, medicalConditions: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white outline-none focus:border-cc-blue"
+                    />
+                  </div>
+                  <div className="sm:col-span-2 space-y-1">
+                    <label className="font-bold text-gray-700 flex items-center gap-1">
+                      <Pill className="w-3.5 h-3.5 text-rose-500" />
+                      <span>ประวัติการแพ้ยา:</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="เช่น แพ้ยาเพนิซิลลิน (หรือ ไม่มี)"
+                      value={editFormData.drugAllergies}
+                      onChange={(e) => setEditFormData({ ...editFormData, drugAllergies: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white outline-none focus:border-cc-blue"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -1447,11 +1701,12 @@ export default function AdminDashboard() {
                       value={editFormData.status}
                       onChange={(e) => {
                         const newStatus = e.target.value as ApplicationStatus;
+                        const isAccOrConf = newStatus === "ACCEPTED" || newStatus === "CONFIRMED";
                         setEditFormData({
                           ...editFormData,
                           status: newStatus,
                           assignedDeptId:
-                            newStatus === "ACCEPTED"
+                            isAccOrConf
                               ? (editFormData.assignedDeptId || editFormData.firstChoiceDeptId || "")
                               : "",
                         });
@@ -1461,12 +1716,13 @@ export default function AdminDashboard() {
                       <option value="SUBMITTED">รอดำเนินการ (พิจารณาเอกสาร)</option>
                       <option value="INTERVIEW_ELIGIBLE">🎙️ มีสิทธิ์เข้าสัมภาษณ์</option>
                       <option value="ACCEPTED">🎉 ผ่านการคัดเลือกเป็นพี่ค่าย</option>
+                      <option value="CONFIRMED">✅ ยืนยันสิทธิ์แล้ว (Confirmed)</option>
                       <option value="REJECTED">❌ ไม่ผ่านการคัดเลือก</option>
                     </select>
                   </div>
 
-                  {/* If ACCEPTED: Show Assigned Department selection */}
-                  {editFormData.status === "ACCEPTED" ? (
+                  {/* If ACCEPTED or CONFIRMED: Show Assigned Department selection */}
+                  {(editFormData.status === "ACCEPTED" || editFormData.status === "CONFIRMED") ? (
                     <div className="space-y-1 animate-fadeIn">
                       <label className="font-bold text-emerald-950 flex items-center gap-1">
                         <Check className="w-3.5 h-3.5 text-emerald-600" />
@@ -1551,6 +1807,259 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Add Applicant Modal (หลังบ้าน) */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-sm animate-fadeIn overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 border-3 border-cc-navy shadow-solid-lg relative space-y-6 my-auto max-h-[90dvh] overflow-y-auto">
+            {/* Close Button */}
+            <button
+              onClick={() => setIsAddModalOpen(false)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 border border-cc-navy flex items-center justify-center text-cc-navy font-bold transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 text-[10px] font-mono font-bold uppercase mb-1">
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>MANUAL APPLICANT CREATION</span>
+              </div>
+              <h3 className="font-display font-black text-xl sm:text-2xl text-cc-navy">
+                เพิ่มพี่ค่าย / ผู้สมัครใหม่ (ระบบหลังบ้าน)
+              </h3>
+              <p className="text-xs text-gray-500">
+                กรอกข้อมูลผู้สมัครเพื่อบันทึกตรงเข้าสู่ฐานข้อมูล Neon PostgreSQL
+              </p>
+            </div>
+
+            {addError && (
+              <div className="p-3.5 rounded-xl bg-rose-50 border-2 border-rose-300 text-rose-800 text-xs flex items-center gap-2 font-medium">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-600" />
+                <span>{addError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleAddApplicant} className="space-y-4 text-xs">
+              <div className="p-4 rounded-2xl bg-gray-50 border-2 border-cc-navy/15 space-y-3">
+                <span className="font-bold text-cc-navy block text-sm flex items-center gap-1.5">
+                  <User className="w-4 h-4 text-cc-blue" />
+                  <span>ข้อมูลส่วนตัวและการศึกษา</span>
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700">ชื่อ - นามสกุล: <span className="text-cc-coral">*</span></label>
+                    <input
+                      type="text"
+                      placeholder="เช่น นายสมชาย ใจดี"
+                      value={addFormData.fullNameTh}
+                      onChange={(e) => setAddFormData({ ...addFormData, fullNameTh: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700">ชื่อเล่น:</label>
+                    <input
+                      type="text"
+                      placeholder="เช่น ปอนด์, พิม"
+                      value={addFormData.nicknameTh}
+                      onChange={(e) => setAddFormData({ ...addFormData, nicknameTh: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700">รหัสนักศึกษา (10 หลัก): <span className="text-cc-coral">*</span></label>
+                    <input
+                      type="text"
+                      maxLength={11}
+                      placeholder="663050123-4"
+                      value={addFormData.studentId}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const prev = addFormData.studentId;
+                        if (prev.endsWith("-") && !val.endsWith("-") && val.length === 9) {
+                          setAddFormData({ ...addFormData, studentId: val.slice(0, 8) });
+                          return;
+                        }
+                        const digits = val.replace(/\D/g, "").slice(0, 10);
+                        let formatted = digits;
+                        if (digits.length === 9) formatted = `${digits}-`;
+                        else if (digits.length === 10) formatted = `${digits.slice(0, 9)}-${digits.slice(9, 10)}`;
+                        setAddFormData({ ...addFormData, studentId: formatted });
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-mono font-bold outline-none focus:border-cc-blue"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700">ชั้นปี: <span className="text-cc-coral">*</span></label>
+                    <select
+                      value={addFormData.year}
+                      onChange={(e) => setAddFormData({ ...addFormData, year: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue cursor-pointer"
+                    >
+                      <option value="ชั้นปีที่ 1">ชั้นปีที่ 1</option>
+                      <option value="ชั้นปีที่ 2">ชั้นปีที่ 2</option>
+                      <option value="ชั้นปีที่ 3">ชั้นปีที่ 3</option>
+                      <option value="ชั้นปีที่ 4">ชั้นปีที่ 4</option>
+                      <option value="อื่นๆ">อื่นๆ</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700">คณะ:</label>
+                    <input
+                      type="text"
+                      value={addFormData.faculty}
+                      onChange={(e) => setAddFormData({ ...addFormData, faculty: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700">สาขาวิชา: <span className="text-cc-coral">*</span></label>
+                    <input
+                      type="text"
+                      placeholder="เช่น สาขาวิชาคอมพิวเตอร์ศึกษา"
+                      value={addFormData.major}
+                      onChange={(e) => setAddFormData({ ...addFormData, major: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-medium outline-none focus:border-cc-blue"
+                      required
+                    />
+                  </div>
+                  <div className="sm:col-span-2 space-y-1">
+                    <label className="font-bold text-gray-700">เบอร์โทรศัพท์ (10 หลัก): <span className="text-cc-coral">*</span></label>
+                    <input
+                      type="text"
+                      maxLength={10}
+                      placeholder="0812345678"
+                      value={addFormData.phone}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                        setAddFormData({ ...addFormData, phone: digits });
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-mono outline-none focus:border-cc-blue"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ฝ่าย & สถานะ */}
+              <div className="p-4 rounded-2xl bg-emerald-50/60 border-2 border-emerald-300 space-y-3">
+                <span className="font-bold text-emerald-950 block text-sm flex items-center gap-1.5">
+                  <Award className="w-4 h-4 text-emerald-600" />
+                  <span>ฝ่ายที่สังกัด และสถานะเริ่มต้น</span>
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-emerald-950">ฝ่ายที่ได้รับคัดเลือก / สังกัด:</label>
+                    <select
+                      value={addFormData.assignedDeptId}
+                      onChange={(e) => setAddFormData({ ...addFormData, assignedDeptId: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border-2 border-emerald-500 bg-white font-bold text-emerald-900 outline-none cursor-pointer"
+                    >
+                      {DEPARTMENTS.map((d) => (
+                        <option key={d.id} value={d.id}>{d.nameTh}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-emerald-950">สถานะเริ่มต้น:</label>
+                    <select
+                      value={addFormData.status}
+                      onChange={(e) => setAddFormData({ ...addFormData, status: e.target.value as ApplicationStatus })}
+                      className="w-full px-3 py-2 rounded-xl border-2 border-emerald-500 bg-white font-bold text-emerald-900 outline-none cursor-pointer"
+                    >
+                      <option value="ACCEPTED">🎉 ผ่านการคัดเลือกเป็นพี่ค่าย</option>
+                      <option value="CONFIRMED">✅ ยืนยันสิทธิ์แล้ว (Confirmed)</option>
+                      <option value="INTERVIEW_ELIGIBLE">🎙️ มีสิทธิ์เข้าสัมภาษณ์</option>
+                      <option value="SUBMITTED">รอดำเนินการ</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* ข้อมูลเสริม (Optional) */}
+              <div className="p-4 rounded-2xl bg-gray-50 border-2 border-cc-navy/15 space-y-3">
+                <span className="font-bold text-gray-700 block text-sm flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-cc-coral" />
+                  <span>ข้อมูลเพิ่มเติม (Optional)</span>
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="sm:col-span-2 space-y-1">
+                    <label className="font-bold text-gray-700 flex items-center gap-1">
+                      <Mail className="w-3.5 h-3.5 text-cc-blue" />
+                      <span>อีเมล KKU Mail:</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="เช่น somchai.k@kkumail.com หรือ somchai.k"
+                      value={addFormData.kkuMail}
+                      onChange={(e) => setAddFormData({ ...addFormData, kkuMail: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-mono outline-none focus:border-cc-blue"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 flex items-center gap-1">
+                      <HeartPulse className="w-3.5 h-3.5 text-rose-500" />
+                      <span>โรคประจำตัว:</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="เช่น หอบหืด (ถ้าไม่มีเว้นว่างได้)"
+                      value={addFormData.medicalConditions}
+                      onChange={(e) => setAddFormData({ ...addFormData, medicalConditions: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white outline-none focus:border-cc-blue"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 flex items-center gap-1">
+                      <Pill className="w-3.5 h-3.5 text-rose-500" />
+                      <span>ประวัติการแพ้ยา:</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="เช่น แพ้ยาเพนิซิลลิน (ถ้าไม่มีเว้นว่างได้)"
+                      value={addFormData.drugAllergies}
+                      onChange={(e) => setAddFormData({ ...addFormData, drugAllergies: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white outline-none focus:border-cc-blue"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs transition-colors cursor-pointer"
+                >
+                  ยกเลิก
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={isAddingApplicant}
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {isAddingApplicant ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>กำลังบันทึก...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4 text-cc-yellow" />
+                      <span>บันทึกผู้สมัครใหม่</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
