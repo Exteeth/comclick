@@ -130,7 +130,18 @@ export async function POST(request: Request) {
   // Confirm rights endpoint
   try {
     const body = await request.json();
-    const { id, action, kkuMail, medicalConditions, drugAllergies } = body;
+    const {
+      id,
+      action,
+      kkuMail,
+      medicalConditions,
+      drugAllergies,
+      phone,
+      facebookName,
+      facebookUrl,
+      nicknameTh,
+      diet,
+    } = body;
 
     if (!id || action !== "confirm_rights") {
       return NextResponse.json({ success: false, error: "Invalid action" }, { status: 400 });
@@ -139,6 +150,13 @@ export async function POST(request: Request) {
     const cleanKkuMail = kkuMail ? String(kkuMail).trim() : null;
     const cleanMedical = medicalConditions ? String(medicalConditions).trim() : "ไม่มี";
     const cleanAllergies = drugAllergies ? String(drugAllergies).trim() : "ไม่มี";
+
+    // Optional / updated applicant details (supporting applicants added manually by admin or updating contact info)
+    const cleanPhone = phone ? String(phone).replace(/\D/g, "").slice(0, 15) : null;
+    const cleanFbName = facebookName !== undefined ? String(facebookName).trim() : null;
+    const cleanFbUrl = facebookUrl !== undefined ? String(facebookUrl).trim() : null;
+    const cleanNickname = nicknameTh !== undefined ? String(nicknameTh).trim() : null;
+    const cleanDiet = diet !== undefined ? String(diet).trim() : null;
 
     // Update in Neon DB
     if (isNeonConfigured()) {
@@ -152,6 +170,11 @@ export async function POST(request: Request) {
               kku_mail = ${cleanKkuMail},
               medical_conditions = ${cleanMedical},
               drug_allergies = ${cleanAllergies},
+              phone = COALESCE(${cleanPhone}, phone),
+              facebook_name = COALESCE(${cleanFbName}, facebook_name),
+              facebook_url = COALESCE(${cleanFbUrl}, facebook_url),
+              nickname_th = COALESCE(${cleanNickname}, nickname_th),
+              diet = COALESCE(${cleanDiet}, diet),
               updated_at = CURRENT_TIMESTAMP
             WHERE id = ${id}
           `;
@@ -160,7 +183,7 @@ export async function POST(request: Request) {
           try {
             await sql`
               INSERT INTO application_logs (application_id, previous_status, new_status, changed_by, notes)
-              VALUES (${id}, 'ACCEPTED', 'CONFIRMED', 'Applicant (Self-Confirmation)', ${`KKU Mail: ${cleanKkuMail || '-'}, โรคประจำตัว: ${cleanMedical}, แพ้ยา: ${cleanAllergies}`})
+              VALUES (${id}, 'ACCEPTED', 'CONFIRMED', 'Applicant (Self-Confirmation)', ${`KKU Mail: ${cleanKkuMail || '-'}, โทร: ${cleanPhone || '-'}, อาหาร: ${cleanDiet || '-'}, โรคประจำตัว: ${cleanMedical}, แพ้ยา: ${cleanAllergies}`})
             `;
           } catch (logErr) {
             // Ignore if log table not present
@@ -179,6 +202,11 @@ export async function POST(request: Request) {
         kkuMail: cleanKkuMail,
         medicalConditions: cleanMedical,
         drugAllergies: cleanAllergies,
+        phone: cleanPhone,
+        facebookName: cleanFbName,
+        facebookUrl: cleanFbUrl,
+        nicknameTh: cleanNickname,
+        diet: cleanDiet,
       }
     });
   } catch (error) {

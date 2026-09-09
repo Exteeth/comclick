@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Application, ApplicationStatus } from "@/lib/types";
-import { DEPARTMENTS } from "@/lib/constants";
+import { DEPARTMENTS, DIET_OPTIONS } from "@/lib/constants";
 import {
   Search,
   CheckCircle2,
@@ -24,6 +24,9 @@ import {
   Copy,
   CheckCheck,
   ExternalLink,
+  Phone,
+  Utensils,
+  Globe,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -39,6 +42,17 @@ export default function StatusChecker() {
   const [hasMedicalCondition, setHasMedicalCondition] = useState(false);
   const [medicalConditionInput, setMedicalConditionInput] = useState("");
   const [drugAllergyInput, setDrugAllergyInput] = useState("");
+
+  // Contact & Personal Confirmation States
+  const [nicknameInput, setNicknameInput] = useState("");
+  const [phoneInput, setPhoneInput] = useState("");
+  const [facebookNameInput, setFacebookNameInput] = useState("");
+  const [facebookUrlInput, setFacebookUrlInput] = useState("");
+
+  // Food / Diet Confirmation States
+  const [dietChoice, setDietChoice] = useState("ทานได้ทุกอย่าง (ไม่แพ้อาหาร)");
+  const [dietCustomInput, setDietCustomInput] = useState("");
+
   const [isConfirming, setIsConfirming] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
   const [confirmSuccess, setConfirmSuccess] = useState(false);
@@ -65,6 +79,36 @@ export default function StatusChecker() {
         // Prefill existing confirmation data if present
         if (json.data.kkuMail) {
           setKkuMailPrefix(json.data.kkuMail.replace(/@.*$/, ""));
+        }
+        if (json.data.nicknameTh) {
+          setNicknameInput(json.data.nicknameTh);
+        }
+        if (json.data.phone) {
+          setPhoneInput(json.data.phone);
+        }
+        if (json.data.facebookName) {
+          setFacebookNameInput(json.data.facebookName);
+        }
+        if (json.data.facebookUrl) {
+          setFacebookUrlInput(json.data.facebookUrl);
+        }
+        if (json.data.diet) {
+          const d = String(json.data.diet).trim();
+          if (
+            d === "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)" ||
+            d === "ฮาลาล (อิสลาม)" ||
+            d === "มังสวิรัติ" ||
+            d === "เจ"
+          ) {
+            setDietChoice(d);
+            setDietCustomInput("");
+          } else if (d.startsWith("แพ้อาหาร:") || d.startsWith("แพ้อาหาร")) {
+            setDietChoice("แพ้อาหาร / อื่นๆ (โปรดระบุ)");
+            setDietCustomInput(d.replace(/^แพ้อาหาร:\s*/, "").replace(/^แพ้อาหาร\s*/, ""));
+          } else {
+            setDietChoice("แพ้อาหาร / อื่นๆ (โปรดระบุ)");
+            setDietCustomInput(d);
+          }
         }
         if (json.data.medicalConditions && json.data.medicalConditions !== "ไม่มี") {
           setHasMedicalCondition(true);
@@ -109,12 +153,59 @@ export default function StatusChecker() {
   };
 
   const handleConfirmRights = async (appId: string) => {
-    const cleanMailPrefix = kkuMailPrefix.trim().replace(/@.*$/, "");
-    if (!cleanMailPrefix) {
-      setConfirmError("กรุณากรอกชื่ออีเมล KKU Mail ก่อนยืนยันสิทธิ์");
+    if (!searchResult || searchResult === "NOT_FOUND") return;
+
+    // 1. Validate Nickname (Use existing if available, else validate input)
+    const existingNick = searchResult.nicknameTh?.trim();
+    const finalNickname = existingNick || nicknameInput.trim();
+    if (!finalNickname) {
+      setConfirmError("กรุณาระบุชื่อเล่นสำหรับเรียกในค่าย");
       return;
     }
 
+    // 2. Validate Phone (Use existing if valid 10 digits, else validate input)
+    const existingPhone = searchResult.phone?.trim();
+    let finalPhone = existingPhone ? existingPhone.replace(/\D/g, "") : "";
+    if (!finalPhone || finalPhone.length !== 10) {
+      const rawPhoneDigits = phoneInput.replace(/\D/g, "");
+      if (rawPhoneDigits.length !== 10 || !rawPhoneDigits.startsWith("0")) {
+        setConfirmError("กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลข 10 หลักที่ถูกต้อง (ขึ้นต้นด้วย 0 เช่น 0812345678)");
+        return;
+      }
+      finalPhone = rawPhoneDigits;
+    }
+
+    // 3. Validate Facebook (Use existing if available, else validate input)
+    const existingFb = searchResult.facebookName?.trim();
+    const finalFbName = existingFb || facebookNameInput.trim();
+    if (!finalFbName) {
+      setConfirmError("กรุณาระบุชื่อ Facebook สำหรับค้นหาและประสานงาน");
+      return;
+    }
+    const finalFbUrl = searchResult.facebookUrl?.trim() || facebookUrlInput.trim();
+
+    // 4. Validate KKU Mail (Use existing if available, else validate input)
+    let finalKkuMail = searchResult.kkuMail?.trim() || "";
+    if (!finalKkuMail) {
+      const cleanMailPrefix = kkuMailPrefix.trim().replace(/@.*$/, "");
+      if (!cleanMailPrefix) {
+        setConfirmError("กรุณากรอกชื่ออีเมล KKU Mail ก่อนยืนยันสิทธิ์");
+        return;
+      }
+      finalKkuMail = `${cleanMailPrefix}@kkumail.com`;
+    }
+
+    // 5. Validate Diet (Mandatory re-confirmation for all)
+    let finalDiet = dietChoice;
+    if (dietChoice === "แพ้อาหาร / อื่นๆ (โปรดระบุ)") {
+      if (!dietCustomInput.trim()) {
+        setConfirmError("เนื่องจากท่านเลือกมีอาการแพ้อาหาร กรุณาระบุรายละเอียดอาหารที่แพ้ (เช่น แพ้กุ้ง, ถั่วลิสง)");
+        return;
+      }
+      finalDiet = `แพ้อาหาร: ${dietCustomInput.trim()}`;
+    }
+
+    // 6. Validate Medical / Allergies
     if (hasMedicalCondition) {
       if (!medicalConditionInput.trim() && !drugAllergyInput.trim()) {
         setConfirmError("เนื่องจากท่านเลือกมีข้อมูลแพ้ยา/โรคประจำตัว กรุณาระบุรายละเอียดโรคประจำตัวหรือยาที่แพ้ (หากไม่มีให้ระบุว่า ไม่มี)");
@@ -122,7 +213,6 @@ export default function StatusChecker() {
       }
     }
 
-    const fullKkuMail = `${cleanMailPrefix}@kkumail.com`;
     const finalMedical = hasMedicalCondition ? (medicalConditionInput.trim() || "ไม่มี") : "ไม่มี";
     const finalAllergies = hasMedicalCondition ? (drugAllergyInput.trim() || "ไม่มี") : "ไม่มี";
 
@@ -136,7 +226,12 @@ export default function StatusChecker() {
         body: JSON.stringify({
           id: appId,
           action: "confirm_rights",
-          kkuMail: fullKkuMail,
+          nicknameTh: finalNickname,
+          phone: finalPhone,
+          facebookName: finalFbName,
+          facebookUrl: finalFbUrl,
+          diet: finalDiet,
+          kkuMail: finalKkuMail,
           medicalConditions: finalMedical,
           drugAllergies: finalAllergies,
         }),
@@ -161,7 +256,12 @@ export default function StatusChecker() {
           return {
             ...prev,
             status: "CONFIRMED",
-            kkuMail: fullKkuMail,
+            nicknameTh: finalNickname,
+            phone: finalPhone,
+            facebookName: finalFbName,
+            facebookUrl: finalFbUrl,
+            diet: finalDiet,
+            kkuMail: finalKkuMail,
             medicalConditions: finalMedical,
             drugAllergies: finalAllergies,
           };
@@ -438,6 +538,38 @@ export default function StatusChecker() {
                             </div>
                             <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-0.5">
                               <span className="text-gray-500 font-bold block text-[10px] uppercase">
+                                ข้อมูลติดต่อ (เบอร์โทร & Facebook)
+                              </span>
+                              <div className="text-emerald-950 font-medium text-xs leading-snug">
+                                <div><strong>โทร:</strong> {searchResult.phone || phoneInput || "-"} (ชื่อเล่น: {searchResult.nicknameTh || nicknameInput || "-"})</div>
+                                <div>
+                                  <strong>Facebook:</strong>{" "}
+                                  {(searchResult.facebookUrl || facebookUrlInput) ? (
+                                    <a
+                                      href={searchResult.facebookUrl || facebookUrlInput}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-700 underline font-bold inline-flex items-center gap-0.5"
+                                    >
+                                      {searchResult.facebookName || facebookNameInput || "ดูโปรไฟล์"}
+                                      <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  ) : (
+                                    searchResult.facebookName || facebookNameInput || "-"
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-0.5">
+                              <span className="text-gray-500 font-bold block text-[10px] uppercase">
+                                อาหารที่แพ้ / ข้อจำกัดด้านอาหาร
+                              </span>
+                              <div className="text-emerald-950 font-bold text-xs leading-snug">
+                                {searchResult.diet || (dietChoice === "แพ้อาหาร / อื่นๆ (โปรดระบุ)" ? `แพ้อาหาร: ${dietCustomInput}` : dietChoice) || "ทานได้ทุกอย่าง (ไม่แพ้อาหาร)"}
+                              </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-0.5">
+                              <span className="text-gray-500 font-bold block text-[10px] uppercase">
                                 ข้อมูลสุขภาพ / ประวัติแพ้ยา
                               </span>
                               <div className="text-emerald-950 font-medium text-xs leading-snug">
@@ -500,147 +632,420 @@ export default function StatusChecker() {
                       </div>
                     ) : (
                       /* ✍️ STATE 2: PENDING CONFIRMATION FORM */
-                      <div className="p-6 sm:p-7 rounded-3xl bg-white border-3 border-cc-navy shadow-solid-sm space-y-5 animate-fadeIn">
-                        <div className="border-b-2 border-cc-navy/10 pb-3">
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cc-coral/10 text-cc-coral text-xs font-bold font-mono">
-                            <Sparkles className="w-3.5 h-3.5" />
-                            <span>CONFIRMATION REQUIRED</span>
-                          </div>
-                          <h3 className="font-display font-black text-xl sm:text-2xl text-cc-navy mt-1.5">
-                            กรอกข้อมูลเพื่อยืนยันสิทธิ์เป็นพี่ค่าย Comclick 20
-                          </h3>
-                          <p className="text-xs text-gray-600 mt-1">
-                            กรุณากรอกข้อมูลเพิ่มเติมก่อนกดยืนยันสิทธิ์ เพื่อใช้ในการติดต่อประสานงานและการดูแลความปลอดภัยตลอดค่าย
-                          </p>
-                        </div>
+                      (() => {
+                        const hasExistingNickname = Boolean(searchResult.nicknameTh?.trim());
+                        const hasExistingPhone = Boolean(
+                          searchResult.phone?.trim() && searchResult.phone.trim().replace(/\D/g, "").length === 10
+                        );
+                        const hasExistingFacebook = Boolean(searchResult.facebookName?.trim());
+                        const hasExistingKkuMail = Boolean(searchResult.kkuMail?.trim());
 
-                        {confirmError && (
-                          <div className="p-3.5 rounded-xl bg-rose-50 border-2 border-rose-300 text-rose-800 text-xs flex items-center gap-2 font-medium">
-                            <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-600" />
-                            <span>{confirmError}</span>
-                          </div>
-                        )}
+                        const missingCount =
+                          (!hasExistingNickname ? 1 : 0) +
+                          (!hasExistingPhone ? 1 : 0) +
+                          (!hasExistingFacebook ? 1 : 0) +
+                          (!hasExistingKkuMail ? 1 : 0);
 
-                        <form
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            handleConfirmRights(searchResult.id);
-                          }}
-                          className="space-y-4"
-                        >
-                          {/* 1. KKU Mail */}
-                          <div className="space-y-1.5">
-                            <label className="block text-xs font-bold text-cc-navy flex items-center gap-1.5">
-                              <Mail className="w-4 h-4 text-cc-blue" />
-                              <span>อีเมลมหาวิทยาลัยขอนแก่น (KKU Mail) <span className="text-cc-coral">*</span></span>
-                            </label>
-                            <div className="flex rounded-xl border-2 border-cc-navy/30 focus-within:border-cc-navy overflow-hidden shadow-sm bg-white transition-all">
-                              <input
-                                type="text"
-                                placeholder="เช่น somchai.k"
-                                value={kkuMailPrefix}
-                                onChange={(e) => {
-                                  const val = e.target.value.replace(/@.*$/, "").trim();
-                                  setKkuMailPrefix(val);
-                                  if (confirmError) setConfirmError(null);
-                                }}
-                                className="flex-1 px-4 py-3 bg-transparent text-sm font-bold text-cc-navy outline-none placeholder:text-gray-400 placeholder:font-normal"
-                                required
-                              />
-                              <div className="bg-cc-cream border-l-2 border-cc-navy/20 px-4 py-3 flex items-center text-xs font-mono font-bold text-cc-navy select-none">
-                                @kkumail.com
+                        return (
+                          <div className="p-6 sm:p-7 rounded-3xl bg-white border-3 border-cc-navy shadow-solid-sm space-y-5 animate-fadeIn">
+                            <div className="border-b-2 border-cc-navy/10 pb-3">
+                              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cc-coral/10 text-cc-coral text-xs font-bold font-mono">
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span>CONFIRMATION REQUIRED</span>
                               </div>
+                              <h3 className="font-display font-black text-xl sm:text-2xl text-cc-navy mt-1.5">
+                                ตรวจสอบข้อมูลและยืนยันสิทธิ์พี่ค่าย Comclick 20
+                              </h3>
+                              <p className="text-xs text-gray-600 mt-1">
+                                ระบบจะล็อกฟิลด์ที่มีข้อมูลอยู่แล้ว และให้กรอกเพิ่มเติมเฉพาะฟิลด์ที่ยังไม่ครบถ้วนในระบบ
+                              </p>
                             </div>
-                            <p className="text-[11px] text-gray-500">
-                              💡 พิมพ์เฉพาะชื่อผู้ใช้ข้างหน้า ระบบจะต่อท้าย <code className="bg-gray-100 px-1 py-0.5 rounded font-mono text-cc-navy font-bold">@kkumail.com</code> ให้อัตโนมัติ
-                            </p>
-                          </div>
 
-                          {/* 2. Medical Conditions Checkbox */}
-                          <div className="pt-2">
-                            <label className="flex items-start gap-3 p-4 rounded-2xl bg-gray-50 border-2 border-cc-navy/20 hover:border-cc-navy/40 cursor-pointer transition-all">
-                              <input
-                                type="checkbox"
-                                checked={hasMedicalCondition}
-                                onChange={(e) => {
-                                  setHasMedicalCondition(e.target.checked);
-                                  if (!e.target.checked) {
-                                    setMedicalConditionInput("");
-                                    setDrugAllergyInput("");
-                                  }
-                                }}
-                                className="mt-0.5 w-4 h-4 rounded border-2 border-cc-navy text-cc-navy focus:ring-0 cursor-pointer"
-                              />
-                              <div className="flex-1">
-                                <span className="text-xs sm:text-sm font-bold text-cc-navy flex items-center gap-1.5">
-                                  <HeartPulse className="w-4 h-4 text-rose-500" />
-                                  <span>ข้อมูลแพ้ยา หรือมีโรคประจำตัว</span>
-                                </span>
-                                <span className="text-[11px] text-gray-500 block mt-0.5">
-                                  หากมีโรคประจำตัวหรือประวัติแพ้ยา กรุณาทำเครื่องหมายเพื่อระบุรายละเอียดให้ทีมพยาบาลและสวัสดิการดูแล
-                                </span>
-                              </div>
-                            </label>
-
-                            {/* Expandable sub-fields */}
-                            {hasMedicalCondition && (
-                              <div className="mt-3 p-4 sm:p-5 rounded-2xl bg-rose-50/60 border-2 border-rose-300 space-y-3.5 animate-fadeIn">
-                                <div className="space-y-1">
-                                  <label className="block text-xs font-bold text-rose-950 flex items-center gap-1.5">
-                                    <HeartPulse className="w-3.5 h-3.5 text-rose-600" />
-                                    <span>โรคประจำตัว (Medical Conditions)</span>
-                                  </label>
-                                  <input
-                                    type="text"
-                                    placeholder="เช่น หอบหืด, ภูมิแพ้, ไมเกรน (ถ้าไม่มี ให้ระบุว่า ไม่มี)"
-                                    value={medicalConditionInput}
-                                    onChange={(e) => setMedicalConditionInput(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-xl border-2 border-rose-200 focus:border-rose-500 bg-white text-xs sm:text-sm font-medium text-gray-800 outline-none shadow-sm"
-                                  />
+                            {/* Status Banner: All Complete vs Missing Fields */}
+                            {missingCount === 0 ? (
+                              <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-emerald-50 border-2 border-emerald-300 text-emerald-900 text-xs font-medium">
+                                <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                                <div>
+                                  <strong className="font-bold block text-emerald-950">ข้อมูลส่วนตัวในระบบครบถ้วนสมบูรณ์แล้ว ✅</strong>
+                                  <span>ข้อมูลติดต่อได้รับการตรวจสอบเรียบร้อย กรุณายืนยันอาหารที่แพ้และข้อมูลสุขภาพเพื่อเสร็จสิ้น</span>
                                 </div>
-
-                                <div className="space-y-1">
-                                  <label className="block text-xs font-bold text-rose-950 flex items-center gap-1.5">
-                                    <Pill className="w-3.5 h-3.5 text-rose-600" />
-                                    <span>ประวัติการแพ้ยา (Drug Allergies)</span>
-                                  </label>
-                                  <input
-                                    type="text"
-                                    placeholder="เช่น แพ้ยาเพนิซิลลิน, ยาซัลฟา (ถ้าไม่มี ให้ระบุว่า ไม่มี)"
-                                    value={drugAllergyInput}
-                                    onChange={(e) => setDrugAllergyInput(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-xl border-2 border-rose-200 focus:border-rose-500 bg-white text-xs sm:text-sm font-medium text-gray-800 outline-none shadow-sm"
-                                  />
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-900 text-xs font-medium">
+                                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                                <div>
+                                  <strong className="font-bold block text-amber-950">ตรวจพบข้อมูลยังไม่ครบถ้วน ({missingCount} รายการ) ⚠️</strong>
+                                  <span>กรุณากรอกข้อมูลในช่องที่เปิดให้ระบุเพิ่มเติมด้านล่าง เพื่อใช้ในการติดต่อประสานงานค่าย</span>
                                 </div>
                               </div>
                             )}
-                          </div>
 
-                          {/* 3. Confirm Rights Button */}
-                          <div className="pt-3">
-                            <button
-                              type="submit"
-                              disabled={isConfirming}
-                              className="w-full py-3.5 px-6 rounded-xl bg-cc-coral hover:bg-cc-coral-dark text-white font-display font-bold text-sm sm:text-base border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                            {confirmError && (
+                              <div className="p-3.5 rounded-xl bg-rose-50 border-2 border-rose-300 text-rose-800 text-xs flex items-center gap-2 font-medium">
+                                <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-600" />
+                                <span>{confirmError}</span>
+                              </div>
+                            )}
+
+                            <form
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                handleConfirmRights(searchResult.id);
+                              }}
+                              className="space-y-4"
                             >
-                              {isConfirming ? (
-                                <>
-                                  <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                  <span>กำลังบันทึกข้อมูลการยืนยันสิทธิ์...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Sparkles className="w-5 h-5 text-cc-yellow" />
-                                  <span>ยืนยันสิทธิ์เป็นพี่ค่าย Comclick 20</span>
-                                </>
-                              )}
-                            </button>
-                            <p className="text-center text-[11px] text-gray-500 mt-2">
-                              เมื่อกดยืนยันสิทธิ์แล้ว สถานะของคุณจะเปลี่ยนเป็นผู้ยืนยันสิทธิ์ตัวจริงทันที
-                            </p>
+                              {/* 1. ส่วนตรวจสอบข้อมูลส่วนตัวและช่องทางติดต่อ */}
+                              <div className="p-4 sm:p-5 rounded-2xl bg-gray-50/80 border-2 border-cc-navy/20 space-y-3.5">
+                                <div className="flex items-center justify-between border-b border-cc-navy/10 pb-2">
+                                  <div className="flex items-center gap-2">
+                                    <User className="w-4 h-4 text-cc-navy" />
+                                    <h4 className="text-xs sm:text-sm font-bold text-cc-navy">
+                                      ข้อมูลส่วนตัวและช่องทางติดต่อ
+                                    </h4>
+                                  </div>
+                                  <span className="text-[11px] font-mono text-gray-500">
+                                    {4 - missingCount}/4 ฟิลด์สมบูรณ์
+                                  </span>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                  {/* ชื่อเล่น (Nickname) */}
+                                  {hasExistingNickname ? (
+                                    <div className="p-3.5 rounded-xl bg-white border-2 border-emerald-400/80 shadow-sm flex flex-col justify-between select-none">
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-1">
+                                          <User className="w-3.5 h-3.5 text-gray-400" />
+                                          <span>ชื่อเล่น</span>
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                                          <Check className="w-3 h-3" /> ข้อมูลครบถ้วน
+                                        </span>
+                                      </div>
+                                      <div className="font-display font-black text-sm sm:text-base text-cc-navy mt-1.5">
+                                        {searchResult.nicknameTh}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="p-3.5 rounded-xl bg-rose-50/70 border-2 border-rose-300 shadow-sm flex flex-col justify-between space-y-1.5">
+                                      <div className="flex items-center justify-between">
+                                        <label className="text-[11px] font-bold text-rose-950 uppercase flex items-center gap-1">
+                                          <span>ชื่อเล่น (สำหรับเรียกในค่าย) <span className="text-rose-600">*</span></span>
+                                        </label>
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">
+                                          <AlertCircle className="w-3 h-3" /> ต้องกรอกเพิ่ม
+                                        </span>
+                                      </div>
+                                      <input
+                                        type="text"
+                                        placeholder="เช่น บาส, ตาล, นัท"
+                                        value={nicknameInput}
+                                        onChange={(e) => {
+                                          setNicknameInput(e.target.value);
+                                          if (confirmError) setConfirmError(null);
+                                        }}
+                                        className="w-full px-3 py-2 rounded-lg border-2 border-rose-300 focus:border-rose-600 bg-white text-xs sm:text-sm font-bold text-cc-navy outline-none shadow-sm transition-all"
+                                        required
+                                      />
+                                    </div>
+                                  )}
+
+                                  {/* เบอร์โทรศัพท์ (Phone) */}
+                                  {hasExistingPhone ? (
+                                    <div className="p-3.5 rounded-xl bg-white border-2 border-emerald-400/80 shadow-sm flex flex-col justify-between select-none">
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-1">
+                                          <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                                          <span>เบอร์โทรศัพท์</span>
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                                          <Check className="w-3 h-3" /> ข้อมูลครบถ้วน
+                                        </span>
+                                      </div>
+                                      <div className="font-mono font-bold text-sm sm:text-base text-cc-navy mt-1.5">
+                                        {searchResult.phone.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3")}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="p-3.5 rounded-xl bg-rose-50/70 border-2 border-rose-300 shadow-sm flex flex-col justify-between space-y-1.5">
+                                      <div className="flex items-center justify-between">
+                                        <label className="text-[11px] font-bold text-rose-950 uppercase flex items-center gap-1">
+                                          <Phone className="w-3.5 h-3.5 text-rose-600" />
+                                          <span>เบอร์โทรศัพท์ (10 หลัก) <span className="text-rose-600">*</span></span>
+                                        </label>
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">
+                                          <AlertCircle className="w-3 h-3" /> ต้องกรอกเพิ่ม
+                                        </span>
+                                      </div>
+                                      <input
+                                        type="tel"
+                                        maxLength={10}
+                                        placeholder="เช่น 0812345678"
+                                        value={phoneInput}
+                                        onChange={(e) => {
+                                          const val = e.target.value.replace(/\D/g, "");
+                                          setPhoneInput(val);
+                                          if (confirmError) setConfirmError(null);
+                                        }}
+                                        className="w-full px-3 py-2 rounded-lg border-2 border-rose-300 focus:border-rose-600 bg-white text-xs sm:text-sm font-mono font-bold text-cc-navy outline-none shadow-sm transition-all"
+                                        required
+                                      />
+                                    </div>
+                                  )}
+
+                                  {/* Facebook Contact */}
+                                  {hasExistingFacebook ? (
+                                    <div className="p-3.5 rounded-xl bg-white border-2 border-emerald-400/80 shadow-sm flex flex-col justify-between sm:col-span-2 select-none">
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-1">
+                                          <Globe className="w-3.5 h-3.5 text-blue-600" />
+                                          <span>Facebook ประสานงาน</span>
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                                          <Check className="w-3 h-3" /> ข้อมูลครบถ้วน
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2 mt-1.5">
+                                        <span className="font-bold text-xs sm:text-sm text-cc-navy truncate">
+                                          {searchResult.facebookName}
+                                        </span>
+                                        {searchResult.facebookUrl && (
+                                          <a
+                                            href={searchResult.facebookUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-xs text-blue-600 underline font-semibold inline-flex items-center gap-0.5 ml-auto flex-shrink-0"
+                                          >
+                                            <span>เปิดโปรไฟล์</span>
+                                            <ExternalLink className="w-3 h-3" />
+                                          </a>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="p-3.5 rounded-xl bg-rose-50/70 border-2 border-rose-300 shadow-sm flex flex-col space-y-2.5 sm:col-span-2">
+                                      <div className="flex items-center justify-between">
+                                        <label className="text-[11px] font-bold text-rose-950 uppercase flex items-center gap-1">
+                                          <Globe className="w-3.5 h-3.5 text-blue-600" />
+                                          <span>Facebook ประสานงาน <span className="text-rose-600">*</span></span>
+                                        </label>
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">
+                                          <AlertCircle className="w-3 h-3" /> ต้องกรอกเพิ่ม
+                                        </span>
+                                      </div>
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                        <input
+                                          type="text"
+                                          placeholder="ชื่อ Facebook (เช่น Somchai Jaidee) *"
+                                          value={facebookNameInput}
+                                          onChange={(e) => {
+                                            setFacebookNameInput(e.target.value);
+                                            if (confirmError) setConfirmError(null);
+                                          }}
+                                          className="w-full px-3 py-2 rounded-lg border-2 border-rose-300 focus:border-rose-600 bg-white text-xs sm:text-sm font-medium text-cc-navy outline-none shadow-sm transition-all"
+                                          required
+                                        />
+                                        <input
+                                          type="text"
+                                          placeholder="ลิงก์โปรไฟล์ Facebook (ถ้ามี)"
+                                          value={facebookUrlInput}
+                                          onChange={(e) => {
+                                            setFacebookUrlInput(e.target.value);
+                                            if (confirmError) setConfirmError(null);
+                                          }}
+                                          className="w-full px-3 py-2 rounded-lg border-2 border-rose-200 focus:border-rose-600 bg-white text-xs sm:text-sm font-medium text-gray-700 outline-none shadow-sm transition-all"
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* KKU Mail */}
+                                  {hasExistingKkuMail ? (
+                                    <div className="p-3.5 rounded-xl bg-white border-2 border-emerald-400/80 shadow-sm flex flex-col justify-between sm:col-span-2 select-none">
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-1">
+                                          <Mail className="w-3.5 h-3.5 text-cc-blue" />
+                                          <span>อีเมลมหาวิทยาลัยขอนแก่น (KKU Mail)</span>
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                                          <Check className="w-3 h-3" /> ข้อมูลครบถ้วน
+                                        </span>
+                                      </div>
+                                      <div className="font-mono font-bold text-xs sm:text-sm text-cc-navy mt-1.5">
+                                        {searchResult.kkuMail}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="p-3.5 rounded-xl bg-rose-50/70 border-2 border-rose-300 shadow-sm flex flex-col justify-between space-y-1.5 sm:col-span-2">
+                                      <div className="flex items-center justify-between">
+                                        <label className="text-[11px] font-bold text-rose-950 uppercase flex items-center gap-1">
+                                          <Mail className="w-3.5 h-3.5 text-cc-blue" />
+                                          <span>อีเมลมหาวิทยาลัย (KKU Mail) <span className="text-rose-600">*</span></span>
+                                        </label>
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">
+                                          <AlertCircle className="w-3 h-3" /> ต้องกรอกเพิ่ม
+                                        </span>
+                                      </div>
+                                      <div className="flex rounded-lg border-2 border-rose-300 focus-within:border-rose-600 overflow-hidden shadow-sm bg-white transition-all">
+                                        <input
+                                          type="text"
+                                          placeholder="เช่น somchai.k"
+                                          value={kkuMailPrefix}
+                                          onChange={(e) => {
+                                            const val = e.target.value.replace(/@.*$/, "").trim();
+                                            setKkuMailPrefix(val);
+                                            if (confirmError) setConfirmError(null);
+                                          }}
+                                          className="flex-1 px-3 py-2 bg-transparent text-xs sm:text-sm font-bold text-cc-navy outline-none placeholder:text-gray-400 placeholder:font-normal"
+                                          required
+                                        />
+                                        <div className="bg-cc-cream border-l-2 border-cc-navy/20 px-3 py-2 flex items-center text-xs font-mono font-bold text-cc-navy select-none">
+                                          @kkumail.com
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* 2. ยืนยันข้อมูลอาหารและข้อจำกัดด้านอาหาร (Re-confirmation for everyone) */}
+                              <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/70 border-2 border-amber-300 space-y-3">
+                                <div className="flex items-center gap-2 border-b border-amber-200/80 pb-2">
+                                  <Utensils className="w-4 h-4 text-amber-700" />
+                                  <h4 className="text-xs sm:text-sm font-bold text-amber-950">
+                                    ยืนยันอาหารที่แพ้ / ข้อจำกัดด้านอาหาร <span className="text-cc-coral">*</span>
+                                  </h4>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <label className="block text-xs font-bold text-amber-950">
+                                    รูปแบบอาหารที่รับประทานได้ในค่าย
+                                  </label>
+                                  <select
+                                    value={dietChoice}
+                                    onChange={(e) => {
+                                      setDietChoice(e.target.value);
+                                      if (confirmError) setConfirmError(null);
+                                    }}
+                                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-amber-300 focus:border-amber-600 bg-white text-xs sm:text-sm font-bold text-gray-900 outline-none cursor-pointer shadow-sm transition-all"
+                                  >
+                                    {DIET_OPTIONS.map((opt) => (
+                                      <option key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                      </option>
+                                    ))}
+                                  </select>
+
+                                  {dietChoice === "แพ้อาหาร / อื่นๆ (โปรดระบุ)" && (
+                                    <div className="pt-1.5 animate-fadeIn">
+                                      <label className="block text-xs font-bold text-rose-950 mb-1">
+                                        ระบุอาหารที่แพ้หรือข้อจำกัดอย่างละเอียด <span className="text-rose-600">*</span>
+                                      </label>
+                                      <input
+                                        type="text"
+                                        placeholder="เช่น แพ้กุ้ง, แพ้อาหารทะเลทุกชนิด, แพ้ถั่วลิสง, ไม่ทานเนื้อวัว"
+                                        value={dietCustomInput}
+                                        onChange={(e) => {
+                                          setDietCustomInput(e.target.value);
+                                          if (confirmError) setConfirmError(null);
+                                        }}
+                                        className="w-full px-3.5 py-2.5 rounded-xl border-2 border-rose-300 focus:border-rose-600 bg-white text-xs sm:text-sm font-medium text-gray-900 outline-none shadow-sm transition-all"
+                                        required
+                                      />
+                                      <span className="text-[11px] text-amber-800 mt-1 block">
+                                        ⚠️ ข้อมูลนี้จะส่งให้ฝ่ายสวัสดิการและทีมครัวจัดเตรียมอาหารที่ปลอดภัยสำหรับท่านตลอดค่าย
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* 3. ข้อมูลแพ้ยา หรือมีโรคประจำตัว */}
+                              <div className="pt-1">
+                                <label className="flex items-start gap-3 p-4 rounded-2xl bg-gray-50 border-2 border-cc-navy/20 hover:border-cc-navy/40 cursor-pointer transition-all">
+                                  <input
+                                    type="checkbox"
+                                    checked={hasMedicalCondition}
+                                    onChange={(e) => {
+                                      setHasMedicalCondition(e.target.checked);
+                                      if (!e.target.checked) {
+                                        setMedicalConditionInput("");
+                                        setDrugAllergyInput("");
+                                      }
+                                    }}
+                                    className="mt-0.5 w-4 h-4 rounded border-2 border-cc-navy text-cc-navy focus:ring-0 cursor-pointer"
+                                  />
+                                  <div className="flex-1">
+                                    <span className="text-xs sm:text-sm font-bold text-cc-navy flex items-center gap-1.5">
+                                      <HeartPulse className="w-4 h-4 text-rose-500" />
+                                      <span>ข้อมูลแพ้ยา หรือมีโรคประจำตัว</span>
+                                    </span>
+                                    <span className="text-[11px] text-gray-500 block mt-0.5">
+                                      หากมีโรคประจำตัวหรือประวัติแพ้ยา กรุณาทำเครื่องหมายเพื่อระบุรายละเอียดให้ทีมพยาบาลดูแล
+                                    </span>
+                                  </div>
+                                </label>
+
+                                {/* Expandable sub-fields */}
+                                {hasMedicalCondition && (
+                                  <div className="mt-3 p-4 sm:p-5 rounded-2xl bg-rose-50/60 border-2 border-rose-300 space-y-3.5 animate-fadeIn">
+                                    <div className="space-y-1">
+                                      <label className="block text-xs font-bold text-rose-950 flex items-center gap-1.5">
+                                        <HeartPulse className="w-3.5 h-3.5 text-rose-600" />
+                                        <span>โรคประจำตัว (Medical Conditions)</span>
+                                      </label>
+                                      <input
+                                        type="text"
+                                        placeholder="เช่น หอบหืด, ภูมิแพ้, ไมเกรน (ถ้าไม่มี ให้ระบุว่า ไม่มี)"
+                                        value={medicalConditionInput}
+                                        onChange={(e) => setMedicalConditionInput(e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-xl border-2 border-rose-200 focus:border-rose-500 bg-white text-xs sm:text-sm font-medium text-gray-800 outline-none shadow-sm"
+                                      />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                      <label className="block text-xs font-bold text-rose-950 flex items-center gap-1.5">
+                                        <Pill className="w-3.5 h-3.5 text-rose-600" />
+                                        <span>ประวัติการแพ้ยา (Drug Allergies)</span>
+                                      </label>
+                                      <input
+                                        type="text"
+                                        placeholder="เช่น แพ้ยาเพนิซิลลิน, ยาซัลฟา (ถ้าไม่มี ให้ระบุว่า ไม่มี)"
+                                        value={drugAllergyInput}
+                                        onChange={(e) => setDrugAllergyInput(e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-xl border-2 border-rose-200 focus:border-rose-500 bg-white text-xs sm:text-sm font-medium text-gray-800 outline-none shadow-sm"
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* 4. Confirm Rights Button */}
+                              <div className="pt-3">
+                                <button
+                                  type="submit"
+                                  disabled={isConfirming}
+                                  className="w-full py-3.5 px-6 rounded-xl bg-cc-coral hover:bg-cc-coral-dark text-white font-display font-bold text-sm sm:text-base border-2 border-cc-navy shadow-solid-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                                >
+                                  {isConfirming ? (
+                                    <>
+                                      <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                      <span>กำลังบันทึกข้อมูลการยืนยันสิทธิ์...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Sparkles className="w-5 h-5 text-cc-yellow" />
+                                      <span>ยืนยันสิทธิ์เป็นพี่ค่าย Comclick 20</span>
+                                    </>
+                                  )}
+                                </button>
+                                <p className="text-center text-[11px] text-gray-500 mt-2">
+                                  เมื่อกดยืนยันสิทธิ์แล้ว สถานะของคุณจะเปลี่ยนเป็นผู้ยืนยันสิทธิ์ตัวจริงทันที
+                                </p>
+                              </div>
+                            </form>
                           </div>
-                        </form>
-                      </div>
+                        );
+                      })()
                     )}
                   </div>
                 ) : isInterview ? (

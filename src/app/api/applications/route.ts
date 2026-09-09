@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     // Validate required core fields
-    if (!body.fullNameTh || !body.studentId || !body.phone || !body.major || !body.firstChoiceDeptId) {
+    if (!body.fullNameTh || !body.studentId || !body.major || !body.firstChoiceDeptId) {
       return NextResponse.json(
         { success: false, error: "กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน" },
         { status: 400 }
@@ -120,15 +120,18 @@ export async function POST(request: Request) {
     }
     const cleanStudentId = `${rawStudentDigits.slice(0, 9)}-${rawStudentDigits.slice(9, 10)}`;
 
-    // Strict Phone Number Validation (10 digits starting with 0)
-    const rawPhoneDigits = String(body.phone).replace(/\D/g, "");
-    if (rawPhoneDigits.length !== 10 || !rawPhoneDigits.startsWith("0")) {
-      return NextResponse.json(
-        { success: false, error: "เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลักที่ถูกต้อง (ไม่มีขีด เช่น 0812345678)" },
-        { status: 400 }
-      );
+    // Phone Number Validation (Optional: allow empty or require 10 digits starting with 0)
+    let cleanPhone = "";
+    if (body.phone && String(body.phone).trim() !== "") {
+      const rawPhoneDigits = String(body.phone).replace(/\D/g, "");
+      if (rawPhoneDigits.length !== 10 || !rawPhoneDigits.startsWith("0")) {
+        return NextResponse.json(
+          { success: false, error: "เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลักที่ถูกต้อง (ไม่มีขีด เช่น 0812345678)" },
+          { status: 400 }
+        );
+      }
+      cleanPhone = rawPhoneDigits;
     }
-    const cleanPhone = rawPhoneDigits;
 
     if (!isNeonConfigured()) {
       return NextResponse.json(

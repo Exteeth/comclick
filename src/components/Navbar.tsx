@@ -84,13 +84,13 @@ export default function Navbar() {
           })}
         </div>
 
-        {/* Action Button: Apply */}
+        {/* Action Button: Status / Confirm Rights */}
         <div className="hidden sm:flex items-center gap-2">
           <a
-            href="/apply"
+            href="/status"
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-cc-coral hover:bg-cc-coral-dark text-white font-display font-bold text-xs sm:text-sm border-2 border-cc-navy shadow-solid-sm hover:translate-x-0.5 hover:-translate-y-0.5 transition-all"
           >
-            <span>สมัคร</span>
+            <span>ยืนยันสิทธิ์พี่ค่าย</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </a>
         </div>
@@ -98,10 +98,10 @@ export default function Navbar() {
         {/* Mobile menu button */}
         <div className="flex md:hidden items-center gap-1.5 flex-shrink-0">
           <a
-            href="/apply"
+            href="/status"
             className="px-2.5 py-1 text-[11px] font-bold text-white bg-cc-coral rounded-lg border border-cc-navy shadow-2xs"
           >
-            สมัคร
+            ยืนยันสิทธิ์พี่ค่าย
           </a>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -136,12 +136,12 @@ export default function Navbar() {
 
           <div className="pt-2.5 border-t border-cc-navy/15 flex flex-col gap-2">
             <a
-              href="/apply"
+              href="/status"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-white bg-cc-coral rounded-xl border-2 border-cc-navy shadow-solid-sm"
             >
               <Send className="w-4 h-4" />
-              <span>กรอกใบสมัครพี่ค่าย Comclick 20</span>
+              <span>ยืนยันสิทธิ์พี่ค่าย Comclick 20</span>
             </a>
           </div>
         </div>

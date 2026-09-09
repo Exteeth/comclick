@@ -367,10 +367,14 @@ export default function AdminDashboard() {
       setAddError("รหัสนักศึกษาต้องเป็นตัวเลข 10 หลัก (เช่น 663050123-4)");
       return;
     }
-    const phoneDigits = addFormData.phone.replace(/\D/g, "");
-    if (phoneDigits.length !== 10 || !phoneDigits.startsWith("0")) {
-      setAddError("เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลักขึ้นต้นด้วย 0 (เช่น 0812345678)");
-      return;
+    const phoneTrimmed = addFormData.phone ? addFormData.phone.trim() : "";
+    let phoneDigits = "";
+    if (phoneTrimmed) {
+      phoneDigits = phoneTrimmed.replace(/\D/g, "");
+      if (phoneDigits.length !== 10 || !phoneDigits.startsWith("0")) {
+        setAddError("หากระบุเบอร์โทรศัพท์ ต้องเป็นตัวเลข 10 หลักขึ้นต้นด้วย 0 (เช่น 0812345678)");
+        return;
+      }
     }
 
     setIsAddingApplicant(true);
@@ -1930,18 +1934,22 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div className="sm:col-span-2 space-y-1">
-                    <label className="font-bold text-gray-700">เบอร์โทรศัพท์ (10 หลัก): <span className="text-cc-coral">*</span></label>
+                    <div className="flex items-center justify-between">
+                      <label className="font-bold text-gray-700">เบอร์โทรศัพท์ (10 หลัก):</label>
+                      <span className="text-[11px] text-gray-500 font-normal">
+                        (ไม่บังคับ - เว้นว่างเพื่อให้ผู้สมัครกรอกเองในหน้ายืนยันสิทธิ์)
+                      </span>
+                    </div>
                     <input
                       type="text"
                       maxLength={10}
-                      placeholder="0812345678"
+                      placeholder="0812345678 (หรือเว้นว่างไว้)"
                       value={addFormData.phone}
                       onChange={(e) => {
                         const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
                         setAddFormData({ ...addFormData, phone: digits });
                       }}
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white font-mono outline-none focus:border-cc-blue"
-                      required
                     />
                   </div>
                 </div>

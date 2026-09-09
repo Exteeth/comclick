@@ -131,12 +131,20 @@ export default function ScheduleTimeline() {
                       </span>
                       <span
                         className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-md border ${
-                          item.status === "active"
-                            ? "bg-cc-yellow text-cc-navy border-cc-navy"
+                          item.status === "active" || item.phase === "04"
+                            ? "bg-cc-yellow text-cc-navy border-cc-navy shadow-xs font-bold"
+                            : item.status === "completed"
+                            ? "bg-white/20 text-white/90 border-white/30"
                             : "bg-white/15 text-white/80 border-white/20"
                         }`}
                       >
-                        {item.status === "active" ? "กำลังเปิดรับ" : "เร็วๆ นี้"}
+                        {item.phase === "04"
+                          ? "กำลังยืนยันสิทธิ์"
+                          : item.status === "active"
+                          ? "กำลังเปิดรับ"
+                          : item.status === "completed"
+                          ? "เสร็จสิ้น"
+                          : "เร็วๆ นี้"}
                       </span>
                     </div>
 
