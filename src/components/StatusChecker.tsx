@@ -175,14 +175,19 @@ export default function StatusChecker() {
       finalPhone = rawPhoneDigits;
     }
 
-    // 3. Validate Facebook (Use existing if available, else validate input)
-    const existingFb = searchResult.facebookName?.trim();
-    const finalFbName = existingFb || facebookNameInput.trim();
+    // 3. Validate Facebook (Both Facebook Name and Profile URL are mandatory)
+    const existingFbName = searchResult.facebookName?.trim();
+    const finalFbName = existingFbName || facebookNameInput.trim();
     if (!finalFbName) {
       setConfirmError("กรุณาระบุชื่อ Facebook สำหรับค้นหาและประสานงาน");
       return;
     }
-    const finalFbUrl = searchResult.facebookUrl?.trim() || facebookUrlInput.trim();
+    const existingFbUrl = searchResult.facebookUrl?.trim();
+    const finalFbUrl = existingFbUrl || facebookUrlInput.trim();
+    if (!finalFbUrl) {
+      setConfirmError("กรุณากรอกลิงก์โปรไฟล์ Facebook สำหรับประสานงาน (บังคับ)");
+      return;
+    }
 
     // 4. Validate KKU Mail (Use existing if available, else validate input)
     let finalKkuMail = searchResult.kkuMail?.trim() || "";
@@ -637,7 +642,9 @@ export default function StatusChecker() {
                         const hasExistingPhone = Boolean(
                           searchResult.phone?.trim() && searchResult.phone.trim().replace(/\D/g, "").length === 10
                         );
-                        const hasExistingFacebook = Boolean(searchResult.facebookName?.trim());
+                        const hasExistingFacebook = Boolean(
+                          searchResult.facebookName?.trim() && searchResult.facebookUrl?.trim()
+                        );
                         const hasExistingKkuMail = Boolean(searchResult.kkuMail?.trim());
 
                         const missingCount =
@@ -846,13 +853,14 @@ export default function StatusChecker() {
                                         />
                                         <input
                                           type="text"
-                                          placeholder="ลิงก์โปรไฟล์ Facebook (ถ้ามี)"
+                                          placeholder="ลิงก์โปรไฟล์ Facebook (เช่น https://facebook.com/...) *"
                                           value={facebookUrlInput}
                                           onChange={(e) => {
                                             setFacebookUrlInput(e.target.value);
                                             if (confirmError) setConfirmError(null);
                                           }}
-                                          className="w-full px-3 py-2 rounded-lg border-2 border-rose-200 focus:border-rose-600 bg-white text-xs sm:text-sm font-medium text-gray-700 outline-none shadow-sm transition-all"
+                                          className="w-full px-3 py-2 rounded-lg border-2 border-rose-300 focus:border-rose-600 bg-white text-xs sm:text-sm font-medium text-cc-navy outline-none shadow-sm transition-all"
+                                          required
                                         />
                                       </div>
                                     </div>
