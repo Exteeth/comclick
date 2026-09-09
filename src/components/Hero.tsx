@@ -83,11 +83,11 @@ export default function Hero() {
             {/* High-Impact Primary CTA Buttons (Top Prominence) */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-1">
               <a
-                href="/apply"
+                href="/status"
                 className="w-full sm:w-auto px-8 py-4 sm:py-4.5 rounded-2xl bg-cc-coral hover:bg-[#e84e3d] text-white font-display font-black text-base sm:text-lg border-2 border-white shadow-[4px_4px_0px_#eccb7d] sm:shadow-[5px_5px_0px_#eccb7d] hover:shadow-[2px_2px_0px_#eccb7d] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-1 active:translate-y-1 transition-all flex items-center justify-center gap-3 group relative overflow-hidden"
               >
                 <div className="absolute inset-0 w-1/2 h-full bg-white/20 skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 ease-out pointer-events-none" />
-                <span className="relative z-10">กรอกใบสมัครเป็นพี่ค่าย</span>
+                <span className="relative z-10">ยืนยันสิทธิ์พี่ค่าย</span>
                 <ArrowUpRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:rotate-45 group-hover:scale-110 transition-all text-cc-yellow relative z-10 flex-shrink-0" />
               </a>
 

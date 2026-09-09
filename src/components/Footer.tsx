@@ -73,10 +73,10 @@ export default function Footer() {
               ตรวจสถานะ
             </a>
             <a
-              href="/apply"
+              href="/status"
               className="px-4 py-1.5 rounded-xl bg-cc-coral hover:bg-cc-coral-dark text-white font-bold transition-all shadow-sm"
             >
-              สมัครเป็นพี่ค่าย
+              ยืนยันสิทธิ์พี่ค่าย
             </a>
           </div>
         </div>

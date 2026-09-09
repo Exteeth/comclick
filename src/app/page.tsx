@@ -66,10 +66,10 @@ export default function HomePage() {
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                 <a
-                  href="/apply"
+                  href="/status"
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-cc-navy hover:bg-cc-blue text-white font-display font-black text-base border-2 border-white shadow-solid hover:translate-x-1 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 group"
                 >
-                  <span>กรอกใบสมัครพี่ค่ายตอนนี้</span>
+                  <span>ยืนยันสิทธิ์พี่ค่ายตอนนี้</span>
                   <ArrowUpRight className="w-5 h-5 group-hover:rotate-45 transition-transform" />
                 </a>
 
