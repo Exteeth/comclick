@@ -11,15 +11,23 @@ interface TimeLeft {
   phase: "before_start" | "active" | "expired";
 }
 
+interface HeroCountdownProps {
+  startDate?: string;
+  targetDate?: string;
+  showTitle?: boolean;
+  beforeLabel?: string;
+  activeLabel?: string;
+  expiredLabel?: string;
+}
+
 export default function HeroCountdown({
   startDate = "2026-08-24T09:00:00+07:00",
   targetDate = "2026-08-30T23:59:59+07:00",
   showTitle = true,
-}: {
-  startDate?: string;
-  targetDate?: string;
-  showTitle?: boolean;
-}) {
+  beforeLabel = "นับถอยหลังเปิดรับสมัครพี่ค่าย",
+  activeLabel = "ระบบเปิดรับสมัครอยู่ • นับถอยหลังปิดรับสมัคร",
+  expiredLabel = "ปิดรับสมัครเรียบร้อยแล้ว",
+}: HeroCountdownProps) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
     hours: 0,
@@ -91,7 +99,7 @@ export default function HeroCountdown({
   if (timeLeft.phase === "expired") {
     return (
       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-cc-coral/20 border border-cc-coral text-cc-coral text-xs font-bold">
-        <span>ปิดรับสมัครเรียบร้อยแล้ว</span>
+        <span>{expiredLabel}</span>
       </div>
     );
   }
@@ -123,9 +131,7 @@ export default function HeroCountdown({
           </span>
           <Clock className={`w-3 h-3 ${isBeforeStart ? "text-cc-yellow" : "text-cc-coral"}`} />
           <span>
-            {isBeforeStart
-              ? "นับถอยหลังเปิดรับสมัครพี่ค่าย"
-              : "ระบบเปิดรับสมัครอยู่ • นับถอยหลังปิดรับสมัคร"}
+            {isBeforeStart ? beforeLabel : activeLabel}
           </span>
         </div>
       )}

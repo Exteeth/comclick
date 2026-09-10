@@ -114,15 +114,15 @@ export default function Hero() {
                   </div>
                 </div>
 
-                {/* Registration Period & Deadline */}
+                {/* Confirmation Period & Deadline */}
                 <div className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-white/5 border border-white/10 text-left">
                   <div className="w-8 h-8 rounded-xl bg-cc-coral text-white flex items-center justify-center flex-shrink-0 border border-white/20 shadow-sm">
                     <Clock className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[10px] text-white/70 font-semibold uppercase tracking-wider">เปิด - ปิดรับสมัคร</div>
+                    <div className="text-[10px] text-white/70 font-semibold uppercase tracking-wider">ยืนยันสิทธิ์พี่ค่าย</div>
                     <div className="text-xs sm:text-sm font-bold text-cc-yellow">
-                      {CAMP_INFO.registrationPeriod}
+                      {CAMP_INFO.confirmationPeriod || "10 - 11 กันยายน 2569"}
                     </div>
                   </div>
                 </div>
@@ -131,9 +131,12 @@ export default function Hero() {
               {/* Real-time Countdown Timer */}
               <div className="pt-2 border-t border-white/10">
                 <HeroCountdown
-                  startDate={CAMP_INFO.registrationStartDate}
-                  targetDate={CAMP_INFO.registrationEndDate}
+                  startDate={CAMP_INFO.confirmationStartDate || "2026-09-10T00:00:00+07:00"}
+                  targetDate={CAMP_INFO.confirmationEndDate || "2026-09-11T23:59:59+07:00"}
                   showTitle={true}
+                  beforeLabel="นับถอยหลังเปิดระบบยืนยันสิทธิ์"
+                  activeLabel="ระบบเปิดยืนยันสิทธิ์อยู่ • นับถอยหลังปิดระบบ"
+                  expiredLabel="ปิดระบบยืนยันสิทธิ์เรียบร้อยแล้ว"
                 />
               </div>
             </div>
